@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Inviso Interaction</title>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            body {
+                margin:0px;
+            }
+        </style>
+
+        <script> var activeObject = null; </script>
+        <script src="js/three.min.js"></script>
+        <script src="js/simplify3D.js"></script>
+        <script src="js/AxisHelper.js"></script>
+        <script src="js/OBJLoader.js"></script>
+        <script src="js/TrackballControls.js"></script>
+        <script src="js/OrbitControls.js"></script>
+        <script src="js/Tween.js"></script>
+        <script src="js/dat.gui.min.js"></script>
+
+        <script src="SoundTrajectory.js"></script>
+        <script src="SoundObject.js"></script>
+        <script src="SoundZone.js"></script>
+        <link rel="stylesheet" href="css/gui.css">
+    </head>
+
+    <body>
+
+        <input id="myInput" type="file" style="visibility:hidden">
+        <div id="UIContainer">
+          <button id="add-object-button"> + </button>
+          <div id="guis"></div>
+        </div>
+
+<script>
+
+    var scene, camera, controls, container, renderer;
+
+    var mouse = new THREE.Vector3();
+    var nonScaledMouse = new THREE.Vector3();
+    var ray = new THREE.Raycaster();
+    var walkingRay = new THREE.Raycaster();
+
+    var isMouseDown = false;
+    var isAddingTrajectory = false;
+    var isAddingObject = false;
+    var isAddingObject = false;
+    var isEditingObject = false;
+
+    var floor;
+    var counter = 1;
+    var movementSpeed = 5;
+    var increment = 0.01;
+    var direction = 1;
+
+    var audio;
+    var soundObjects = [];
+    var soundTrajectories = [];
+    var soundZones = [];
+
+    var axisHelper;
+    var loader;
+    var headModel;
+    var moveForward = 0, moveBackwards = 0;
+    var yawLeft = 0, yawRight = 0;
+    var rotationSpeed = 0.05;
+    var listenerMovementSpeed = 5;
+
+    var perspectiveView = false;
+    var keyPressed = false;
+
+    var interactiveCone = null, previousInteractiveCone = null;
+    var selectedConeColor, unselectedConeColor;
+    var placingCone = false;
+    var replacingCone = false;
+
+    var cameraPosition = new THREE.Vector3();
+
+    init();
+    render();
+
+    function init() {
+
+      setupAudio();
+
+      container = document.createElement( 'div' );
+      document.body.appendChild( container );
+
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+      camera.position.set(0, 2500, 0);
+      camera.updateProjectionMatrix();
+
+      controls = new THREE.OrbitControls( camera );
+      controls.minPolarAngle = -Math.PI/2;
+      controls.maxPolarAngle = Math.PI/2;
+      controls.enabled = false;
+
+      ray.linePrecision = 10;
+
+      scene = new THREE.Scene();
+      scene.add(camera);
+      scene.add( new THREE.AmbientLight( 0x909090 ) );
+
+      var obj = {
+
+        loadFile : function() {
+          document.getElementById("myInput").click();
+        },
+        addTrajectory : function() {
+          toggleAddTrajectory();
+        },
+        attachSound : function() {
+
+          attachSound();
+
+          if(!isEditingObject){
+            isEditingObject = true;
+            cameraPosition.lerpVectors(activeObject.containerObject.position, headModel.position,
+            500 / headModel.position.distanceTo(activeObject.containerObject.position));
+
+            var tween = new TWEEN.Tween(camera.position)
+            .to(cameraPosition, 800)
+            .onComplete(function() {
+              headModel.position.copy(cameraPosition);
+              headModel.lookAt(activeObject.containerObject.position);
+              axisHelper.position.copy(cameraPosition);
+              axisHelper.lookAt(activeObject.containerObject.position);})
+            .start();
+
+            var tween2 = new TWEEN.Tween(controls.center)
+            .to(activeObject.containerObject.position, 800)
+            .start();
+          }
+        },
+        editObject : function() {
+
+          if(!isEditingObject){
+            cameraPosition.lerpVectors(activeObject.containerObject.position, headModel.position,
+            500 / headModel.position.distanceTo(activeObject.containerObject.position));
+
+            var tween = new TWEEN.Tween(camera.position)
+            .to(cameraPosition, 800)
+            .onComplete(function() {
+              headModel.position.copy(cameraPosition);
+              headModel.lookAt(activeObject.containerObject.position);
+              axisHelper.position.copy(cameraPosition);
+              axisHelper.lookAt(activeObject.containerObject.position);})
+            .start();
+
+            var tween2 = new TWEEN.Tween(controls.center)
+            .to(activeObject.containerObject.position, 800)
+            .start();
+          }
+          isEditingObject = !isEditingObject;
+        }
+      };
+
+      var objectGui = new dat.GUI({ autoPlace: false });
+      objectGui.width = 250;
+      var customContainer = document.getElementById('guis');
+      customContainer.appendChild(objectGui.domElement);
+
+      objectGui.add(obj, 'loadFile').name('Load Sound File');
+      objectGui.add(obj, 'attachSound').name('Attach Sound');
+      objectGui.add(obj, 'addTrajectory').name('Add Trajectory');
+      objectGui.add(obj, 'editObject').name('Edit Object');
+
+      guis.style.display = "block";
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setClearColor( 0xf0f0f0 );
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.autoClear = false;
+
+      trajectory.setScene(scene);
+      zone.setScene(scene);
+
+      var geometry = new THREE.PlaneGeometry(5000, 5000);
+      var material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide, visible: false} );
+      floor = new THREE.Mesh( geometry, material );
+      floor.rotation.x = Math.PI/2;
+      scene.add(floor);
+
+      axisHelper = new THREE.AxisHelper(60);
+      axisHelper.rotation.y += Math.PI;
+      scene.add(axisHelper);
+
+      loader = new THREE.OBJLoader();
+      loader.load('assets/head.obj', function(object){
+        headModel = object;
+        headModel.position.y = 1; // necessary for raycasting onto the zone shape
+
+        headModel.rotation.y += Math.PI;
+        headModel.scale.set(30, 30, 30);
+        scene.add(headModel);
+      });
+
+      var grid = new THREE.GridHelper( 5000, 100 );
+      grid.position.y = -300;
+      grid.material.opacity = 0.25;
+      grid.material.transparent = true;
+      scene.add( grid );
+
+      var dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+      dirLight.color.setHSL( 0.1, 1, 0.95 );
+      dirLight.position.set( -1, 1.75, 1 );
+      dirLight.position.multiplyScalar( 50 );
+      scene.add( dirLight );
+
+      unselectedConeColor = new THREE.Color(0x80FFE7);
+      selectedConeColor = new THREE.Color(0xFFCCCC);
+
+      container.appendChild( renderer.domElement );
+      container.addEventListener( 'mousedown', onMouseDown, false );
+      container.addEventListener( 'mouseup', onMouseUp, false );
+      container.addEventListener( 'mouseleave', onMouseUp, false );
+      container.addEventListener( 'mousemove', onMouseMove, false );
+      document.body.addEventListener( 'keydown', onKeyDown, false);
+      document.body.addEventListener( 'keyup', onKeyUp, false);
+
+      document.querySelector('#add-object-button').onclick = toggleAddObject.bind(this);
+      window.addEventListener( 'resize', onWindowResize, false );
+    }
+
+    function setupAudio(){
+
+      var a = {};
+      audio = a;
+
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
+      a.context = new AudioContext();
+      a.context.listener.setOrientation(0,0,-1,0,1,0);
+      a.context.listener.setPosition(0, 0, 1);
+      a.destination = a.context.createGain();
+      a.destination.connect(a.context.destination);
+    }
+
+    function setListenerPosition(object) {
+
+      var q = new THREE.Vector3();
+      object.updateMatrixWorld();
+      q.setFromMatrixPosition(object.matrixWorld);
+      audio.context.listener.setPosition(q.x, q.y, q.z);
+
+      var m = object.matrix;
+      var mx = m.elements[12], my = m.elements[13], mz = m.elements[14];
+      m.elements[12] = m.elements[13] = m.elements[14] = 0;
+
+      var vec = new THREE.Vector3(0,0,-1);
+      vec.applyProjection(m);
+      vec.normalize();
+
+      var up = new THREE.Vector3(0,-1,0);
+      up.applyProjection(m);
+      up.normalize();
+
+      audio.context.listener.setOrientation(vec.x, vec.y, vec.z, up.x, up.y, up.z);
+
+      m.elements[12] = mx;
+      m.elements[13] = my;
+      m.elements[14] = mz;
+    }
+
+    function render() {
+
+      for(var i in soundObjects){
+        if( !isMouseDown || soundObjects[i] != activeObject) {
+          if( soundObjects[i].type === 'SoundObject') soundObjects[i].followTrajectory();
+        }
+      }
+
+      TWEEN.update();
+
+      if( controls.getPolarAngle() > 0.4 ) perspectiveView = true; else perspectiveView = false;
+
+      controls.update();
+      checkZones();
+      updateDummyHead();
+      requestAnimationFrame( this.render.bind(this) );
+
+      renderer.clear();
+      renderer.setViewport( 0, 0, window.innerWidth, window.innerHeight );
+      renderer.render( scene, camera );
+
+      if ( activeObject ) document.getElementById('guis').style.display = 'block';
+      else document.getElementById('guis').style.display = 'none';
+    }
+
+    function checkZones() {
+
+      if( soundZones.length > 0 ){
+
+        var walkingRayVector = new THREE.Vector3(0, -1, 0);
+        walkingRay.set(headModel.position, walkingRayVector);
+
+        for(var i in soundZones){
+          var intersects = walkingRay.intersectObject( soundZones[i].shape );
+          if(intersects.length > 0) {
+            soundZones[i].underUser();
+          }
+          else {
+            soundZones[i].notUnderUser();
+          }
+        }
+      }
+    }
+
+    function attachSound() {
+
+      var x = document.getElementById("myInput");
+      if( activeObject.type === 'SoundObject' ){ activeObject.createCone('assets/' + x.files[0].name); }
+      if( activeObject.type === 'SoundZone' ){ activeObject.loadSound('assets/' + x.files[0].name); }
+      if( activeObject.type === 'SoundTrajectory' ) activeObject.parentSoundObject.createCone('assets/' + x.files[0].name);
+    }
+
+    function toggleAddTrajectory() {
+
+      if(perspectiveView) controls.reset();
+      isAddingTrajectory = !isAddingTrajectory;
+    }
+
+    function toggleAddObject() {
+
+      if(perspectiveView) controls.reset();
+      isAddingObject = !isAddingObject;
+    }
+
+    function setActiveObject(obj) {
+
+      if (activeObject) {
+        activeObject.setInactive();
+      }
+      activeObject = obj;
+
+      if (obj) {
+        obj.setActive();
+      }
+    }
+
+    function updateDummyHead(){
+
+      if(headModel){
+        axisHelper.rotation.y += - yawLeft + yawRight;
+        headModel.rotation.y += - yawLeft + yawRight;
+        axisHelper.translateZ( - moveBackwards + moveForward);
+        headModel.translateZ( - moveBackwards + moveForward);
+        setListenerPosition(headModel);
+      }
+    }
+
+    function setMousePosition(event) {
+
+      var pointer = new THREE.Vector3();
+      pointer.set((event.clientX / window.innerWidth) * 2 - 1, - (event.clientY / window.innerHeight) * 2 + 1);
+
+      nonScaledMouse = pointer;
+
+      ray.setFromCamera( pointer, camera );
+
+      var intersects = ray.intersectObject( floor );
+      if(intersects.length > 0) {
+        mouse = intersects[0].point;
+      }
+    }
+
+    function onMouseDown(e) {
+
+      if( !keyPressed ){
+
+        isMouseDown = true;
+
+        var everyComponent = [].concat(soundObjects, soundZones, soundTrajectories);
+
+        var intersectObjects = everyComponent.filter(function(obj) {
+            return obj.isUnderMouse(ray);
+        });
+
+        if( everyComponent.length > 0 ) setActiveObject(intersectObjects[0]);
+        else setActiveObject(null);
+
+        if (isAddingTrajectory) {
+          mouse.y = activeObject.containerObject.position.y;
+          trajectory.beginAt(mouse);
+        }
+
+        if (isAddingObject) {
+          zone.beginAt(mouse);
+        }
+
+        if (activeObject && activeObject.isUnderMouse(ray)) {
+            // click inside active object
+          if ( activeObject.type != 'SoundObject'){
+            var intersect = activeObject.objectUnderMouse(ray);
+            activeObject.select(intersect);
+          }else{
+            activeObject.select();
+          }
+        }
+
+        if ( isEditingObject ){
+
+          var intersects2 = ray.intersectObjects(activeObject.containerObject.children);
+
+        	if (intersects2.length > 0) {
+
+        		var intersect2 = intersects2[0];
+
+        		switch(intersect2.object.name){
+
+        			case "cone":
+
+        				previousInteractiveCone = interactiveCone;
+        				if(interactiveCone == intersect2.object.id - activeObject.cones[0].id){
+        					placingCone = false;
+        					interactiveCone = null;
+        				}
+        				else{
+        					interactiveCone = intersect2.object.id - activeObject.cones[0].id;
+        					replacingCone = true;
+        				}
+        			break;
+
+        			case "visibleSphere":
+        				replacingCone = false;
+        			break;
+
+        			case "addButton":
+
+        				var x = document.getElementById("myInput");
+        				if( activeObject.type === 'SoundObject' ) activeObject.createCone('assets/' + x.files[0].name);
+        				previousInteractiveCone = interactiveCone;
+        				placingCone = true;
+        				createCone(intersect2.point);
+        				interactiveCone = soundCones.length - 1;
+
+        			break;
+        		}
+          }else{
+        		previousInteractiveCone = interactiveCone;
+        		placingCone = false;
+        		replacingCone = false;
+        		interactiveCone = null;
+        	}
+
+        	if(previousInteractiveCone !== null) activeObject.cones[previousInteractiveCone].material.color = new THREE.Color(unselectedConeColor);
+        	if(interactiveCone !== null) activeObject.cones[interactiveCone].material.color = new THREE.Color(selectedConeColor);
+        }
+
+      }
+
+    }
+
+    function onMouseUp(e) {
+
+      setMousePosition(e);
+      var obj;
+
+      if (isAddingTrajectory) {
+        obj = trajectory.createObject();
+        activeObject.trajectory = obj;
+        obj.parentSoundObject = activeObject;
+        if (obj && obj.type === 'SoundTrajectory') {
+          soundTrajectories.push(obj);
+        }
+        toggleAddTrajectory();
+        isAddingTrajectory = false;
+      }
+
+      if (isAddingObject) {
+        obj = zone.createObject();
+        if (obj && obj.type === 'SoundZone') {
+          soundZones.push(obj);
+        }
+        if (obj && obj.type === 'SoundObject') {
+          soundObjects.push(obj);
+        }
+
+        setActiveObject(obj);
+        toggleAddObject();
+        isAddingObject = false;
+      }
+
+      isMouseDown = false;
+
+      for( var i in soundObjects ){
+        if( soundObjects[i].type === 'SoundObject') soundObjects[i].calculateMovementSpeed();
+      }
+    }
+
+    function onMouseMove(e) {
+
+      setMousePosition(e);
+      if (isMouseDown === true && !isEditingObject) {
+        if( activeObject ){
+          activeObject.move();
+        }
+
+        if (isAddingTrajectory === true) {
+          if (activeObject.type === 'SoundObject') {
+            mouse.y = activeObject.containerObject.position.y;
+            trajectory.addPoint(mouse);
+          }
+        }
+
+        if (isAddingObject === true) {
+          zone.addPoint(mouse);
+        }
+
+        if (activeObject && activeObject.type === 'SoundTrajectory') {
+            var intersection = activeObject.objectUnderMouse(ray);
+
+            if (isMouseDown === true) {
+                // click+drag
+                activeObject.move(mouse);
+            }
+            else {
+                // hover cursor over line
+
+                if (intersection && intersection.object.type === 'Line') {
+                    activeObject.showCursor();
+                    activeObject.setCursor(intersection.point);
+                }
+                else if (intersection && intersection.object.parent.type === 'Object3D') {
+                    activeObject.showCursor();
+                    activeObject.setCursor(intersection.object.parent.position);
+
+                }
+                else {
+                    activeObject.showCursor(false);
+                }
+            }
+          }
+      }
+
+      if(isEditingObject){
+
+        var intersects3 = ray.intersectObject(activeObject.raycastSphere);
+        var intersect3 = intersects3[0];
+
+        if (intersects3.length > 0 && placingCone){
+          activeObject.cones[interactiveCone].lookAt(intersect3.point);
+          setPosition(activeObject.cones[interactiveCone]);
+        }else if(isMouseDown){
+          if(intersects3.length > 0 && replacingCone){
+
+            var coneRotation = new THREE.Vector3();
+            coneRotation.subVectors(intersect3.point, activeObject.containerObject.position);
+            activeObject.cones[interactiveCone].lookAt(coneRotation);
+            activeObject.setAudioPosition(activeObject.cones[interactiveCone]);
+          }
+        }
+      }
+    }
+
+    function onWindowResize(){
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onKeyDown(e) {
+
+      keyPressed = true;
+
+      var key = e.keyCode || e.which;
+      switch(key) {
+        case 87: moveForward = 1 * movementSpeed; break; //W
+        case 83: moveBackwards = 1 * movementSpeed; break; //S
+        case 68: yawLeft = 1 * rotationSpeed; break; // D
+        case 65: yawRight = 1 * rotationSpeed; break; // A
+        case 67: controls.enabled = true; break;
+
+        case 8: case 46:    // Backspace & Delete
+          e.preventDefault();
+          if (activeObject && activeObject.type === 'SoundTrajectory') {
+
+            if (activeObject.selectedPoint && activeObject.splinePoints.length > 3) {
+              activeObject.removePoint();
+            }
+          }
+
+          if (activeObject && activeObject.type === 'SoundZone') {
+
+            if (activeObject.selectedPoint && activeObject.splinePoints.length > 3) {
+              activeObject.removePoint();
+            }
+            else {
+              removeSoundZone(activeObject);
+              activeObject = null;
+            }
+          }
+
+          if (activeObject && activeObject.type === 'SoundObject') {
+            removeSoundObject(activeObject);
+            removeSoundTrajectory(activeObject.trajectory);
+            activeObject = null;
+          }
+        break;
+      }
+    }
+
+    function onKeyUp(e) {
+
+      keyPressed = false;
+
+      var key = e.keyCode || e.which;
+      switch(key) {
+        case 87: moveForward = 0; break; //W
+        case 83: moveBackwards = 0; break; //S
+        case 68: yawLeft = 0; break; // D
+        case 65: yawRight = 0; break; // A
+        case 67: controls.enabled = false; break; // C
+        case 82: controls.reset(); if( isEditingObject ) isEditingObject = false; break; // R
+      }
+    }
+
+    function removeSoundZone (soundZone) {
+      var i = soundZones.indexOf(soundZone);
+      soundZones[i].notUnderUser();
+      soundZone.removeFromScene(scene);
+      soundZones.splice(i,1);
+    }
+
+    function removeSoundObject (soundObject) {
+      soundObject.removeFromScene(scene);
+      var i = soundObjects.indexOf(soundObject);
+      soundObjects.splice(i,1);
+    }
+
+    function removeSoundTrajectory (soundTrajectory) {
+      soundTrajectory.removeFromScene(scene);
+      var i = soundTrajectories.indexOf(soundTrajectory);
+      soundTrajectories.splice(i,1);
+    }
+
+</script>
+</body>
+</html>
