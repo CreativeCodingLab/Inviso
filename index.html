@@ -21,6 +21,7 @@
         <script src="js/Tween.js"></script>
         <script src="js/dat.gui.min.js"></script>
 
+        <script src="controls.js"></script>
         <script src="SoundTrajectory.js"></script>
         <script src="SoundObject.js"></script>
         <script src="SoundZone.js"></script>
@@ -96,7 +97,9 @@
       controls = new THREE.OrbitControls( camera );
       controls.minPolarAngle = -Math.PI/2;
       controls.maxPolarAngle = Math.PI/2;
-      controls.enabled = false;
+      controls.enabled = true;
+      controls.enableRotate = false;
+      // controls.enabled = false;
 
       ray.linePrecision = 10;
 
@@ -573,7 +576,7 @@
         case 83: moveBackwards = 1 * movementSpeed; break; //S
         case 68: yawLeft = 1 * rotationSpeed; break; // D
         case 65: yawRight = 1 * rotationSpeed; break; // A
-        case 67: controls.enabled = true; break;
+        // case 67: controls.enabled = true; break;
 
         case 8: case 46:    // Backspace & Delete
           e.preventDefault();
@@ -614,7 +617,7 @@
         case 83: moveBackwards = 0; break; //S
         case 68: yawLeft = 0; break; // D
         case 65: yawRight = 0; break; // A
-        case 67: controls.enabled = false; break; // C
+        // case 67: controls.enabled = false; break; // C
         case 82: controls.reset(); if( isEditingObject ) isEditingObject = false; break; // R
       }
     }

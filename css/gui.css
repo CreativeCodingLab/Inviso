@@ -32,6 +32,20 @@ input[type="file"] {
   display: none;
 }
 
+
+#cam-control {
+  position:absolute;
+  right:0;
+  bottom:0;
+  margin:20px;
+  width:100px;
+  height:100px;
+  border:1px solid #aaa;
+  cursor:grab;
+}
+#cam-control:active {
+  cursor:grabbing;
+}
 .dg.main.taller-than-window .close-button {
 border-top: 1px solid #ddd;
 }
