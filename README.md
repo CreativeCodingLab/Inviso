@@ -1,6 +1,6 @@
 # Inviso
 
-A cross-platform tool for the design of interactive virtual soundscapes. 
+A cross-platform tool for designing interactive virtual soundscapes. 
 
 # TO-DO
 • Code refactoring, adding a test framework
