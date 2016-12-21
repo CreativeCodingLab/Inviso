@@ -24,9 +24,53 @@
 }
 
 #guis{
-  position: relative;
-  float: top;
+  position:absolute;
+  top:40px;
+  background-color:rgba(255,255,255,0.6);
+  font-family:roboto,'helvetica neue', helvetica, arial, sans-serif;
+  box-shadow: 0 0 10px #aaa;
+  transition: opacity 200ms ease;
+  -webkit-transition: opacity 200ms ease;
 }
+#guis > div {
+  padding: 15px;
+}
+#guis > div+div {
+  border-top:0.5px solid #aaa;
+}
+#guis h4 { 
+  margin: 0;
+  font-weight:400;
+}
+#guis h4+* {
+  margin-top:1em;
+}
+#guis div>span { 
+  font-size: 0.8em; 
+  vertical-align: top;
+}
+
+#guis .property {
+  font-weight: bold;
+  display: inline-block;
+  width: 70px;
+  position:absolute;
+}
+#guis .valueSpan {
+  cursor:pointer;
+  border-bottom: 1px dotted #555;
+  display:inline-block;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Chrome/Safari/Opera */
+     -khtml-user-select: none; /* Konqueror */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  not supported by any browser */
+}
+
+.property + .valueSpan { margin-left:80px; }
 
 input[type="file"] {
   display: none;

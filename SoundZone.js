@@ -37,6 +37,7 @@ var SoundZone = function(points) {
 		var sound = {};
 		var _this = this;
 
+		sound.name = soundFileName;
 		sound.volume = context.createGain();
 		sound.volume.connect(audio.destination);
 

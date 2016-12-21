@@ -19,8 +19,7 @@
         <script src="js/TrackballControls.js"></script>
         <script src="js/OrbitControls.js"></script>
         <script src="js/Tween.js"></script>
-        <script src="js/dat.gui.min.js"></script>
-
+        <script src="gui.js"></script>
         <script src="SoundTrajectory.js"></script>
         <script src="SoundObject.js"></script>
         <script src="SoundZone.js"></script>
@@ -46,7 +45,6 @@
 
     var isMouseDown = false;
     var isAddingTrajectory = false;
-    var isAddingObject = false;
     var isAddingObject = false;
     var isEditingObject = false;
 
@@ -104,71 +102,7 @@
       scene.add(camera);
       scene.add( new THREE.AmbientLight( 0x909090 ) );
 
-      var obj = {
-
-        loadFile : function() {
-          document.getElementById("myInput").click();
-        },
-        addTrajectory : function() {
-          toggleAddTrajectory();
-        },
-        attachSound : function() {
-
-          attachSound();
-
-          if(!isEditingObject){
-            isEditingObject = true;
-            cameraPosition.lerpVectors(activeObject.containerObject.position, headModel.position,
-            500 / headModel.position.distanceTo(activeObject.containerObject.position));
-
-            var tween = new TWEEN.Tween(camera.position)
-            .to(cameraPosition, 800)
-            .onComplete(function() {
-              headModel.position.copy(cameraPosition);
-              headModel.lookAt(activeObject.containerObject.position);
-              axisHelper.position.copy(cameraPosition);
-              axisHelper.lookAt(activeObject.containerObject.position);})
-            .start();
-
-            var tween2 = new TWEEN.Tween(controls.center)
-            .to(activeObject.containerObject.position, 800)
-            .start();
-          }
-        },
-        editObject : function() {
-
-          if(!isEditingObject){
-            cameraPosition.lerpVectors(activeObject.containerObject.position, headModel.position,
-            500 / headModel.position.distanceTo(activeObject.containerObject.position));
-
-            var tween = new TWEEN.Tween(camera.position)
-            .to(cameraPosition, 800)
-            .onComplete(function() {
-              headModel.position.copy(cameraPosition);
-              headModel.lookAt(activeObject.containerObject.position);
-              axisHelper.position.copy(cameraPosition);
-              axisHelper.lookAt(activeObject.containerObject.position);})
-            .start();
-
-            var tween2 = new TWEEN.Tween(controls.center)
-            .to(activeObject.containerObject.position, 800)
-            .start();
-          }
-          isEditingObject = !isEditingObject;
-        }
-      };
-
-      var objectGui = new dat.GUI({ autoPlace: false });
-      objectGui.width = 250;
-      var customContainer = document.getElementById('guis');
-      customContainer.appendChild(objectGui.domElement);
-
-      objectGui.add(obj, 'loadFile').name('Load Sound File');
-      objectGui.add(obj, 'attachSound').name('Attach Sound');
-      objectGui.add(obj, 'addTrajectory').name('Add Trajectory');
-      objectGui.add(obj, 'editObject').name('Edit Object');
-
-      guis.style.display = "block";
+      gui.init();
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setClearColor( 0xf0f0f0 );
@@ -286,8 +220,7 @@
       renderer.setViewport( 0, 0, window.innerWidth, window.innerHeight );
       renderer.render( scene, camera );
 
-      if ( activeObject ) document.getElementById('guis').style.display = 'block';
-      else document.getElementById('guis').style.display = 'none';
+      gui.display(activeObject);
     }
 
     function checkZones() {
@@ -597,7 +530,9 @@
 
           if (activeObject && activeObject.type === 'SoundObject') {
             removeSoundObject(activeObject);
-            removeSoundTrajectory(activeObject.trajectory);
+            if (activeObject.trajectory) {
+              removeSoundTrajectory(activeObject.trajectory);
+            }
             activeObject = null;
           }
         break;
