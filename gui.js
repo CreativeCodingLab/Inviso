@@ -309,7 +309,7 @@ gui = {
     },
 
     // event handler additions
-    addSound:function(e) {
+    addSound: function(e) {
         var obj = this.obj;
         var span = e.target;
         var input = document.getElementById('myInput');
@@ -326,7 +326,39 @@ gui = {
               case 'SoundTrajectory': 
                 obj = obj.parentSoundObject;
               case 'SoundObject':
-                self.addCone(obj.createCone(path));
+                // replace sound attached to existing cone
+                var text = span.innerText || span.textContent;
+                if (obj.cones && obj.cones.length > 0 && text) {
+                  var coneToSplice = obj.cones.findIndex(function(cone) {
+                    return cone.filename === text;
+                  });
+                  if (coneToSplice > -1) {
+                    var cone = obj.cones[coneToSplice];
+                    var sound = cone.sound;
+
+                    // copy properties of previous sound
+                    cone.sound = obj.loadSound(path);
+                    cone.sound.panner.refDistance = sound.panner.refDistance;
+                    cone.sound.panner.distanceModel = sound.panner.distanceModel;
+                    cone.sound.panner.coneInnerAngle = sound.panner.coneInnerAngle;
+                    cone.sound.panner.coneOuterAngle = sound.panner.coneOuterAngle;
+                    cone.sound.panner.coneOuterGain = sound.panner.coneOuterGain;
+                    cone.sound.volume.gain.value = sound.volume.gain.value;
+
+                    sound.source.stop();
+
+                    // replace text with file name
+                    cone.filename = file.name;
+                    while(span.firstChild) { span.removeChild(span.firstChild); }
+                    span.appendChild(document.createTextNode(file.name));
+                    return; // quit early
+                  }
+                }
+
+                // create new cone
+                var cone = obj.createCone(path);
+                cone.filename = file.name;
+                self.addCone(cone);
 
                 // automatically enter edit mode after brief delay
                 window.setTimeout(function() {
@@ -334,7 +366,7 @@ gui = {
                   self.editObject(obj);
                 }, 500)
                 break;
-              case 'SoundTrajectory':
+              case 'SoundZone':
                 // replace text with file name
                 while(span.firstChild) { span.removeChild(span.firstChild); }
                 span.appendChild(document.createTextNode(file.name));
@@ -355,30 +387,28 @@ gui = {
 
       this.addParameter({
         property: 'File',
-        value: '???'
+        value: cone.filename,
+        events: [{
+          type: 'click', 
+          callback: this.addSound.bind(this)
+        }]
       }, elem);
       this.addParameter({
         property: 'Volume',
-        value: '???',
-        type: 'number',
-        suffix: ' dB'
+        value: Number((cone.sound.volume.gain.value).toFixed(3)),
+        type: 'number'
       }, elem);
       this.addParameter({
         property: 'Longitude',
-        value: '???',
+        value: Number((cone.rotation._y * 180/Math.PI).toFixed(2)),
         type: 'number',
-        suffix: ' ˚'
+        suffix: '˚'
       }, elem);
       this.addParameter({
         property: 'Latitude',
-        value: '???',
+        value: Number((cone.rotation._x * 180/Math.PI).toFixed(2)),
         type: 'number',
-        suffix: ' ˚'
-      }, elem);
-      this.addParameter({
-        property: 'Spread',
-        value: '???',
-        type: 'number'
+        suffix: '˚'
       }, elem);
       this.addParameter({
         value: 'Delete'
@@ -387,7 +417,7 @@ gui = {
 
     },
     addTrajectory: function(object) {
-      var elem = this.addElem('Trajectory', document.getElementById('add-cone'));
+      var elem = this.addElem('Trajectory');
       elem.id = 'trajectory';
 
       this.addParameter({
@@ -416,8 +446,18 @@ gui = {
           .onComplete(function() {
             headModel.position.copy(cameraTo.position);
             headModel.lookAt(objectPosition);
+
             axisHelper.position.copy(cameraTo.position);
             axisHelper.lookAt(objectPosition);
+            // if (objectPosition.z < cameraTo.position.z) {
+            //   console.log(cameraTo.position.z - objectPosition.z);
+            //   headModel.rotation.x = Math.PI - headModel.rotation.x;
+            //   // headModel.rotation.y = Math.PI - headModel.rotation.y;
+            //   // headModel.rotation.z = Math.PI - headModel.rotation.z;
+            //   axisHelper.rotation.x = Math.PI - axisHelper.rotation.x;
+            //   // headModel.rotation.y = Math.PI - headModel.rotation.y;
+            //   // axisHelper.rotation.z = Math.PI - axisHelper.rotation.z;
+            // }
           });
 
         var tween2 = new TWEEN.Tween(controls.center)

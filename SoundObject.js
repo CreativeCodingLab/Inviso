@@ -60,7 +60,7 @@ var SoundObject = function(audio){
     coneMaterial.side = THREE.DoubleSide;
     var cone = new THREE.Mesh(coneGeo, coneMaterial);
 
-    cone.sound = loadSound(fileName);
+    cone.sound = this.loadSound(fileName);
     cone.sound.panner.refDistance = 50;
     cone.sound.panner.distanceModel = 'inverse';
     cone.sound.panner.coneInnerAngle = Math.atan(coneWidth/coneHeight) * (180/Math.PI);
@@ -113,7 +113,7 @@ var SoundObject = function(audio){
     m.elements[14] = mz;
   };
 
-  function loadSound(soundFileName){
+  this.loadSound = function(soundFileName){
 
     var context = audio.context;
     var sound = {};
