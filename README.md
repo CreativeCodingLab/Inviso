@@ -7,7 +7,7 @@ A cross-platform tool for designing interactive virtual soundscapes.
 
 • Revising/implementing parametric view windows
 
-• Constaining camera movement to bottom-left corner icons
+• Constaining camera movement to bottom-right corner icons
 
 • Implementing state pause, play, save and load
 
