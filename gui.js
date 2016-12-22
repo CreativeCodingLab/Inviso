@@ -5,7 +5,7 @@ gui = {
         this.display();
     },
 
-    id: null,   // uuid of either "shape" or "raycastSphere" being displayed
+    id: null,   // uuid of either "shape" or "containerObject" being displayed
     obj: null,  // the object whose information is being displayed
     parameters: {}, // list of parameter key-DOM element pairs
 
@@ -35,10 +35,10 @@ gui = {
           case 'SoundTrajectory':
               obj = obj.parentSoundObject; // do not break
           case 'SoundObject':
-              if (this.id !== obj.raycastSphere.uuid) {
+              if (this.id !== obj.containerObject.uuid) {
                   // init a new gui
                   clearGUI();
-                  this.id = obj.raycastSphere.uuid;
+                  this.id = obj.containerObject.uuid;
                   this.obj = obj;
                   this.initObjectGUI(obj);
               }
@@ -76,7 +76,7 @@ gui = {
 
     // set up initial parameters for a sound object
     initObjectGUI: function(object) {
-        var mesh = object.raycastSphere;
+        var mesh = object.containerObject;
         var elem = this.addElem('Object ' + (soundObjects.indexOf(object)+1));
 
         this.addParameter({
@@ -107,15 +107,29 @@ gui = {
             cls: 'z'
         },elem);
 
-        // insert cone window
-        function initConeGUI(cone) {
+        var self = this;
 
-        }
-        object.cones.forEach(initConeGUI);
+        // "edit object" dialog
+        this.addParameter({
+          value: 'Edit object',
+          events: [{
+            type: 'click', 
+            callback: function() { self.editObject(object); }
+          }]
+        });
+
+        // insert cone window
+        object.cones.forEach(function(cone) {
+          self.addCone(cone);
+        });
 
         // "add cone" dialog
         var addConeElem = this.addParameter({
-          value: 'Add cone'
+          value: 'Add cone',
+          events: [{
+            type: 'click', 
+            callback: this.addSound.bind(this)
+          }]
         });
         addConeElem.id = 'add-cone'
 
@@ -139,7 +153,7 @@ gui = {
     // update parameters of sound object
     updateObjectGUI: function(object) {
         // update position parameters
-        var pos = object.raycastSphere.position;
+        var pos = object.containerObject.position;
         var x = this.container.querySelector('.x .value');
         var y = this.container.querySelector('.y .value');
         var z = this.container.querySelector('.z .value');
@@ -163,6 +177,15 @@ gui = {
             // update trajectory parameters
 
           }
+        }
+
+        // get cone information
+        if (object.cones) {
+          object.cones.forEach(function(cone) {
+
+            var lat  = cone.rotation._x * 180/Math.PI,
+                long = cone.rotation._y * 180/Math.PI;
+          })
         }
     },
 
@@ -291,42 +314,76 @@ gui = {
         var span = e.target;
         var input = document.getElementById('myInput');
         // listen to click
+        var self = this;
         input.onchange = function(e) {
-            var file = e.target.files[0];
+          var file = e.target.files[0];
 
-            if (file) {
+          if (file) {
+            var path = 'assets/'+file.name;
+
+            // load sound onto obect
+            switch (obj.type) {
+              case 'SoundTrajectory': 
+                obj = obj.parentSoundObject;
+              case 'SoundObject':
+                self.addCone(obj.createCone(path));
+
+                // automatically enter edit mode after brief delay
+                window.setTimeout(function() {
+                  isEditingObject = false;
+                  self.editObject(obj);
+                }, 500)
+                break;
+              case 'SoundTrajectory':
                 // replace text with file name
                 while(span.firstChild) { span.removeChild(span.firstChild); }
                 span.appendChild(document.createTextNode(file.name));
-                var path = 'assets/'+file.name;
 
-                // add sound to object
-                if (obj.type === 'SoundObject') { obj.createCone(path); }
-                else if (obj.type === 'SoundZone') { obj.loadSound(path); }
-                else if (obj.type === 'SoundTrajectory') { obj.parentSoundObject.createCone(path); }
+                // add sound to zone
+                obj.loadSound(path);
+                break;
+              default:
+                break;
             }
-        }
+          }
+        };
         input.click();
+    },
+    addCone: function(cone) {
+      var elem = this.addElem('Cone '+cone.id, document.getElementById('add-cone'));
+      elem.id = 'cone-'+cone.id;
 
-        // for an object, go into edit mode
-          // if(!isEditingObject){
-          //   isEditingObject = true;
-          //   cameraPosition.lerpVectors(activeObject.containerObject.position, headModel.position,
-          //   500 / headModel.position.distanceTo(activeObject.containerObject.position));
-
-          //   var tween = new TWEEN.Tween(camera.position)
-          //   .to(cameraPosition, 800)
-          //   .onComplete(function() {
-          //     headModel.position.copy(cameraPosition);
-          //     headModel.lookAt(activeObject.containerObject.position);
-          //     axisHelper.position.copy(cameraPosition);
-          //     axisHelper.lookAt(activeObject.containerObject.position);})
-          //   .start();
-
-          //   var tween2 = new TWEEN.Tween(controls.center)
-          //   .to(activeObject.containerObject.position, 800)
-          //   .start();
-          // }
+      this.addParameter({
+        property: 'File',
+        value: '???'
+      }, elem);
+      this.addParameter({
+        property: 'Volume',
+        value: '???',
+        type: 'number',
+        suffix: ' dB'
+      }, elem);
+      this.addParameter({
+        property: 'Longitude',
+        value: '???',
+        type: 'number',
+        suffix: ' ˚'
+      }, elem);
+      this.addParameter({
+        property: 'Latitude',
+        value: '???',
+        type: 'number',
+        suffix: ' ˚'
+      }, elem);
+      this.addParameter({
+        property: 'Spread',
+        value: '???',
+        type: 'number'
+      }, elem);
+      this.addParameter({
+        value: 'Delete'
+      }, elem)
+      // todo: click on a cone to make it vis? accordion?
 
     },
     addTrajectory: function(object) {
@@ -339,58 +396,50 @@ gui = {
         suffix:' m/s',
         type:'number'
       }, elem)
+
+      return elem;
+    },
+    editObject: function(object) {
+      // global variables 
+      // isEditingObject, controls, camera, headModel, axisHelper
+      if(!isEditingObject){
+        isEditingObject = true;
+
+        var objectPosition = object.containerObject.position;
+        var cameraTo = new THREE.Object3D();
+        cameraTo.position.lerpVectors(objectPosition, headModel.position,
+        500 / headModel.position.distanceTo(objectPosition));
+        cameraTo.lookAt(objectPosition);
+
+        var tween = new TWEEN.Tween(camera.position)
+          .to(cameraTo.position, 1000)
+          .onComplete(function() {
+            headModel.position.copy(cameraTo.position);
+            headModel.lookAt(objectPosition);
+            axisHelper.position.copy(cameraTo.position);
+            axisHelper.lookAt(objectPosition);
+          });
+
+        var tween2 = new TWEEN.Tween(controls.center)
+          .to(objectPosition, 1000);
+
+        // slightly hacky fix: orbit controls tween works poorly from top view
+        if (controls.getPolarAngle() < 0.01) {
+          controls.constraint.rotateUp(-0.05);
+          window.setTimeout(function() {
+            tween.start();
+            tween2.start();
+          }, 50);
+        }
+        else {
+          tween.start();
+          tween2.start();
+        }
+
+      }
+      else {
+        isEditingObject = false;
+      }
     }
 };
-
-
-      // objectGui.add(obj, 'attachSound').name('Attach Sound');
-      // objectGui.add(obj, 'editObject').name('Edit Object');
-
-
-      // var obj = {
-      //   attachSound : function() {
-
-      //     attachSound();
-
-      //     if(!isEditingObject){
-      //       isEditingObject = true;
-      //       cameraPosition.lerpVectors(activeObject.containerObject.position, headModel.position,
-      //       500 / headModel.position.distanceTo(activeObject.containerObject.position));
-
-      //       var tween = new TWEEN.Tween(camera.position)
-      //       .to(cameraPosition, 800)
-      //       .onComplete(function() {
-      //         headModel.position.copy(cameraPosition);
-      //         headModel.lookAt(activeObject.containerObject.position);
-      //         axisHelper.position.copy(cameraPosition);
-      //         axisHelper.lookAt(activeObject.containerObject.position);})
-      //       .start();
-
-      //       var tween2 = new TWEEN.Tween(controls.center)
-      //       .to(activeObject.containerObject.position, 800)
-      //       .start();
-      //     }
-      //   },
-      //   editObject : function() {
-
-      //     if(!isEditingObject){
-      //       cameraPosition.lerpVectors(activeObject.containerObject.position, headModel.position,
-      //       500 / headModel.position.distanceTo(activeObject.containerObject.position));
-
-      //       var tween = new TWEEN.Tween(camera.position)
-      //       .to(cameraPosition, 800)
-      //       .onComplete(function() {
-      //         headModel.position.copy(cameraPosition);
-      //         headModel.lookAt(activeObject.containerObject.position);
-      //         axisHelper.position.copy(cameraPosition);
-      //         axisHelper.lookAt(activeObject.containerObject.position);})
-      //       .start();
-
-      //       var tween2 = new TWEEN.Tween(controls.center)
-      //       .to(activeObject.containerObject.position, 800)
-      //       .start();
-      //     }
-      //     isEditingObject = !isEditingObject;
-      //   }
-      // };
 

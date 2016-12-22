@@ -73,6 +73,7 @@ var SoundObject = function(audio){
     this.cones.push(cone);
     this.containerObject.add(cone);
     this.setAudioPosition(cone);
+    return cone;
   };
 
   this.setAudioPosition = function(cone){

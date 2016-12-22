@@ -26,7 +26,10 @@ var SoundZone = function(points) {
 	this.notUnderUser = function(){
 		if( this.sound && this.isPlaying){
 			this.sound.volume.gain.setTargetAtTime(0.0, audio.context.currentTime, 0.05);
-			this.sound.source.stop(audio.context.currentTime + 0.2);
+
+			if (this.sound.source) {
+				this.sound.source.stop(audio.context.currentTime + 0.2);
+			}
 			this.isPlaying = false;
 		}
 	};
@@ -56,6 +59,11 @@ var SoundZone = function(points) {
 
 		request.send();
 		sound.volume.gain.value = 0.0;
+
+		if (this.sound && this.sound.source) {
+			this.sound.source.stop(audio.context.currentTime + 0.2);
+		}
+
 		this.sound = sound;
 	},
 
