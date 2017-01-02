@@ -9,6 +9,8 @@ A cross-platform tool for designing interactive virtual soundscapes.
 
 • Constaining camera movement to bottom-right corner icons
 
+• Switching between perspective and bird's-eye views should be tween'ed.
+
 • Implementing state pause, play, save and load
 
 
