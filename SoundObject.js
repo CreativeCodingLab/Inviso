@@ -15,10 +15,20 @@ var SoundObject = function(audio){
 
   this.containerObject = new THREE.Object3D();
 
+  /*
+  Base spherical object, which is visible to the user. An omnidirectional sound
+  can be attached to the sphere separate from the cone sounds. The omnidirectional
+  sound interface is not there yet so no audio can be attached to the sphere
+  currently.
+  */
   var sphereGeometry = new THREE.SphereBufferGeometry(this.radius, 100, 100);
   var sphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, opacity: 0.8, transparent:true});
   this.omniSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 
+  /*
+  A larger sphere for raycasting when positioning cones. This is invisible and
+  only useful in the object close-up (i.e. the object edit mode).
+  */
   var raycastSphereGeometry = new THREE.SphereBufferGeometry(150, 100, 100);
   var raycastSphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, visible:false});
   this.raycastSphere = new THREE.Mesh(raycastSphereGeometry, raycastSphereMaterial);
@@ -26,10 +36,18 @@ var SoundObject = function(audio){
   this.raycastSphere.position.copy(mouse);
   scene.add(this.raycastSphere);
 
+  /*
+  Three axis line for indicating the orientation of the object. Since we are
+  moving away from the object close-up view approach, this might be redundant.
+  */
   this.axisHelper = new THREE.AxisHelper( 100 );
   this.axisHelper.position.copy(mouse);
   scene.add(this.axisHelper);
 
+  /*
+  Y-axis indicator for individual objects. This works as a guide in the
+  perspective view for when the user is changing the altitude of an object.
+  */
   var lineMaterial = new THREE.LineDashedMaterial({ color: 0x888888, dashSize: 30, gapSize: 30 });
   var lineGeometry = new THREE.Geometry();
   lineGeometry.vertices.push(
@@ -42,12 +60,24 @@ var SoundObject = function(audio){
   scene.add(this.altitudeHelper);
   this.altitudeHelper.position.copy(mouse);
 
+  /*
+  A container object of type THREE.Object3D, that holds all the visible objects
+  above. Useful for when applying global transformations (i.e. change in position
+  and orientation) to an object.
+  */
   this.containerObject.add(this.omniSphere);
   this.containerObject.position.copy(mouse);
   scene.add(this.containerObject);
 
   this.cones = [];
 
+  /*
+  Function to create new cones. Cone is a cylinder geometry with one end of zero
+  radius. This function also initates a panner node for the sound file passed to it.
+  This way, the panner node is instanced based on the orientation of the cylinder.
+  The cylinder needs be rotated by 90 degrees for the transform origin to be moved
+  to the bottom of the cone.
+  */
   this.createCone = function(fileName){
 
     var coneWidth = Math.random() * 50 + 50;
@@ -60,6 +90,11 @@ var SoundObject = function(audio){
     coneMaterial.side = THREE.DoubleSide;
     var cone = new THREE.Mesh(coneGeo, coneMaterial);
 
+    /*
+    Once the system is fully implemented, this needs to be fine tuned for an
+    accurate distance model. This also extend the THREE.Mesh with Web audio properties
+    under "sound".
+    */
     cone.sound = loadSound(fileName);
     cone.sound.panner.refDistance = 50;
     cone.sound.panner.distanceModel = 'inverse';
@@ -75,6 +110,11 @@ var SoundObject = function(audio){
     this.setAudioPosition(cone);
   };
 
+  /*
+  Function to align the panner node to the cone geomtry when the visual object is
+  moved. The cone (visual) object is passed as a parameter; its matrix properties
+  are extracted and normalized before its applied to the objects panner property.
+  */
   this.setAudioPosition = function(cone){
 
     // cone.sound.panner.position = cone.position;
@@ -112,6 +152,15 @@ var SoundObject = function(audio){
     m.elements[14] = mz;
   };
 
+  /*
+  Function to load sound files; agnostic to where it's being assigned (i.e.
+  omnisphere vs. cone). Cretas context and sound Web Audio objects, populates
+  them with necessary attributes for binaural mixing. An XMLHttpRequest is
+  initiated to load a sound file from the local drive. The response of the
+  request is passed to the decodeAudioData() and assigned to the sound object's
+  buffer; playback is immediately started. The "sound" object is returned to the
+  cone, which originally called the loadSound() with a file path.
+  */
   function loadSound(soundFileName){
 
     var context = audio.context;
@@ -143,14 +192,29 @@ var SoundObject = function(audio){
     return sound;
   }
 
+  /*
+  Function called from index.html that queries whether the object is under mouse.
+  It's passed the global (mouse) ray object.
+  */
   this.isUnderMouse = function(ray) {
     return ray.intersectObject( this.containerObject, true ).length > 0;
   };
 
+  /*
+  This is called from index.html whenever an object is cliecked on. This was
+  needed to keep track of an object's position on click so it could be used
+  for determining differential position when changing altitutde. There is
+  probably a nicer way of doing this.
+  */
   this.select = function(){
     this.nonScaledMouseOffsetY = nonScaledMouse.y;
   }
 
+  /*
+  Function to move object around either in the X-Z axis (lateral motion), or
+  the Y-axis (altitude motion). This accesses the global mouse variable, which
+  is a sloppy implementation and needs to be revised.
+  */
   this.move = function() {
 
     var pointer;
@@ -173,28 +237,48 @@ var SoundObject = function(audio){
     if(this.trajectory) this.trajectory.move(pointer);
     if(this.cones[0]){
 
+      /*
+      Whenever the object is moved, and given that it has cones, the panner
+      node for the files attached to the cones are re-oriented through this call.
+      This needs to be revised as the currently "unimplemented" omnidirectional
+      sound object will need to be setAudioPosition()'ed regardless of whether
+      there are cones or not.
+      */
       for(var i in this.cones){
         this.setAudioPosition(this.cones[i]);
       }
     }
   };
 
-  this.addToScene = function() {
+  /* REDUNDANT. Leaving it here to be safe. */
+  // this.addToScene = function() {
+  //
+  //   scene.add(this.containerObject);
+  // };
 
-    scene.add(this.containerObject);
-  };
-
+  /*
+  Setting an object active. This merely calls the trajectory object attached
+  to a sound so that it highlihjts itself and a mouse position is passed to it
+  for Y-axis movements (similar to select() function). This will need to be
+  revisited.
+  */
   this.setActive = function() {
 
     if(this.trajectory) this.trajectory.setActive();
     if(this.trajectory) this.trajectory.setMouseOffset(mouse);
   };
 
+  /* Sets the object inactive; main purpose of it is to set the trajectory
+  inactive by association.
+  */
   this.setInactive = function() {
 
     if(this.trajectory) this.trajectory.setInactive();
   };
 
+  /* Function for removing a sound object, and all of its visual and sonic
+  components from the scene.
+  */
   this.removeFromScene = function() {
     scene.remove(this.containerObject, true);
     scene.remove(this.altitudeHelper, true);
@@ -205,6 +289,14 @@ var SoundObject = function(audio){
     }
   };
 
+  /*
+  Function that forces a sound object to follow a user-defined trajectory.
+  A follow behavior depends on whether the trajectory is a closed spline or not.
+  If closed, the object follows a circular (looping) trajectory. If the spline
+  is open, the object will back-and-forth between the two end points. This state
+  can be altered interactively as the user connect or disconnects the two end
+  points.
+  */
   this.followTrajectory = function() {
 
     if (this.trajectory){
@@ -244,6 +336,12 @@ var SoundObject = function(audio){
     }
   };
 
+  /*
+  This is necessary to maintain a uniform speed when the trjactory length is
+  changed. Normalizes the speed by dividing a user-defined speed parameter by
+  the current length of the spline. This is called whenever the trajectory is
+  changed.
+  */
   this.calculateMovementSpeed = function() {
     if(this.trajectory) this.movementIncrement = this.movementSpeed / this.trajectory.spline.getLength(10);
   };
