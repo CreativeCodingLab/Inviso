@@ -13,6 +13,8 @@ A cross-platform tool for designing interactive virtual soundscapes.
 
 • Implementing state pause, play, save and load
 
+• Omnidirectional sound source implementation for base spheres, and the interface for attaching these to sound objects.
+
 
 ## GUI Details
 
