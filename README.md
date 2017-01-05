@@ -13,12 +13,14 @@ A cross-platform tool for designing interactive virtual soundscapes.
 
 • Implementing state pause, play, save and load
 
-• Omnidirectional sound source implementation for base spheres, and the interface for attaching these to sound objects.
+• Omnidirectional sound source implementation for base spheres.
 
 
 ## GUI Details
 
 • Back and forward scroll buttons (possibly next to object, cone name) to switch between objects, and also cones (for when an object, or a cone is hard to grab onto interactively)
+
+• Interface for attaching omnidirectional Web Audio nodes to sound objects (textual elements in the object paramter window).
 
 • ...
 
