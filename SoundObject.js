@@ -250,11 +250,10 @@ var SoundObject = function(audio){
     }
   };
 
-  /* REDUNDANT. Leaving it here to be safe. */
-  // this.addToScene = function() {
-  //
-  //   scene.add(this.containerObject);
-  // };
+  this.addToScene = function() {
+
+    scene.add(this.containerObject);
+  };
 
   /*
   Setting an object active. This merely calls the trajectory object attached
