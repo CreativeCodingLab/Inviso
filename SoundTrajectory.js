@@ -395,7 +395,8 @@ trajectory = {
 		this.scene.add(line);
 	},
 
-	/* Called inside the index.html mouseUp function after the user completes
+	/* 
+	Called inside the index.html mouseUp function after the user completes
 	the mouse drag motion when first drawing a trajectory. "Simplify 3D"
 	(3D version is necessary for XZ-plane drawings) is used to interpolate
 	the mouse coordinates reported in each animation frame. SoundTrajectory
