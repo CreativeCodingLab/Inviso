@@ -266,7 +266,7 @@ export default class Interaction {
           const intersect = main.activeObject.objectUnderMouse(main.ray);
           main.activeObject.select(intersect);
         } else {
-          main.activeObject.select(main);
+          main.activeObject.select(intersect);
         }
       }
 

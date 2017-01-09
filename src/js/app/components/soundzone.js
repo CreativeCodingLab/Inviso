@@ -193,28 +193,27 @@ export default class SoundZone {
   move(main) {
     if (!main.perspectiveView) {
       if (this.selectedPoint) {
-        console.log("moving point")
         // move selected point
         const i = this.pointObjects.indexOf(this.selectedPoint);
         if (i > -1) {
           this.showCursor(false);
-          this.splinePoints[i].copy(this.mouse);
+          this.splinePoints[i].copy(main.mouse);
           this.updateZone();
           this.selectPoint(this.pointObjects[i]);
         }
-      }
-      else {
+      } else {
         // move entire shape
-        const dx = this.mouse.x - this.mouseOffsetX;
-        const dy = this.mouse.z - this.mouseOffsetY;
-        this.mouseOffsetX = this.mouse.x, this.mouseOffsetY = this.mouse.z;
+        const dx = main.mouse.x - this.mouseOffsetX;
+        const dy = main.mouse.z - this.mouseOffsetY;
+        this.mouseOffsetX = main.mouse.x;
+        this.mouseOffsetY = main.mouse.z;
 
-        this.objects.forEach(function(obj) {
+        this.objects.forEach((obj) => {
           obj.position.x += dx;
           obj.position.z += dy;
         });
 
-        this.splinePoints.forEach(function(pt) {
+        this.splinePoints.forEach((pt) => {
           pt.x += dx;
           pt.z += dy;
         });
@@ -231,12 +230,10 @@ export default class SoundZone {
     this.cursor.visible = bool;
   }
 
-  setActive() {
-    this.setMouseOffset(this.mouse);
+  setActive(main) {
+    this.setMouseOffset(main.mouse);
     this.isActive = true;
-    this.pointObjects.forEach(function(obj) {
-      obj.visible = true;
-    });
+    this.pointObjects.forEach(obj => obj.visible = true);
     this.spline.mesh.visible = true;
   }
 
@@ -244,9 +241,7 @@ export default class SoundZone {
     this.deselectPoint();
     this.showCursor(false);
     this.isActive = false;
-    this.pointObjects.forEach(function(obj) {
-      obj.visible = false;
-    });
+    this.pointObjects.forEach(obj => obj.visible = false);
     this.spline.mesh.visible = false;
   }
 
