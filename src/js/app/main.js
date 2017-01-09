@@ -471,7 +471,7 @@ export default class Main {
   }
 
   toggleAddTrajectory() {
-    if (this.perspectiveView) this.controls.threeContorls.reset();
+    if (this.perspectiveView) this.controls.threeControls.reset();
     this.isAddingTrajectory = !this.isAddingTrajectory;
   }
 

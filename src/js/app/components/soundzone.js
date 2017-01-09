@@ -183,9 +183,17 @@ export default class SoundZone {
       this.mouseOffsetY = point.z;
   }
 
-  move(perspectiveView) {
-    if (!perspectiveView){
+  updateZone() {
+    const scene = this.spline.mesh.parent;
+    this.removeFromScene(scene);
+    this.renderPath();
+    this.addToScene(scene);
+  }
+
+  move(main) {
+    if (!main.perspectiveView) {
       if (this.selectedPoint) {
+        console.log("moving point")
         // move selected point
         const i = this.pointObjects.indexOf(this.selectedPoint);
         if (i > -1) {
@@ -259,6 +267,33 @@ export default class SoundZone {
     else {
       this.deselectPoint();
       this.setMouseOffset(intersect.point);
+    }
+  }
+
+  addPoint(position) {
+    let minDistance = Number.MAX_VALUE;
+    let minPoint = 1;
+    let prevDistToSplinePoint = -1;
+    let closestSplinePoint = 0;
+
+    for (let t = 0; t < 1; t += 1 / 200.0) {
+      const pt = this.spline.getPoint(t);
+
+      const distToSplinePoint = this.splinePoints[closestSplinePoint].distanceToSquared(pt);
+      if (distToSplinePoint > prevDistToSplinePoint) {
+        closestSplinePoint += 1;
+
+        if (closestSplinePoint >= this.splinePoints.length)
+          closestSplinePoint = 0;
+      }
+
+      prevDistToSplinePoint = this.splinePoints[closestSplinePoint].distanceToSquared(pt);
+
+      const distToPoint = pt.distanceToSquared(position);
+      if (distToPoint < minDistance) {
+        minDistance = distToPoint;
+        minPoint = closestSplinePoint;
+      }
     }
   }
 

@@ -203,7 +203,7 @@ export default class SoundTrajectory {
     this.spline.mesh.material.color.setHex( 0xcccccc );
   }
 
-  select(main, intersect) {
+  select(intersect) {
     if (!intersect) return;
 
     const obj = intersect.object;
