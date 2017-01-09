@@ -134,10 +134,9 @@ export default class SoundZone {
     });
 
     this.shape = new THREE.Mesh(shapeGeometry, material);
-    this.objects = this.getObjects();
   }
 
-  getObjects() {
+  get objects() {
     return [].concat(this.pointObjects, this.spline.mesh, this.shape);
   }
 
