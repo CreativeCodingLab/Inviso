@@ -487,8 +487,10 @@ export default class Main {
 
     this.activeObject = obj;
 
+    console.log(this.activeObject);
+
     if (obj) {
-      obj.setActive();
+      obj.setActive(this);
     }
   }
 

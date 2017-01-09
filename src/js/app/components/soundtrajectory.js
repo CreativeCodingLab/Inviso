@@ -78,6 +78,14 @@ export default class SoundTrajectory {
     return [].concat(this.pointObjects, this.spline.mesh);
   }
 
+  removeFromScene(scene) {
+    this.objects.forEach(function(obj) {
+      scene.remove(obj, true);
+    });
+
+    scene.remove(this.cursor);
+  }
+
   addToScene(scene) {
     this.objects.forEach(function(obj) {
       scene.add(obj);
@@ -195,21 +203,18 @@ export default class SoundTrajectory {
     this.spline.mesh.material.color.setHex( 0xcccccc );
   }
 
-  select(intersect) {
-    console.log("trajectory select");
+  select(main, intersect) {
     if (!intersect) return;
 
     const obj = intersect.object;
 
     if (obj.type === 'Line') {
       this.addPoint(intersect.point);
-    }
-    else if (obj.parent.type === 'Object3D') {
+    } else if (obj.parent.type === 'Object3D') {
       this.selectPoint(obj.parent);
-    }
-    else {
+    } else {
       this.deselectPoint();
-      this.setMouseOffset(intersect.point);
+      this.setMouseOffset(main.nonScaledMouse, intersect.point);
     }
   }
 

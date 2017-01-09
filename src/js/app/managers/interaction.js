@@ -162,7 +162,7 @@ export default class Interaction {
 
         if (main.isMouseDown === true) {
           // click+drag
-          main.activeObject.move(main.mouse);
+          main.activeObject.move(main.mouse, main.nonScaledMouse, main.perspectiveView);
         } else {
           // hover cursor over line
 

@@ -185,16 +185,16 @@ export default class SoundObject {
     scene.add(this.containerObject);
   }
 
-  setActive(mouse) {
+  setActive(main) {
     if (this.trajectory) {
       this.trajectory.setActive();
-      this.trajectory.setMouseOffset(mouse);
+      this.trajectory.setMouseOffset(main.nonScaledMouse, main.mouse);
     }
   }
 
   setInactive() {
     if (this.trajectory) {
-      this.tractory.setInactive();
+      this.trajectory.setInactive();
     }
   }
 
