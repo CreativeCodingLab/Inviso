@@ -74,7 +74,7 @@ export default class SoundTrajectory {
     this.spline.mesh = new THREE.Line( geometry, material );
   }
 
-  getObjects() {
+  get objects() {
     return [].concat(this.pointObjects, this.spline.mesh);
   }
 
