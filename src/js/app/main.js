@@ -238,7 +238,7 @@ export default class Main {
         const points = simplify(this.points, 10, true);
         let object;
         if (points.length >= 3) {
-          object = new SoundZone(points);
+          object = new SoundZone(main, points);
         } else {
           object = new SoundObject(main);
         }

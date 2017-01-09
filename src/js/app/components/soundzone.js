@@ -4,10 +4,11 @@ import Config from '../../data/config';
 import Helpers from '../../utils/helpers';
 
 export default class SoundZone {
-  constructor(mouse, audio, points) {
+  constructor(main, points) {
     this.type = 'SoundZone';
     this.isActive = true;
-    this.mouse = mouse;
+    this.mouse = main.mouse;
+    this.scene = main.scene;
 
     this.splinePoints = points;
     this.pointObjects;
@@ -18,11 +19,11 @@ export default class SoundZone {
     this.selectedPoint;
     this.mouseOffsetX = 0, this.mouseOffsetY = 0;
     this.buffer;
-    this.audio = audio;
+    this.audio = main.audio;
 
     this.cursor = new THREE.Mesh(
       new THREE.SphereGeometry(10),
-      new THREE.MeshBasicMaterial({ color:0x00ccff })
+      new THREE.MeshBasicMaterial({ color: 0x00ccff }),
     );
 
 
@@ -43,7 +44,7 @@ export default class SoundZone {
   }
 
   notUnderUser() {
-    if( this.sound && this.isPlaying){
+    if (this.sound && this.isPlaying) {
       this.sound.volume.gain.setTargetAtTime(0.0, this.audio.context.currentTime, 0.05);
       this.sound.source.stop(this.audio.context.currentTime + 0.2);
       this.isPlaying = false;
@@ -53,20 +54,18 @@ export default class SoundZone {
   loadSound(soundFileName) {
     const context = this.audio.context;
     const sound = {};
-    const _this = this;
 
     sound.volume = context.createGain();
     sound.volume.connect(this.audio.destination);
 
     const request = new XMLHttpRequest();
-    request.open("GET", soundFileName, true);
-    request.responseType = "arraybuffer";
+    request.open('GET', soundFileName, true);
+    request.responseType = 'arraybuffer';
     request.onload = () => {
-      context.decodeAudioData(request.response, buffer => {
-        _this.buffer = buffer;
-
+      context.decodeAudioData(request.response, (buffer) => {
+        this.buffer = buffer;
       }, () => {
-        alert("Decoding the audio buffer failed");
+        alert('Decoding the audio buffer failed');
       });
     };
 
@@ -78,7 +77,7 @@ export default class SoundZone {
   renderPath() {
     // splinePoints control the curve of the path
     const points = this.splinePoints;
-    this.pointObjects = (function() {
+    this.pointObjects = (() => {
       // setup
       const sphere = new THREE.SphereGeometry(10);
       const sphereMat = new THREE.MeshBasicMaterial( { color:0xff1169 } );
@@ -89,8 +88,8 @@ export default class SoundZone {
 
       // place a meshgroup at each point in array
       const pointObjects = [];
-      points.forEach(function(point) {
-        const sphereMesh = new THREE.Mesh( sphere, sphereMat.clone() );
+      points.forEach((point) => {
+        const sphereMesh = new THREE.Mesh(sphere, sphereMat.clone());
         const group = new THREE.Object3D();
 
         group.add(sphereMesh, colliderMesh.clone());
@@ -109,9 +108,9 @@ export default class SoundZone {
     const geometry = new THREE.Geometry();
     let material = new THREE.LineBasicMaterial({
       color: 0xff1169,
-      linewidth:1,
-      transparent:true,
-      opacity:0.4
+      linewidth: 1,
+      transparent: true,
+      opacity: 0.4
     });
 
     geometry.vertices = this.spline.getPoints(200);
@@ -133,7 +132,9 @@ export default class SoundZone {
       opacity: 0.2,
       side: THREE.DoubleSide,
     });
+
     this.shape = new THREE.Mesh(shapeGeometry, material);
+    this.objects = this.getObjects();
   }
 
   getObjects() {
@@ -141,7 +142,7 @@ export default class SoundZone {
   }
 
   addToScene() {
-    this.objects.forEach(function(obj) {
+    this.objects.forEach((obj) => {
       this.scene.add(obj);
     });
 
@@ -149,7 +150,7 @@ export default class SoundZone {
   }
 
   removeFromScene() {
-    this.objects.forEach(function(obj) {
+    this.objects.forEach((obj) => {
       this.scene.remove(obj, true);
     });
     this.scene.remove(this.cursor);
@@ -205,6 +206,7 @@ export default class SoundZone {
           obj.position.x += dx;
           obj.position.z += dy;
         });
+
         this.splinePoints.forEach(function(pt) {
           pt.x += dx;
           pt.z += dy;
@@ -242,7 +244,6 @@ export default class SoundZone {
   }
 
   select(intersect) {
-    console.log("zone select");
     if (!intersect) return;
 
     // obj can be the curve, a spline point, or the shape mesh
