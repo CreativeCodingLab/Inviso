@@ -252,25 +252,24 @@ export default class SoundZone {
     const obj = intersect.object;
 
     if (obj.type === 'Line') {
-      //add a point to the line
+      // add a point to the line
       this.addPoint(intersect.point);
-    }
-    else if (obj.parent.type === 'Object3D') {
+    } else if (obj.parent.type === 'Object3D') {
       // select an existing point on line
       this.selectPoint(obj.parent);
-    }
-    else {
+    } else {
       this.deselectPoint();
       this.setMouseOffset(intersect.point);
     }
   }
 
   addPoint(position) {
+    let closestSplinePoint = 0;
+    let prevDistToSplinePoint = -1;
     let minDistance = Number.MAX_VALUE;
     let minPoint = 1;
-    let prevDistToSplinePoint = -1;
-    let closestSplinePoint = 0;
 
+    // search for point on spline
     for (let t = 0; t < 1; t += 1 / 200.0) {
       const pt = this.spline.getPoint(t);
 
@@ -281,15 +280,17 @@ export default class SoundZone {
         if (closestSplinePoint >= this.splinePoints.length)
           closestSplinePoint = 0;
       }
-
       prevDistToSplinePoint = this.splinePoints[closestSplinePoint].distanceToSquared(pt);
-
       const distToPoint = pt.distanceToSquared(position);
       if (distToPoint < minDistance) {
         minDistance = distToPoint;
         minPoint = closestSplinePoint;
       }
     }
+
+    this.splinePoints.splice(minPoint, 0, position);
+    this.updateZone();
+    this.selectPoint(this.pointObjects[minPoint]);
   }
 
   selectPoint(obj) {
