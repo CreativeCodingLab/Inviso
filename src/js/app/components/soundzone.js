@@ -263,6 +263,14 @@ export default class SoundZone {
     }
   }
 
+  removePoint() {
+    // find point in array
+    const i = this.pointObjects.indexOf(this.selectedPoint);
+    this.splinePoints.splice(i, 1);
+    this.deselectPoint();
+    this.updateZone();
+  }
+
   addPoint(position) {
     let closestSplinePoint = 0;
     let prevDistToSplinePoint = -1;
