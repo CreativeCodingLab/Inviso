@@ -56,3 +56,4 @@ You can run any of these individually if you'd like with the npm run command:
 * Scrollwheel zooms in and out
 * Delete objects with 'delete' or 'backspace'
 * Move dummyhead with 'w/a/s/d'
+* Hide stats with 'h' -- dev mode only

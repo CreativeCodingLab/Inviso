@@ -78,6 +78,15 @@ export default class Interaction {
           main.activeObject = null;
         }
       }
+
+      if(Config.isDev) {
+        if (this.keyboard.eventMatches(event, 'h')) {
+          const base = document.getElementsByClassName('rs-base')[0];
+
+          if (base.style.display === 'none') base.style.display = 'block';
+          else base.style.display = 'none';
+        }
+      }
     });
 
     this.keyboard.domElement.addEventListener('keyup', (event) => {
