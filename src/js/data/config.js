@@ -18,13 +18,11 @@ export default {
   },
   texture: {
     path: './assets/textures/',
-    imageFiles: [
-      {name: 'UV', image: 'UV_Grid_Sm.jpg'}
-    ]
+    imageFiles: []
   },
   mesh: {
     enableHelper: false,
-    wireframe: false,
+    wireframe: true,
     translucent: false,
     material: {
       color: 0xffffff,
@@ -94,7 +92,7 @@ export default {
     z: 1
   },
   shadow: {
-    enabled: false,
+    enabled: true,
     helperEnabled: false,
     bias: 0,
     mapWidth: 2048,

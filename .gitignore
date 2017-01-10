@@ -4,3 +4,4 @@ node_modules
 .idea
 Iconr
 build/public/assets/js/app.js
+src/public/assets/js/app.js

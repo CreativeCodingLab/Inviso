@@ -103,14 +103,16 @@ export default class Main {
     this.axisHelper.rotation.y += Math.PI;
     this.scene.add(this.axisHelper);
 
-    // Add Plane
+    /**
+     * The X-Z raycasting plane for determining where on the floor
+     * the user is clicking.
+     */
     const geometry = new THREE.PlaneGeometry(5000, 5000);
     const material = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       side: THREE.DoubleSide,
       visible: false,
     });
-
     this.floor = new THREE.Mesh(geometry, material);
     this.floor.rotation.x = Math.PI / 2;
     this.scene.add(this.floor);
@@ -137,7 +139,7 @@ export default class Main {
 
     // Create planar grid
     this.grid = new Geometry(this.scene);
-    this.grid.make('plane')(5000, 5000);
+    this.grid.make('plane')(5000, 5000, 10, 10);
     this.grid.place([0, 0, 0], [Math.PI / 2, 0, 0]);
 
     this.trajectory = {
@@ -266,6 +268,10 @@ export default class Main {
       }
     };
 
+    /**
+     * Setting up the trajectory and zone interfaces. These will return
+     * us the trajectory and zone instances when we ask for them.
+     */
     this.trajectory.setScene(this.scene);
     this.zone.setScene(this.scene);
 
@@ -340,31 +346,45 @@ export default class Main {
       rS('rStats').end();
     }
 
-    // Delta time is sometimes needed for certain updates
-    //const delta = this.clock.getDelta();
-
-    // Call any vendor or module updates here
+    /* Camera tweening object update */
     TWEEN.update();
+
+    /* Updating camera controls. */
     this.controls.threeControls.update();
 
-    if (this.controls.threeControls.getPolarAngle() > 0.4)
+    /**
+     * Differentiating between perspective and bird's-eye views. If the camera is tilted
+     * enough the perspective view is activated, restring user's placement of object in the
+     * X-Z plane
+     */
+    if (this.controls.threeControls.getPolarAngle() > 0.4) {
       this.perspectiveView = true;
-    else
+    } else {
       this.perspectiveView = false;
+    }
 
+    /* Checking if the user has walked into a sound zone in each frame. */
     this.checkZones();
+
+    /* Updating the head model's position and orientation in each frame. */
     this.updateDummyHead();
 
+    /**
+     * Stops an object trajectory motion if the used clicks onto a moving object
+     */
     for (const i in this.soundObjects) {
       if (!this.isMouseDown || this.soundObjects[i] !== this.activeObject) {
         if (this.soundObjects[i].type === 'SoundObject') this.soundObjects[i].followTrajectory();
       }
     }
 
-    if (this.activeObject) document.getElementById('guis').style.display = 'block';
-    else document.getElementById('guis').style.display = 'none';
+    /* Making the GUI visible if an object is selected */
+    if (this.activeObject) {
+      document.getElementById('guis').style.display = 'block';
+    } else {
+      document.getElementById('guis').style.display = 'none';
+    }
 
-    // RAF
     requestAnimationFrame(this.render.bind(this)); // Bind the main class instead of window object
   }
 
@@ -408,6 +428,11 @@ export default class Main {
     m.elements[14] = mz;
   }
 
+  /**
+   * Checks if the user has walked into a sound zone by raycasting from the
+   * head model's position onto each sound zone into scene and checking if there
+   * is a hit.
+   */
   checkZones() {
     if (this.soundZones.length > 0) {
       const walkingRayVector = new THREE.Vector3(0, -1, 0);
@@ -416,6 +441,10 @@ export default class Main {
       for (const i in this.soundZones) {
         const intersects = this.walkingRay.intersectObject(this.soundZones[i].shape);
         if (intersects.length > 0) {
+          /**
+           * Flagging a zone "under user" to activate the audio file associated
+           * with the sound zone.
+           */
           this.soundZones[i].underUser();
         } else {
           this.soundZones[i].notUnderUser();
@@ -474,16 +503,28 @@ export default class Main {
     this.isEditingObject = !this.isEditingObject;
   }
 
+  /**
+   * Sets the trajectory adding state on. If the scene is in perspective view when
+   * this is called, it will be reset to bird's eye.
+   */
   toggleAddTrajectory() {
     if (this.perspectiveView) this.controls.threeControls.reset();
     this.isAddingTrajectory = !this.isAddingTrajectory;
   }
 
+  /**
+   * Sets the object adding state on. If the scene is in perspective view when
+   * this is called, it will be reset to bird's eye.
+   */
   toggleAddObject() {
     if (this.perspectiveView) this.controls.threeControls.reset();
     this.isAddingObject = !this.isAddingObject;
   }
 
+  /**
+   * Sets the the last clicked (active) object.
+   * Calls a "secActive()" function ob the selected object.
+   */
   setActiveObject(obj) {
     if (this.activeObject) {
       this.activeObject.setInactive();
@@ -496,6 +537,7 @@ export default class Main {
     }
   }
 
+  /* Updates the head model's position and orientation in each frame. */
   updateDummyHead() {
     this.head = this.scene.getObjectByName('dummyHead', true);
 

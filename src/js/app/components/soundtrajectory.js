@@ -22,9 +22,26 @@ export default class SoundTrajectory {
 
     this.cursor.visible = false;
 
+    /**
+     * First call to renderPath happens in update trajectory function. From there
+     * on the function recursively calls itself at the end of each draw.
+     */
     this.renderPath();
   }
 
+  /**
+   * A recursive function that draws all the THREE geometries, including
+   *
+   * visual and collider spheres as control points on the trajectory spline
+   * (grouped as points in the pointsObjects array),
+   *
+   * the CatmullRom spline that is created from splinePoints, which is populated
+   * under addPoint function below, and repopulated whenever a trajectory is
+   * moved or a control point is removed from the spline,
+   *
+   * and the line geometry which is assigned as a mesh for the said spline for it
+   * to be drawn on screen.
+   */
   renderPath() {
     const points = this.splinePoints;
 
@@ -61,6 +78,12 @@ export default class SoundTrajectory {
     this.spline = new THREE.CatmullRomCurve3(this.splinePoints);
     this.spline.type = 'centripetal';
 
+    /*
+     * This measures the distance between the start and end points of a trajectory
+     * and if the distance is small enough it turnes the spline into a closed curve.
+     * This is checked in each frame so that the user can interactively determine
+     * if a trajectory is closed (looping) or open (back-and-forth).
+     */
     const begEndDistance = this.splinePoints[0].distanceTo(this.splinePoints[this.splinePoints.length - 1]);
 
     if (begEndDistance < 40) {
@@ -82,10 +105,19 @@ export default class SoundTrajectory {
     this.spline.mesh = new THREE.Line(geometry, material);
   }
 
+  /**
+   * Creates a global object array that includes both the pointObjects (i.e. vectors
+   * for both visible and collider spheres) and the spline mesh which is used to
+   * draw the line that makes up the spline.
+   */
   get objects() {
     return [].concat(this.pointObjects, this.spline.mesh);
   }
 
+  /**
+   * Removes each object in the object array (that pertain to a single
+   * trajectory) from the scene.
+   */
   removeFromScene(scene) {
     this.objects.forEach((obj) => {
       scene.remove(obj, true);
@@ -94,6 +126,10 @@ export default class SoundTrajectory {
     scene.remove(this.cursor);
   }
 
+  /**
+   * Adds each object in the object array (that pertain to a single
+   * trajectory) to the scene.
+   */
   addToScene(scene) {
     this.objects.forEach((obj) => {
       scene.add(obj);
@@ -102,12 +138,20 @@ export default class SoundTrajectory {
     scene.add(this.cursor);
   }
 
+  /**
+   * Returns true if a particular object is under the mouse (called from
+   * index.html)
+   */
   isUnderMouse(raycaster) {
     if (this.isActive) {
       return raycaster.intersectObjects(this.objects).length > 0;
     }
   }
 
+  /**
+   * Determines if it is a control point or the curve itself that's under the
+   * mouse. Returns the collided object.
+   */
   objectUnderMouse(raycaster) {
     const intersects = raycaster.intersectObjects(this.objects, true);
 
@@ -122,18 +166,24 @@ export default class SoundTrajectory {
     return null;
   }
 
+  /* Keeps record of the mouse offset after the initial click. */
   setMouseOffset(nonScaledMouse, point) {
     this.mouseOffsetX = point.x;
     this.mouseOffsetY = point.z;
     this.nonScaledMouseOffsetY = nonScaledMouse.y;
   }
 
+  /* Moves a single control point on the spline or the entire trajectory. */
   move(mouse, nonScaledMouse, perspectiveView) {
     if (this.selectedPoint) {
       const i = this.pointObjects.indexOf(this.selectedPoint);
       let pointer;
 
       if (i > -1) {
+        /**
+         * If the camera is in perspective view, the control points can only be
+         * moved in the Y-axis (height).
+         */
         if (perspectiveView) {
           pointer = this.splinePoints[i];
           const posY = Helpers.mapRange(nonScaledMouse.y, -0.5, 0.5, -200, 200);
@@ -144,13 +194,18 @@ export default class SoundTrajectory {
 
         pointer.y = this.splinePoints[i].y;
 
+        /* Otherwise the mouse position vector is copied to the control point. */
         this.showCursor(false);
         this.splinePoints[i].copy(pointer);
         this.updateTrajectory();
         this.selectPoint(this.pointObjects[i]);
       }
     } else {
-      // move entire shape
+      /**
+       * This moves the entire shape when the parent sound object is moved around.
+       * The same XZ versus Y dimension principles apply depending which view mode
+       * the camera is in.
+       */
       if (perspectiveView) {
         const posY = Helpers.mapRange(
           nonScaledMouse.y - this.nonScaledMouseOffsetY,
@@ -170,16 +225,20 @@ export default class SoundTrajectory {
 
         this.nonScaledMouseOffsetY = nonScaledMouse.y;
       } else {
+        /**
+         * Mouse movement differentials based on initial click position stored
+         * in setMouseOffset() is calculated here.
+         */
         const dx = mouse.x - this.mouseOffsetX;
         const dy = mouse.z - this.mouseOffsetY;
         this.mouseOffsetX = mouse.x;
         this.mouseOffsetY = mouse.z;
 
-        this.objects.forEach((obj) => {
-          obj.position.x += dx;
-          obj.position.z += dy;
-        });
-
+        /**
+         * Maps mouse position differentials to the splinePoints, which are in
+         * return used in the render path function to update the trajectories in
+         * each frame.
+         */
         this.splinePoints.forEach((pt) => {
           pt.x += dx;
           pt.z += dy;
@@ -250,6 +309,10 @@ export default class SoundTrajectory {
     }
   }
 
+  /**
+   * Adds new points to an existing trajectory. Updates the splinePoints array
+   * and calls the updateTrajectory function as a result.
+   */
   addPoint(position) {
     let minDistance = Number.MAX_VALUE;
     let minPoint = 1;
@@ -282,6 +345,7 @@ export default class SoundTrajectory {
     this.selectPoint(this.pointObjects[minPoint]);
   }
 
+  /* Removes points from the splinePoints array. */
   removePoint() {
     const i = this.pointObjects.indexOf(this.selectedPoint);
     this.splinePoints.splice(i, 1);
@@ -289,6 +353,10 @@ export default class SoundTrajectory {
     this.updateTrajectory();
   }
 
+  /**
+   * Updates trajectory by calling renderPath. First called inside addPoint()
+   * and this initates the renderPath() recursion.
+   */
   updateTrajectory() {
     const scene = this.spline.mesh.parent;
     this.removeFromScene(scene);

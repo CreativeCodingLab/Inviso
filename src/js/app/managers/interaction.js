@@ -232,17 +232,34 @@ export default class Interaction {
   }
 
   onMouseDown(main, event) {
-    if(!main.keyPressed) {
+    /**
+     * !keyPressed is added to avoid interaction with object when the camera
+     * is being rotated. It can (should) be changed into a flag more specific
+     * to this action.
+     */
+    if (!main.keyPressed) {
       main.isMouseDown = true;
 
+      /**
+       * Create a collection array of all the object in the scene and check if
+       * any of these objects isUnderMouse (a function which is passed our raycaster).
+       *
+       * If there is indeed an intersected object, set it as the activeObject.
+       */
       const everyComponent = [].concat(main.soundObjects, main.soundZones, main.soundTrajectories);
-      const intersectObjects = everyComponent.filter(obj => {
+      const intersectObjects = everyComponent.filter((obj) => {
         return obj.isUnderMouse(main.ray);
       });
 
       if (everyComponent.length > 0) main.setActiveObject(intersectObjects[0]);
       else main.setActiveObject(null);
 
+      /**
+       * If adding a trajectory, ask the trajectory interface to initate a new
+       * trajectory at the mouse position determined in setMousePosition()
+       *
+       * Same for the zone.
+       */
       if (main.isAddingTrajectory) {
         main.mouse.y = main.activeObject.containerObject.position.y;
         main.trajectory.beginAt(main.mouse);
@@ -252,6 +269,7 @@ export default class Interaction {
         main.zone.beginAt(main.mouse);
       }
 
+      /* If the most recent active object interacted with again, select it: */
       if (main.activeObject && main.activeObject.isUnderMouse(main.ray)) {
         // click inside active object
         if (main.activeObject.type != 'SoundObject'){
@@ -262,6 +280,9 @@ export default class Interaction {
         }
       }
 
+      /**
+      * In object edit mode a different interaction scheme is followed.
+      */
       if (main.isEditingObject) {
         const intersects2 = main.ray.intersectObjects(main.activeObject.containerObject.children);
 
