@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import TWEEN from 'tween.js';
 import OBJLoader from 'three-obj-loader';
-import simplify from 'simplify-js';
 
 // Components
 import Renderer from './components/renderer';

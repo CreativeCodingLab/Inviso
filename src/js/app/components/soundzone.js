@@ -4,6 +4,7 @@ export default class SoundZone {
   constructor(main, points) {
     this.type = 'SoundZone';
     this.isActive = true;
+
     this.mouse = main.mouse;
     this.scene = main.scene;
 
@@ -22,7 +23,6 @@ export default class SoundZone {
       new THREE.SphereGeometry(10),
       new THREE.MeshBasicMaterial({ color: 0x00ccff }),
     );
-
 
     this.cursor.visible = false;
     this.renderPath();
@@ -108,6 +108,7 @@ export default class SoundZone {
     this.spline.closed = true;
 
     const geometry = new THREE.Geometry();
+    geometry.vertices = this.spline.getPoints(200);
     let material = new THREE.LineBasicMaterial({
       color: 0xff1169,
       linewidth: 1,
@@ -115,7 +116,6 @@ export default class SoundZone {
       opacity: 0.4,
     });
 
-    geometry.vertices = this.spline.getPoints(200);
     this.spline.mesh = new THREE.Line(geometry, material);
 
     // fill the path
