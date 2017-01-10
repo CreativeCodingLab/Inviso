@@ -1,4 +1,3 @@
-// Global imports (NPM)
 import * as THREE from 'three';
 import TWEEN from 'tween.js';
 import OBJLoader from 'three-obj-loader';
@@ -9,15 +8,14 @@ import Renderer from './components/renderer';
 import Camera from './components/camera';
 import Light from './components/light';
 import Controls from './components/controls';
-import SoundObject from './components/soundobject'
-import SoundTrajectory from './components/soundtrajectory'
+import SoundObject from './components/soundobject';
+import SoundTrajectory from './components/soundtrajectory';
 import SoundZone from './components/soundzone';
 
 // Helpers
 import Geometry from './helpers/geometry';
 
 // Model
-import Texture from './model/texture';
 import Model from './model/model';
 
 // Managers
@@ -30,7 +28,8 @@ import Config from './../data/config';
 // Local vars for rStats
 let rS, bS, glS, tS;
 
-// This class instantiates and ties all of the components together, starts the loading process and renders the main loop
+// This class instantiates and ties all of the components together
+// starts the loading process and renders the main loop
 export default class Main {
   constructor(container) {
     OBJLoader(THREE);
@@ -60,8 +59,10 @@ export default class Main {
     this.soundZones = [];
 
     this.loader;
-    this.moveForward = 0, this.moveBackwards = 0;
-    this.yawLeft = 0, this.yawRight = 0;
+    this.moveForward = 0;
+    this.moveBackwards = 0;
+    this.yawLeft = 0;
+    this.yawRight = 0;
     this.rotationSpeed = 0.05;
     this.listenerMovementSpeed = 5;
 
@@ -70,8 +71,10 @@ export default class Main {
 
     this.unselectedConeColor = new THREE.Color(0x80FFE7);
     this.selectedConeColor = new THREE.Color(0xFFCCCC);
-    this.interactiveCone = null, this.previousInteractiveCone = null;
-    this.selectedConeColor, this.unselectedConeColor;
+    this.interactiveCone = null;
+    this.previousInteractiveCone = null;
+    this.selectedConeColor;
+    this.unselectedConeColor;
     this.placingCone = false;
     this.replacingCone = false;
 
@@ -102,9 +105,14 @@ export default class Main {
 
     // Add Plane
     const geometry = new THREE.PlaneGeometry(5000, 5000);
-    const material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide, visible: false} );
-    this.floor = new THREE.Mesh( geometry, material );
-    this.floor.rotation.x = Math.PI/2;
+    const material = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      side: THREE.DoubleSide,
+      visible: false,
+    });
+
+    this.floor = new THREE.Mesh(geometry, material);
+    this.floor.rotation.x = Math.PI / 2;
     this.scene.add(this.floor);
 
     // Get Device Pixel Ratio first for retina
@@ -123,14 +131,14 @@ export default class Main {
 
     // Create and place lights in scene
     const lights = ['ambient', 'directional'];
-    for (let i = 0; i < lights.length; i++) {
+    for (let i = 0; i < lights.length; i += 1) {
       this.light.place(lights[i]);
     }
 
     // Create planar grid
     this.grid = new Geometry(this.scene);
     this.grid.make('plane')(5000, 5000);
-    this.grid.place([0, 0, 0], [Math.PI/2, 0, 0]);
+    this.grid.place([0, 0, 0], [Math.PI / 2, 0, 0]);
 
     this.trajectory = {
       scene: null,
@@ -149,7 +157,6 @@ export default class Main {
 
       addPoint: function(point) {
         if (this.scene === null) {
-          console.log('scene not set');
           return;
         }
 
@@ -194,7 +201,7 @@ export default class Main {
         this.lines = [];
         this.points = [];
       }
-    }
+    };
 
     this.zone = {
       scene: null,              //    the scene
@@ -213,7 +220,6 @@ export default class Main {
 
       addPoint: function(point) {
         if (this.scene === null) {
-          console.log('scene not set');
           return;
         }
 
@@ -258,7 +264,7 @@ export default class Main {
         this.lines = [];
         this.points = [];
       }
-    }
+    };
 
     this.trajectory.setScene(this.scene);
     this.zone.setScene(this.scene);
@@ -300,7 +306,7 @@ export default class Main {
 
     document.querySelector('#add-object-button').onclick = this.toggleAddObject.bind(this);
 
-    new DatGUI(this)
+    this.gui = new DatGUI(this);
 
     // Start render which does not wait for model fully loaded
     this.container.querySelector('#loading').style.display = 'none';
@@ -349,21 +355,21 @@ export default class Main {
     this.checkZones();
     this.updateDummyHead();
 
-    for (const i in this.soundObjects){
-      if (!this.isMouseDown || this.soundObjects[i] != this.activeObject) {
+    for (const i in this.soundObjects) {
+      if (!this.isMouseDown || this.soundObjects[i] !== this.activeObject) {
         if (this.soundObjects[i].type === 'SoundObject') this.soundObjects[i].followTrajectory();
       }
     }
 
-    if ( this.activeObject ) document.getElementById('guis').style.display = 'block';
+    if (this.activeObject) document.getElementById('guis').style.display = 'block';
     else document.getElementById('guis').style.display = 'none';
 
     // RAF
     requestAnimationFrame(this.render.bind(this)); // Bind the main class instead of window object
   }
 
-  setupAudio(){
-    var a = {};
+  setupAudio() {
+    const a = {};
     this.audio = a;
 
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -376,20 +382,22 @@ export default class Main {
   }
 
   setListenerPosition(object) {
-    var q = new THREE.Vector3();
+    const q = new THREE.Vector3();
     object.updateMatrixWorld();
     q.setFromMatrixPosition(object.matrixWorld);
     this.audio.context.listener.setPosition(q.x, q.y, q.z);
 
-    var m = object.matrix;
-    var mx = m.elements[12], my = m.elements[13], mz = m.elements[14];
+    const m = object.matrix;
+    const mx = m.elements[12];
+    const my = m.elements[13];
+    const mz = m.elements[14];
     m.elements[12] = m.elements[13] = m.elements[14] = 0;
 
-    var vec = new THREE.Vector3(0,0,-1);
+    const vec = new THREE.Vector3(0, 0, -1);
     vec.applyProjection(m);
     vec.normalize();
 
-    var up = new THREE.Vector3(0,-1,0);
+    const up = new THREE.Vector3(0, -1, 0);
     up.applyProjection(m);
     up.normalize();
 
@@ -401,12 +409,12 @@ export default class Main {
   }
 
   checkZones() {
-    if( this.soundZones.length > 0 ){
+    if (this.soundZones.length > 0) {
       const walkingRayVector = new THREE.Vector3(0, -1, 0);
       this.walkingRay.set(this.head.position, walkingRayVector);
 
-      for(const i in this.soundZones){
-        const intersects = this.walkingRay.intersectObject( this.soundZones[i].shape );
+      for (const i in this.soundZones) {
+        const intersects = this.walkingRay.intersectObject(this.soundZones[i].shape);
         if (intersects.length > 0) {
           this.soundZones[i].underUser();
         } else {
@@ -417,13 +425,28 @@ export default class Main {
   }
 
   loadFile() {
-    document.getElementById("soundPicker").click();
+    document.getElementById('soundPicker').click();
+  }
+
+  editObjectView() {
+    new TWEEN.Tween(this.camera.threeCamera.position)
+      .to(this.cameraPosition, 800)
+      .onComplete(() => {
+        this.head.position.copy(this.cameraPosition);
+        this.head.lookAt(this.activeObject.containerObject.position);
+        this.axisHelper.position.copy(this.cameraPosition);
+        this.axisHelper.lookAt(this.activeObject.containerObject.position);})
+      .start();
+
+    new TWEEN.Tween(this.controls.threeControls.center)
+      .to(this.activeObject.containerObject.position, 800)
+      .start();
   }
 
   attach() {
     const SOUNDSPATH = 'assets/sounds/';
 
-    const x = document.getElementById("soundPicker");
+    const x = document.getElementById('soundPicker');
     if ( this.activeObject.type === 'SoundObject' ){ this.activeObject.createCone(SOUNDSPATH + x.files[0].name); }
     if ( this.activeObject.type === 'SoundZone' ){ this.activeObject.loadSound(SOUNDSPATH + x.files[0].name); }
     if ( this.activeObject.type === 'SoundTrajectory' ) this.activeObject.parentSoundObject.createCone(SOUNDSPATH + x.files[0].name);
@@ -433,38 +456,19 @@ export default class Main {
       this.cameraPosition.lerpVectors(this.activeObject.containerObject.position, this.head.position,
         500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
 
-      new TWEEN.Tween(this.camera.threeCamera.position)
-        .to(this.cameraPosition, 800)
-        .onComplete(() => {
-          this.head.position.copy(this.cameraPosition);
-          this.head.lookAt(this.activeObject.containerObject.position);
-          this.axisHelper.position.copy(this.cameraPosition);
-          this.axisHelper.lookAt(this.activeObject.containerObject.position);})
-        .start();
-
-      new TWEEN.Tween(this.controls.threeControls.center)
-        .to(this.activeObject.containerObject.position, 800)
-        .start();
+      this.editObjectView();
     }
   }
 
   editObject() {
-    if(!this.isEditingObject){
-      this.cameraPosition.lerpVectors(this.activeObject.containerObject.position, this.head.position,
-        500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
+    if (!this.isEditingObject) {
+      this.cameraPosition.lerpVectors(
+        this.activeObject.containerObject.position,
+        this.head.position,
+        500 / this.head.position.distanceTo(this.activeObject.containerObject.position),
+      );
 
-      new TWEEN.Tween(this.camera.threeCamera.position)
-        .to(this.cameraPosition, 800)
-        .onComplete(() => {
-          this.head.position.copy(this.cameraPosition);
-          this.head.lookAt(this.activeObject.containerObject.position);
-          this.axisHelper.position.copy(this.cameraPosition);
-          this.axisHelper.lookAt(this.activeObject.containerObject.position);})
-        .start();
-
-      new TWEEN.Tween(this.controls.threeControls.center)
-        .to(this.activeObject.containerObject.position, 800)
-        .start();
+      this.editObjectView();
     }
 
     this.isEditingObject = !this.isEditingObject;
@@ -487,8 +491,6 @@ export default class Main {
 
     this.activeObject = obj;
 
-    console.log(this.activeObject);
-
     if (obj) {
       obj.setActive(this);
     }
@@ -497,11 +499,11 @@ export default class Main {
   updateDummyHead() {
     this.head = this.scene.getObjectByName('dummyHead', true);
 
-    if (this.head){
+    if (this.head) {
       this.axisHelper.rotation.y += -this.yawLeft + this.yawRight;
       this.head.rotation.y += -this.yawLeft + this.yawRight;
-      this.axisHelper.translateZ( -this.moveBackwards + this.moveForward);
-      this.head.translateZ( -this.moveBackwards + this.moveForward);
+      this.axisHelper.translateZ(-this.moveBackwards + this.moveForward);
+      this.head.translateZ(-this.moveBackwards + this.moveForward);
       this.setListenerPosition(this.head);
     }
   }

@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 
-import Config from '../../data/config';
 import Helpers from '../../utils/helpers';
 
 export default class SoundTrajectory {
@@ -12,11 +11,13 @@ export default class SoundTrajectory {
     this.spline;
     this.parentSoundObject;
     this.selectedPoint;
-    this.mouseOffsetX = 0, this.mouseOffsetY = 0; this.nonScaledMouseOffsetY = 0;
+    this.mouseOffsetX = 0;
+    this.mouseOffsetY = 0;
+    this.nonScaledMouseOffsetY = 0;
 
     this.cursor = new THREE.Mesh(
       new THREE.SphereGeometry(10),
-      new THREE.MeshBasicMaterial({ color:0x00ccff })
+      new THREE.MeshBasicMaterial({ color: 0x00ccff }),
     );
 
     this.cursor.visible = false;
@@ -27,19 +28,23 @@ export default class SoundTrajectory {
   renderPath() {
     const points = this.splinePoints;
 
-    this.pointObjects = (function() {
-
+    this.pointObjects = (() => {
       const sphere = new THREE.SphereGeometry(10);
-      const sphereMat = new THREE.MeshBasicMaterial( { color:0x999999 } );
+      const sphereMat = new THREE.MeshBasicMaterial({ color: 0x999999 });
 
       const collider = new THREE.SphereGeometry(20);
-      const colliderMat = new THREE.MeshBasicMaterial( {color:0x999999, transparent:true, opacity:0, depthWrite: false});
-      const colliderMesh = new THREE.Mesh( collider, colliderMat );
+      const colliderMat = new THREE.MeshBasicMaterial({
+        color: 0x999999,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      });
+      const colliderMesh = new THREE.Mesh(collider, colliderMat);
 
       const pointObjects = [];
 
-      points.forEach(function(point) {
-        const sphereMesh = new THREE.Mesh( sphere, sphereMat.clone() );
+      points.forEach((point) => {
+        const sphereMesh = new THREE.Mesh(sphere, sphereMat.clone());
         const group = new THREE.Object3D();
 
         group.add(sphereMesh, colliderMesh.clone());
@@ -48,7 +53,7 @@ export default class SoundTrajectory {
         group.position.z = point.z;
 
         pointObjects.push(group);
-      })
+      });
 
       return pointObjects;
     })();
@@ -58,8 +63,11 @@ export default class SoundTrajectory {
 
     const begEndDistance = this.splinePoints[0].distanceTo(this.splinePoints[this.splinePoints.length - 1]);
 
-    if(begEndDistance < 40) this.spline.closed = true;
-    else this.spline.closed = false;
+    if (begEndDistance < 40) {
+      this.spline.closed = true;
+    } else {
+      this.spline.closed = false;
+    }
 
     const geometry = new THREE.Geometry();
 
@@ -67,11 +75,11 @@ export default class SoundTrajectory {
 
     const material = new THREE.LineBasicMaterial({
       color: 0x999999,
-      linewidth:2,
-      opacity:0.4
+      linewidth: 2,
+      opacity: 0.4,
     });
 
-    this.spline.mesh = new THREE.Line( geometry, material );
+    this.spline.mesh = new THREE.Line(geometry, material);
   }
 
   get objects() {
@@ -79,7 +87,7 @@ export default class SoundTrajectory {
   }
 
   removeFromScene(scene) {
-    this.objects.forEach(function(obj) {
+    this.objects.forEach((obj) => {
       scene.remove(obj, true);
     });
 
@@ -87,7 +95,7 @@ export default class SoundTrajectory {
   }
 
   addToScene(scene) {
-    this.objects.forEach(function(obj) {
+    this.objects.forEach((obj) => {
       scene.add(obj);
     });
 
@@ -105,10 +113,10 @@ export default class SoundTrajectory {
 
     if (intersects.length > 0) {
       if (intersects[0].object.type === 'Line') {
-        return intersects[Math.floor(intersects.length/2)];
-      } else {
-        return intersects[0];
+        return intersects[Math.floor(intersects.length / 2)];
       }
+
+      return intersects[0];
     }
 
     return null;
@@ -127,7 +135,7 @@ export default class SoundTrajectory {
 
       if (i > -1) {
         if (perspectiveView) {
-          const pointer = this.splinePoints[i];
+          pointer = this.splinePoints[i];
           const posY = Helpers.mapRange(nonScaledMouse.y, -0.5, 0.5, -200, 200);
           pointer.y = posY;
         } else {
@@ -143,28 +151,36 @@ export default class SoundTrajectory {
       }
     } else {
       // move entire shape
-      if (perspectiveView){
-        const posY = Helpers.mapRange(nonScaledMouse.y - this.nonScaledMouseOffsetY, -0.5, 0.5, -200, 200);
+      if (perspectiveView) {
+        const posY = Helpers.mapRange(
+          nonScaledMouse.y - this.nonScaledMouseOffsetY,
+          -0.5,
+          0.5,
+          -200,
+          200,
+        );
 
-        this.objects.forEach(obj => {
+        this.objects.forEach((obj) => {
           obj.position.y += posY;
         });
-        this.splinePoints.forEach(pt => {
+
+        this.splinePoints.forEach((pt) => {
           pt.y += posY;
         });
 
         this.nonScaledMouseOffsetY = nonScaledMouse.y;
       } else {
-        let dx = mouse.x - this.mouseOffsetX;
-        let dy = mouse.z - this.mouseOffsetY;
-        this.mouseOffsetX = mouse.x, this.mouseOffsetY = mouse.z;
+        const dx = mouse.x - this.mouseOffsetX;
+        const dy = mouse.z - this.mouseOffsetY;
+        this.mouseOffsetX = mouse.x;
+        this.mouseOffsetY = mouse.z;
 
-        this.objects.forEach(obj => {
+        this.objects.forEach((obj) => {
           obj.position.x += dx;
           obj.position.z += dy;
         });
 
-        this.splinePoints.forEach(pt => {
+        this.splinePoints.forEach((pt) => {
           pt.x += dx;
           pt.z += dy;
         });
@@ -186,21 +202,23 @@ export default class SoundTrajectory {
   setActive() {
     this.isActive = true;
 
-    this.pointObjects.forEach(function(obj) {
-      obj.children[0].material.color.setHex( 0x999999 );
+    this.pointObjects.forEach((obj) => {
+      obj.children[0].material.color.setHex(0x999999);
     });
 
-    this.spline.mesh.material.color.setHex( 0x999999 );
+    this.spline.mesh.material.color.setHex(0x999999);
   }
 
   setInactive() {
     this.deselectPoint();
     this.showCursor(false);
     this.isActive = false;
-    this.pointObjects.forEach(function(obj) {
-      obj.children[0].material.color.setHex( 0xcccccc );
+
+    this.pointObjects.forEach((obj) => {
+      obj.children[0].material.color.setHex(0xcccccc);
     });
-    this.spline.mesh.material.color.setHex( 0xcccccc );
+
+    this.spline.mesh.material.color.setHex(0xcccccc);
   }
 
   select(intersect) {
@@ -213,6 +231,7 @@ export default class SoundTrajectory {
     } else if (obj.parent.type === 'Object3D') {
       this.selectPoint(obj.parent);
     } else {
+      // TODO: main?
       this.deselectPoint();
       this.setMouseOffset(main.nonScaledMouse, intersect.point);
     }
@@ -237,15 +256,16 @@ export default class SoundTrajectory {
     let prevDistToSplinePoint = -1;
     let closestSplinePoint = 0;
 
-    for (let t = 0; t < 1; t += 1/200.0) {
+    for (let t = 0; t < 1; t += 1 / 200.0) {
       const pt = this.spline.getPoint(t);
 
       const distToSplinePoint = this.splinePoints[closestSplinePoint].distanceToSquared(pt);
       if (distToSplinePoint > prevDistToSplinePoint) {
-        ++closestSplinePoint;
+        closestSplinePoint += 1;
 
-        if (closestSplinePoint >= this.splinePoints.length)
+        if (closestSplinePoint >= this.splinePoints.length) {
           closestSplinePoint = 0;
+        }
       }
 
       prevDistToSplinePoint = this.splinePoints[closestSplinePoint].distanceToSquared(pt);
@@ -264,7 +284,7 @@ export default class SoundTrajectory {
 
   removePoint() {
     const i = this.pointObjects.indexOf(this.selectedPoint);
-    this.splinePoints.splice(i,1);
+    this.splinePoints.splice(i, 1);
     this.deselectPoint();
     this.updateTrajectory();
   }

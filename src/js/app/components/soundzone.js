@@ -1,8 +1,5 @@
 import * as THREE from 'three';
 
-import Config from '../../data/config';
-import Helpers from '../../utils/helpers';
-
 export default class SoundZone {
   constructor(main, points) {
     this.type = 'SoundZone';
@@ -65,7 +62,7 @@ export default class SoundZone {
       context.decodeAudioData(request.response, (buffer) => {
         this.buffer = buffer;
       }, () => {
-        alert('Decoding the audio buffer failed');
+        console.log('Decoding the audio buffer failed');
       });
     };
 
@@ -80,11 +77,17 @@ export default class SoundZone {
     this.pointObjects = (() => {
       // setup
       const sphere = new THREE.SphereGeometry(10);
-      const sphereMat = new THREE.MeshBasicMaterial( { color:0xff1169 } );
+      const sphereMat = new THREE.MeshBasicMaterial({ color: 0xff1169 });
 
       const collider = new THREE.SphereGeometry(15);
-      const colliderMat = new THREE.MeshBasicMaterial( {color:0xff1169, transparent:true, opacity:0, depthWrite: false});
-      const colliderMesh = new THREE.Mesh( collider, colliderMat );
+      const colliderMat = new THREE.MeshBasicMaterial({
+        color: 0xff1169,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      });
+
+      const colliderMesh = new THREE.Mesh(collider, colliderMat);
 
       // place a meshgroup at each point in array
       const pointObjects = [];
@@ -94,7 +97,6 @@ export default class SoundZone {
 
         group.add(sphereMesh, colliderMesh.clone());
         group.position.copy(point);
-        // group.position.z = -300;
 
         pointObjects.push(group);
       });
@@ -110,22 +112,22 @@ export default class SoundZone {
       color: 0xff1169,
       linewidth: 1,
       transparent: true,
-      opacity: 0.4
+      opacity: 0.4,
     });
 
     geometry.vertices = this.spline.getPoints(200);
-    this.spline.mesh = new THREE.Line( geometry, material );
+    this.spline.mesh = new THREE.Line(geometry, material);
 
     // fill the path
     const rotatedPoints = this.spline.getPoints(200);
-    rotatedPoints.forEach(function (vertex){
+    rotatedPoints.forEach((vertex) => {
       vertex.y = vertex.z;
       vertex.z = 0.0;
     });
     const shapeFill = new THREE.Shape();
     shapeFill.fromPoints(rotatedPoints);
     const shapeGeometry = new THREE.ShapeGeometry(shapeFill);
-    shapeGeometry.rotateX(Math.PI/2);
+    shapeGeometry.rotateX(Math.PI / 2);
     material = new THREE.MeshBasicMaterial({
       color: 0xff1169,
       transparent: true,
@@ -159,9 +161,9 @@ export default class SoundZone {
   isUnderMouse(raycaster) {
     if (this.isActive) {
       return raycaster.intersectObjects(this.objects).length > 0;
-    } else {
-      return raycaster.intersectObject(this.shape).length > 0;
     }
+
+    return raycaster.intersectObject(this.shape).length > 0;
   }
 
   objectUnderMouse(raycaster) {
@@ -169,18 +171,18 @@ export default class SoundZone {
 
     if (intersects.length > 0) {
       if (intersects[0].object.type === 'Line') {
-        return intersects[Math.floor(intersects.length/2)];
-      } else {
-        return intersects[0];
+        return intersects[Math.floor(intersects.length / 2)];
       }
+
+      return intersects[0];
     }
 
     return null;
   }
 
   setMouseOffset(point) {
-    this.mouseOffsetX = point.x,
-      this.mouseOffsetY = point.z;
+    this.mouseOffsetX = point.x;
+    this.mouseOffsetY = point.z;
   }
 
   updateZone() {
@@ -233,7 +235,7 @@ export default class SoundZone {
   setActive(main) {
     this.setMouseOffset(main.mouse);
     this.isActive = true;
-    this.pointObjects.forEach(obj => obj.visible = true);
+    this.pointObjects.forEach(obj => (obj.visible = true));
     this.spline.mesh.visible = true;
   }
 
@@ -241,7 +243,7 @@ export default class SoundZone {
     this.deselectPoint();
     this.showCursor(false);
     this.isActive = false;
-    this.pointObjects.forEach(obj => obj.visible = false);
+    this.pointObjects.forEach(obj => (obj.visible = false));
     this.spline.mesh.visible = false;
   }
 
@@ -285,8 +287,9 @@ export default class SoundZone {
       if (distToSplinePoint > prevDistToSplinePoint) {
         closestSplinePoint += 1;
 
-        if (closestSplinePoint >= this.splinePoints.length)
+        if (closestSplinePoint >= this.splinePoints.length) {
           closestSplinePoint = 0;
+        }
       }
       prevDistToSplinePoint = this.splinePoints[closestSplinePoint].distanceToSquared(pt);
       const distToPoint = pt.distanceToSquared(position);

@@ -23,31 +23,39 @@ export default class SoundObject {
     this.containerObject = new THREE.Object3D();
 
     const sphereGeometry = new THREE.SphereBufferGeometry(this.radius, 100, 100);
-    const sphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, opacity: 0.8, transparent:true});
+    const sphereMaterial = new THREE.MeshBasicMaterial({
+      color: 0xFFFFFF,
+      opacity: 0.8,
+      transparent: true,
+    });
     this.omniSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 
     const raycastSphereGeometry = new THREE.SphereBufferGeometry(150, 100, 100);
-    const raycastSphereMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF, visible:false});
+    const raycastSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, visible: false });
     this.raycastSphere = new THREE.Mesh(raycastSphereGeometry, raycastSphereMaterial);
-    this.raycastSphere.name = "sphere";
+    this.raycastSphere.name = 'sphere';
     this.raycastSphere.position.copy(main.mouse);
     main.scene.add(this.raycastSphere);
 
-    this.axisHelper = new THREE.AxisHelper( 100 );
+    this.axisHelper = new THREE.AxisHelper(100);
     this.axisHelper.position.copy(main.mouse);
     main.scene.add(this.axisHelper);
 
-    const lineMaterial = new THREE.LineDashedMaterial({ color: 0x888888, dashSize: 30, gapSize: 30 });
+    const lineMaterial = new THREE.LineDashedMaterial({
+      color: 0x888888,
+      dashSize: 30,
+      gapSize: 30,
+    });
     const lineGeometry = new THREE.Geometry();
 
     lineGeometry.vertices.push(
-      new THREE.Vector3( 0, 0, -300 ),
-      new THREE.Vector3( 0, 0, 300 )
+      new THREE.Vector3(0, 0, -300),
+      new THREE.Vector3(0, 0, 300),
     );
 
     lineGeometry.computeLineDistances();
-    this.altitudeHelper = new THREE.Line( lineGeometry, lineMaterial );
-    this.altitudeHelper.rotation.x = Math.PI/2;
+    this.altitudeHelper = new THREE.Line(lineGeometry, lineMaterial);
+    this.altitudeHelper.rotation.x = Math.PI / 2;
     main.scene.add(this.altitudeHelper);
     this.altitudeHelper.position.copy(main.mouse);
 
@@ -57,15 +65,18 @@ export default class SoundObject {
   }
 
   createCone(fileName) {
-    const coneWidth = Math.random() * 50 + 50;
-    const coneHeight = Math.random() * 50 + 100;
+    const coneWidth = (Math.random() * 50) + 50;
+    const coneHeight = (Math.random() * 50) + 100;
 
     const coneGeo = new THREE.CylinderGeometry(coneWidth, 0, coneHeight, 100, 1, true);
     const coneColor = new THREE.Color(0.5, Math.random(), 0.9);
-    const coneMaterial = new THREE.MeshBasicMaterial({color: coneColor, opacity: 0.5});
+    const coneMaterial = new THREE.MeshBasicMaterial({
+      color: coneColor,
+      opacity: 0.5,
+    });
 
-    coneGeo.translate(0, coneHeight/2, 0);
-    coneGeo.rotateX(Math.PI/2);
+    coneGeo.translate(0, coneHeight / 2, 0);
+    coneGeo.rotateX(Math.PI / 2);
     coneMaterial.side = THREE.DoubleSide;
 
     const cone = new THREE.Mesh(coneGeo, coneMaterial);
@@ -73,12 +84,12 @@ export default class SoundObject {
     cone.sound = this.loadSound(fileName);
     cone.sound.panner.refDistance = 50;
     cone.sound.panner.distanceModel = 'inverse';
-    cone.sound.panner.coneInnerAngle = Math.atan(coneWidth/coneHeight) * (180/Math.PI);
+    cone.sound.panner.coneInnerAngle = Math.atan(coneWidth / coneHeight) * (180 / Math.PI);
     cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
     cone.sound.panner.coneOuterGain = 0.05;
     cone.sound.volume.gain.value = Helpers.mapRange(coneHeight, 100, 150, 0.2, 1);
 
-    cone.name = "cone";
+    cone.name = 'cone';
 
     this.cones.push(cone);
     this.containerObject.add(cone);
@@ -90,9 +101,9 @@ export default class SoundObject {
     const q = new THREE.Vector3();
     const m = cone.matrixWorld;
 
-    const px = p.x, py = p.y, pz = p.z;
-    const dx = q.x-px, dy = q.y-py, dz = q.z-pz;
-    const mx = m.elements[12], my = m.elements[13], mz = m.elements[14];
+    const mx = m.elements[12];
+    const my = m.elements[13];
+    const mz = m.elements[14];
 
     const vec = new THREE.Vector3(0, 0, 1);
 
@@ -127,15 +138,15 @@ export default class SoundObject {
     sound.panner.connect(this.audio.destination);
 
     const request = new XMLHttpRequest();
-    request.open("GET", soundFileName, true);
-    request.responseType = "arraybuffer";
-    request.onload = function() {
-      context.decodeAudioData(request.response, function(buffer){
+    request.open('GET', soundFileName, true);
+    request.responseType = 'arraybuffer';
+    request.onload = () => {
+      context.decodeAudioData(request.response, (buffer) => {
         sound.buffer = buffer;
         sound.source.buffer = sound.buffer;
         sound.source.start(context.currentTime + 0.020);
       }, () => {
-        alert("Decoding the audio buffer failed");
+        console.log("Decoding the audio buffer failed");
       });
     };
     request.send();
@@ -155,11 +166,16 @@ export default class SoundObject {
     let pointer;
 
     if (main.perspectiveView) {
-      const posY = Helpers.mapRange(main.nonScaledMouse.y - this.nonScaledMouseOffsetY, -0.5, 0.5, -200, 200);
+      const posY = Helpers.mapRange(
+        main.nonScaledMouse.y - this.nonScaledMouseOffsetY,
+        -0.5,
+        0.5,
+        -200,
+        200,
+      );
+
       pointer = this.containerObject.position;
-
       if (pointer.y > -200 || pointer.y < 200) pointer.y += posY;
-
       this.nonScaledMouseOffsetY = main.nonScaledMouse.y;
     } else {
       pointer = main.mouse;
@@ -173,9 +189,9 @@ export default class SoundObject {
     this.raycastSphere.position.copy(pointer);
 
     if (this.trajectory) this.trajectory.move(pointer);
-    if (this.cones[0]){
 
-      for (const i in this.cones){
+    if (this.cones[0]) {
+      for (const i in this.cones) {
         this.setAudioPosition(this.cones[i]);
       }
     }
@@ -204,7 +220,7 @@ export default class SoundObject {
     scene.remove(this.axisHelper, true);
     scene.remove(this.trajectory, true);
 
-    for(const i in this.cones){
+    for (const i in this.cones) {
       this.cones[i].sound.source.stop();
     }
   }
@@ -226,7 +242,7 @@ export default class SoundObject {
         if (this.trajectory.spline.closed) {
           this.trajectoryClock = 1;
         } else {
-          this.movementDirection = - this.movementDirection;
+          this.movementDirection = -this.movementDirection;
           this.trajectoryClock = 0;
         }
       }

@@ -1,7 +1,6 @@
-import Keyboard from '../../utils/keyboard';
-import Helpers from '../../utils/helpers';
-import Config from '../../data/config';
 import * as THREE from 'three';
+import Keyboard from '../../utils/keyboard';
+import Config from '../../data/config';
 
 // Manages all input interactions
 export default class Interaction {
@@ -28,31 +27,31 @@ export default class Interaction {
     // Keyboard events
     this.keyboard.domElement.addEventListener('keydown', (event) => {
       // Only once
-      if(event.repeat) {
+      if (event.repeat) {
         return;
       }
 
-      if(this.keyboard.eventMatches(event, 'w')) {
+      if (this.keyboard.eventMatches(event, 'w')) {
         main.moveForward = 1 * main.movementSpeed;
       }
 
-      if(this.keyboard.eventMatches(event, 'a')) {
+      if (this.keyboard.eventMatches(event, 'a')) {
         main.yawRight = 1 * main.rotationSpeed;
       }
 
-      if(this.keyboard.eventMatches(event, 'd')) {
+      if (this.keyboard.eventMatches(event, 'd')) {
         main.yawLeft = 1 * main.rotationSpeed;
       }
 
-      if(this.keyboard.eventMatches(event, 's')) {
+      if (this.keyboard.eventMatches(event, 's')) {
         main.moveBackwards = 1 * main.movementSpeed;
       }
 
-      if(this.keyboard.eventMatches(event, 'c')) {
+      if (this.keyboard.eventMatches(event, 'c')) {
         main.controls.threeControls.enabled = true;
       }
 
-      if(this.keyboard.eventMatches(event, 'backspace') ||
+      if (this.keyboard.eventMatches(event, 'backspace') ||
          this.keyboard.eventMatches(event, 'delete')) {
 
         if (main.activeObject && main.activeObject.type === 'SoundTrajectory') {
@@ -83,37 +82,37 @@ export default class Interaction {
 
     this.keyboard.domElement.addEventListener('keyup', (event) => {
       // Only once
-      if(event.repeat) {
+      if (event.repeat) {
         return;
       }
 
-      if(this.keyboard.eventMatches(event, 'w')) {
+      if (this.keyboard.eventMatches(event, 'w')) {
         main.moveForward = 0;
       }
 
-      if(this.keyboard.eventMatches(event, 'a')) {
+      if (this.keyboard.eventMatches(event, 'a')) {
         main.yawRight = 0;
       }
 
-      if(this.keyboard.eventMatches(event, 'd')) {
+      if (this.keyboard.eventMatches(event, 'd')) {
         main.yawLeft = 0;
       }
 
-      if(this.keyboard.eventMatches(event, 's')) {
+      if (this.keyboard.eventMatches(event, 's')) {
         main.moveBackwards = 0;
       }
 
-      if(this.keyboard.eventMatches(event, 'c')) {
+      if (this.keyboard.eventMatches(event, 'c')) {
         main.controls.threeControls.enabled = false;
       }
 
-      if(this.keyboard.eventMatches(event, 'r')) {
+      if (this.keyboard.eventMatches(event, 'r')) {
         main.controls.threeControls.reset();
 
-        if (main.isEditingObject)
+        if (main.isEditingObject) {
           main.isEditingObject = false;
+        }
       }
-
     });
   }
 
@@ -133,16 +132,13 @@ export default class Interaction {
     event.preventDefault();
 
     clearTimeout(this.timeout);
-
-    this.timeout = setTimeout(function() {
-      Config.isMouseMoving = false;
-    }, 200);
+    this.timeout = setTimeout(() => { Config.isMouseMoving = false; }, 200);
 
     Config.isMouseMoving = true;
 
     main.setMousePosition(event);
     if (main.isMouseDown === true && !main.isEditingObject) {
-      if( main.activeObject ){
+      if (main.activeObject) {
         main.activeObject.move(main);
       }
 
@@ -163,31 +159,27 @@ export default class Interaction {
         if (main.isMouseDown === true) {
           // click+drag
           main.activeObject.move(main.mouse, main.nonScaledMouse, main.perspectiveView);
+        } else if (intersection && intersection.object.type === 'Line') { // hover cursor over line
+          main.activeObject.showCursor();
+          main.activeObject.setCursor(intersection.point);
+        } else if (intersection && intersection.object.parent.type === 'Object3D') {
+          main.activeObject.showCursor();
+          main.activeObject.setCursor(intersection.object.parent.position);
         } else {
-          // hover cursor over line
-
-          if (intersection && intersection.object.type === 'Line') {
-            main.activeObject.showCursor();
-            main.activeObject.setCursor(intersection.point);
-          } else if (intersection && intersection.object.parent.type === 'Object3D') {
-            main.activeObject.showCursor();
-            main.activeObject.setCursor(intersection.object.parent.position);
-          } else {
-            main.activeObject.showCursor(false);
-          }
+          main.activeObject.showCursor(false);
         }
       }
     }
 
-    if (main.isEditingObject){
+    if (main.isEditingObject) {
       const intersects3 = main.ray.intersectObject(main.activeObject.raycastSphere);
       const intersect3 = intersects3[0];
 
-      if (intersects3.length > 0 && main.placingCone){
+      if (intersects3.length > 0 && main.placingCone) {
         main.activeObject.cones[main.interactiveCone].lookAt(intersect3.point);
         main.setPosition(main.activeObject.cones[main.interactiveCone]);
       } else if (main.isMouseDown) {
-        if(intersects3.length > 0 && main.replacingCone){
+        if(intersects3.length > 0 && main.replacingCone) {
 
           const coneRotation = new THREE.Vector3();
           coneRotation.subVectors(intersect3.point, main.activeObject.containerObject.position);
@@ -277,8 +269,7 @@ export default class Interaction {
           const intersect2 = intersects2[0];
 
           switch (intersect2.object.name) {
-            case "cone": {
-
+            case 'cone': {
               main.previousInteractiveCone = main.interactiveCone;
 
               if (main.interactiveCone == intersect2.object.id - main.activeObject.cones[0].id) {
@@ -291,19 +282,17 @@ export default class Interaction {
 
               break;
             }
-            case "visibleSphere": {
-
+            case 'visibleSphere': {
               main.replacingCone = false;
 
               break;
-
             }
-            case "addButton": {
+            case 'addButton': {
+              const x = document.getElementById('soundPicker');
 
-              const x = document.getElementById("soundPicker");
-
-              if (main.activeObject.type === 'SoundObject')
-                main.activeObject.createCone('assets/' + x.files[0].name);
+              if (main.activeObject.type === 'SoundObject') {
+                main.activeObject.createCone(`assets/${x.files[0].name}`);
+              }
 
               main.previousInteractiveCone = main.interactiveCone;
               main.placingCone = true;
@@ -320,10 +309,13 @@ export default class Interaction {
           main.interactiveCone = null;
         }
 
-        if (main.previousInteractiveCone !== null)
+        if (main.previousInteractiveCone !== null) {
           main.activeObject.cones[main.previousInteractiveCone].material.color = new THREE.Color(main.unselectedConeColor);
-        if (main.interactiveCone !== null)
+        }
+
+        if (main.interactiveCone !== null) {
           main.activeObject.cones[main.interactiveCone].material.color = new THREE.Color(main.selectedConeColor);
+        }
       }
     }
   }
