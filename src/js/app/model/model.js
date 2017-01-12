@@ -21,8 +21,8 @@ export default class Model {
       obj.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           // Create material for mesh and set its map to texture by name from preloaded textures
-          // const material = new Material(0xffffff).standard;
-          // child.material = material;
+          const material = new Material(0xffffff).basic;
+          child.material = material;
 
           // Set to cast and receive shadow if enabled
           if (Config.shadow.enabled) {
