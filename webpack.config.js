@@ -25,7 +25,7 @@ var env     = 'dev',
     ];
 
 // Production environment
-if(PROD) {
+if (PROD) {
   env = 'prod';
   devtool = 'hidden-source-map';
   debug = false;
@@ -72,6 +72,7 @@ module.exports = {
         test: /\.js?$/,
         loader: 'babel-loader',
         query: {
+          retainLines: true,
           presets: ['es2015']
         },
         include: [
