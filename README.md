@@ -32,4 +32,6 @@ A cross-platform tool for designing interactive virtual soundscapes.
 
 • oMouseMove() and onMouseDown() functions is a mix of main and former object close-up view interactions. There should be unified interaction scheme. Currently, states like placingCone and isMousePressed are overlapping to a certain extent and should be simplified.
 
+• Currently, if the zones are not drawn as convex hulls (i.e. if a point is dragged across a zone boundary) the shape utils fail to handle this, and ideally we want the zones to be only convex hulls. Shape Utils is throwing an exception when the the dragging across the boundary is attampted so we could use that to prevent the user from doing this (i.e. the dragged point stops moving when a boundary is hit).
+
 • ...
