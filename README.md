@@ -26,6 +26,10 @@ A cross-platform tool for designing interactive virtual soundscapes.
 
 • Interface for attaching omnidirectional Web Audio nodes to sound objects (textual elements in the object paramter window).
 
+• Dialogue bubbles for Add Button ("Click anywhere on screen to create a sound object; click and drag for drawing sound zones"), and Camera Control ("Rotate the scene to change the height of a sound object or a trajectory point") UI elements.
+
+• A dot that tracks the mouse cursor can be used between Add Button click and Scene click/click-and-drag events to make it clear that the user is in a state where they are adding objects or zones to the scene. Another possibility could be to highlight the floor plane  when user is in this state. Currently there is no indication of having hit the Add Button.
+
 • ...
 
 ## Interaction bugs
