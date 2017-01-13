@@ -31,7 +31,7 @@ export default class SoundZone {
     if (this.sound && !this.isPlaying && this.loaded) {
       this.sound.source = audio.context.createBufferSource();
       this.sound.source.loop = true;
-      this.sound.source.connect(this.sound.volume);
+      this.sound.source.connect(audio.destination);
       this.sound.source.buffer = this.sound.buffer;
       this.sound.source.start(audio.context.currentTime);
       this.sound.volume.gain.setTargetAtTime(0.3, audio.context.currentTime + 0.1, 0.1);
