@@ -52,7 +52,6 @@ export default class Main {
     this.increment = 0.01;
     this.direction = 1;
 
-    this.audio;
     this.soundObjects = [];
     this.soundTrajectories = [];
     this.soundZones = [];
@@ -389,8 +388,6 @@ export default class Main {
 
   setupAudio() {
     const a = {};
-    this.audio = a;
-
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
     a.context = new AudioContext();
@@ -398,6 +395,8 @@ export default class Main {
     a.context.listener.setPosition(0, 0, 1);
     a.destination = a.context.createGain();
     a.destination.connect(a.context.destination);
+
+    this.audio = a;
   }
 
   setListenerPosition(object) {
@@ -444,9 +443,9 @@ export default class Main {
            * Flagging a zone "under user" to activate the audio file associated
            * with the sound zone.
            */
-          this.soundZones[i].underUser();
+          this.soundZones[i].underUser(this.audio);
         } else {
-          this.soundZones[i].notUnderUser();
+          this.soundZones[i].notUnderUser(this.audio);
         }
       }
     }
@@ -471,15 +470,23 @@ export default class Main {
       .start();
   }
 
+  set audio(audio) {
+    this._audio = audio;
+  }
+
+  get audio() {
+    return this._audio;
+  }
+
   attach() {
     const SOUNDSPATH = 'assets/sounds/';
 
     const x = document.getElementById('soundPicker');
-    if ( this.activeObject.type === 'SoundObject' ){ this.activeObject.createCone(SOUNDSPATH + x.files[0].name); }
-    if ( this.activeObject.type === 'SoundZone' ){ this.activeObject.loadSound(SOUNDSPATH + x.files[0].name); }
+    if ( this.activeObject.type === 'SoundObject' ) this.activeObject.createCone(SOUNDSPATH + x.files[0].name);
+    if ( this.activeObject.type === 'SoundZone' ) this.activeObject.loadSound(SOUNDSPATH + x.files[0].name, this.audio);
     if ( this.activeObject.type === 'SoundTrajectory' ) this.activeObject.parentSoundObject.createCone(SOUNDSPATH + x.files[0].name);
 
-    if(!this.isEditingObject){
+    if(!this.isEditingObject && this.activeObject.type != 'SoundZone'){
       this.isEditingObject = true;
       this.cameraPosition.lerpVectors(this.activeObject.containerObject.position, this.head.position,
         500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
@@ -565,7 +572,7 @@ export default class Main {
 
   removeSoundZone(soundZone) {
     const i = this.soundZones.indexOf(soundZone);
-    this.soundZones[i].notUnderUser();
+    this.soundZones[i].notUnderUser(this.audio);
     soundZone.removeFromScene(this.scene);
     this.soundZones.splice(i, 1);
   }

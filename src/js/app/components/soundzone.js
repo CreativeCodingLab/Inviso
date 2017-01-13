@@ -13,11 +13,10 @@ export default class SoundZone {
     this.spline;
     this.shape;
     this.sound;
+    this.loaded = false;
     this.isPlaying = false;
     this.selectedPoint;
     this.mouseOffsetX = 0, this.mouseOffsetY = 0;
-    this.buffer;
-    this.audio = main.audio;
 
     this.cursor = new THREE.Mesh(
       new THREE.SphereGeometry(10),
@@ -28,47 +27,41 @@ export default class SoundZone {
     this.renderPath();
   }
 
-  underUser() {
-    if (this.sound && !this.isPlaying) {
-      this.sound.source = this.audio.context.createBufferSource();
+  underUser(audio) {
+    if (this.sound && !this.isPlaying && this.loaded) {
+      this.sound.source = audio.context.createBufferSource();
       this.sound.source.loop = true;
       this.sound.source.connect(this.sound.volume);
-      this.sound.source.buffer = this.buffer;
-      this.sound.source.start(this.audio.context.currentTime);
-      this.sound.volume.gain.setTargetAtTime(0.3, this.audio.context.currentTime + 0.1, 0.1);
+      this.sound.source.buffer = this.sound.buffer;
+      this.sound.source.start(audio.context.currentTime);
+      this.sound.volume.gain.setTargetAtTime(0.3, audio.context.currentTime + 0.1, 0.1);
       this.isPlaying = true;
     }
   }
 
-  notUnderUser() {
-    if (this.sound && this.isPlaying) {
-      this.sound.volume.gain.setTargetAtTime(0.0, this.audio.context.currentTime, 0.05);
-      this.sound.source.stop(this.audio.context.currentTime + 0.2);
+  notUnderUser(audio) {
+    if (this.sound && this.isPlaying && this.loaded) {
+      this.sound.volume.gain.setTargetAtTime(0.0, audio.context.currentTime, 0.05);
+      this.sound.source.stop(audio.context.currentTime + 0.2);
       this.isPlaying = false;
     }
   }
 
-  loadSound(soundFileName) {
-    const context = this.audio.context;
-    const sound = {};
+  loadSound(soundFileName, audio) {
+    const context = audio.context;
+    this.sound = {};
 
-    sound.volume = context.createGain();
-    sound.volume.connect(this.audio.destination);
+    this.sound.source = context.createBufferSource();
+    this.sound.volume = context.createGain();
+    this.sound.volume.connect(audio.destination);
+    this.sound.volume.gain.value = 0.0;
 
-    const request = new XMLHttpRequest();
-    request.open('GET', soundFileName, true);
-    request.responseType = 'arraybuffer';
-    request.onload = () => {
-      context.decodeAudioData(request.response, (buffer) => {
-        this.buffer = buffer;
-      }, () => {
-        console.log('Decoding the audio buffer failed');
-      });
-    };
-
-    request.send();
-    sound.volume.gain.value = 0.0;
-    this.sound = sound;
+    fetch(soundFileName)
+      .then(response => response.arrayBuffer())
+      .then(buffer => context.decodeAudioData(buffer, (decodedData) => {
+        this.sound.buffer = decodedData;
+        this.loaded = true;
+      }));
   }
 
   renderPath() {
