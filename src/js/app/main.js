@@ -284,7 +284,7 @@ export default class Main {
 
       rS = new rStats({
         CSSPath: './assets/css/',
-        userTimingAPI: true,
+        userTimingAPI: false,
         values: {
           frame: { caption: 'Total frame time (ms)', over: 16, average: true, avgMs: 100 },
           fps: { caption: 'Framerate (FPS)', below: 30 },
