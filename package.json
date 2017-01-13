@@ -22,7 +22,8 @@
     "es6-promise": "^4.0.5",
     "three": "0.81.2",
     "three-obj-loader": "^1.0.2",
-    "tween.js": "16.3.0"
+    "tween.js": "16.3.0",
+    "whatwg-fetch": "^2.0.1"
   },
   "devDependencies": {
     "babel-core": "^6.17.0",
