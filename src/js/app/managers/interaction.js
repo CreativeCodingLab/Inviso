@@ -317,20 +317,20 @@ export default class Interaction {
 
               break;
             }
-            case 'addButton': {
-              const x = document.getElementById('soundPicker');
-
-              if (main.activeObject.type === 'SoundObject') {
-                main.activeObject.createCone(`assets/${x.files[0].name}`);
-              }
-
-              main.previousInteractiveCone = main.interactiveCone;
-              main.placingCone = true;
-              main.createCone(intersect2.point);
-              main.interactiveCone = main.soundCones.length - 1;
-
-              break;
-            }
+            // case 'addButton': {
+            //   const x = document.getElementById('soundPicker');
+            //
+            //   if (main.activeObject.type === 'SoundObject') {
+            //     main.activeObject.createCone(`assets/${x.files[0].name}`);
+            //   }
+            //
+            //   main.previousInteractiveCone = main.interactiveCone;
+            //   main.placingCone = true;
+            //   main.createCone(intersect2.point);
+            //   main.interactiveCone = main.soundCones.length - 1;
+            //
+            //   break;
+            // }
           }
         } else {
           main.previousInteractiveCone = main.interactiveCone;

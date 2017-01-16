@@ -5,8 +5,6 @@ import Helpers from '../../utils/helpers';
 
 export default class SoundObject {
   constructor(main) {
-    this.audio = main.audio;
-
     this.type = 'SoundObject';
     this.posX = 0;
     this.posY = 0;
@@ -64,7 +62,7 @@ export default class SoundObject {
     main.scene.add(this.containerObject);
   }
 
-  createCone(fileName) {
+  createCone(fileName, audio) {
     const coneWidth = (Math.random() * 50) + 50;
     const coneHeight = (Math.random() * 50) + 100;
 
@@ -81,7 +79,7 @@ export default class SoundObject {
 
     const cone = new THREE.Mesh(coneGeo, coneMaterial);
 
-    cone.sound = this.loadSound(fileName);
+    cone.sound = this.loadSound(fileName, audio);
     cone.sound.panner.refDistance = 50;
     cone.sound.panner.distanceModel = 'inverse';
     cone.sound.panner.coneInnerAngle = Math.atan(coneWidth / coneHeight) * (180 / Math.PI);
@@ -124,8 +122,8 @@ export default class SoundObject {
     m.elements[14] = mz;
   }
 
-  loadSound(soundFileName) {
-    const context = this.audio.context;
+  loadSound(soundFileName, audio) {
+    const context = audio.context;
 
     const sound = {};
     sound.source = context.createBufferSource();
@@ -135,7 +133,7 @@ export default class SoundObject {
     sound.volume = context.createGain();
     sound.source.connect(sound.volume);
     sound.volume.connect(sound.panner);
-    sound.panner.connect(this.audio.destination);
+    sound.panner.connect(audio.destination);
 
     const request = new XMLHttpRequest();
     request.open('GET', soundFileName, true);

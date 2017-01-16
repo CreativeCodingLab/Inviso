@@ -392,7 +392,7 @@ export default class Main {
 
     a.context = new AudioContext();
     a.context.listener.setOrientation(0, 0, -1, 0, 1, 0);
-    a.context.listener.setPosition(0, 0, 1);
+    a.context.listener.setPosition(0, 1, 0);
     a.destination = a.context.createGain();
     a.destination.connect(a.context.destination);
 
@@ -400,10 +400,12 @@ export default class Main {
   }
 
   setListenerPosition(object) {
-    const q = new THREE.Vector3();
-    object.updateMatrixWorld();
-    q.setFromMatrixPosition(object.matrixWorld);
-    this.audio.context.listener.setPosition(q.x, q.y, q.z);
+    // const q = new THREE.Vector3();
+    // object.updateMatrixWorld();
+    // q.setFromMatrixPosition(object.matrixWorld);
+    // console.log(q.z);
+    this.audio.context.listener.setPosition(this.head.position.x, this.head.position.y, this.head.position.z);
+
 
     const m = object.matrix;
     const mx = m.elements[12];
@@ -482,8 +484,13 @@ export default class Main {
     const SOUNDSPATH = 'assets/sounds/';
 
     const x = document.getElementById('soundPicker');
+<<<<<<< Updated upstream
     if ( this.activeObject.type === 'SoundObject' ) this.activeObject.createCone(SOUNDSPATH + x.files[0].name);
     if ( this.activeObject.type === 'SoundZone' ) this.activeObject.loadSound(SOUNDSPATH + x.files[0].name, this.audio);
+=======
+    if ( this.activeObject.type === 'SoundObject' ) this.activeObject.createCone(SOUNDSPATH + x.files[0].name, this.audio);
+    if ( this.activeObject.type === 'SoundZone' ) this.activeObject.loadSound(SOUNDSPATH + x.files[0].name);
+>>>>>>> Stashed changes
     if ( this.activeObject.type === 'SoundTrajectory' ) this.activeObject.parentSoundObject.createCone(SOUNDSPATH + x.files[0].name);
 
     if(!this.isEditingObject && this.activeObject.type != 'SoundZone'){
