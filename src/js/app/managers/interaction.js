@@ -147,10 +147,6 @@ export default class Interaction {
 
     main.setMousePosition(event);
     if (main.isMouseDown === true && !main.isEditingObject) {
-      if (main.activeObject) {
-        main.activeObject.move(main);
-      }
-
       if (main.isAddingTrajectory === true) {
         if (main.activeObject.type === 'SoundObject') {
           main.mouse.y = main.activeObject.containerObject.position.y;
@@ -177,6 +173,8 @@ export default class Interaction {
         } else {
           main.activeObject.showCursor(false);
         }
+      } else if (main.activeObject) {
+        main.activeObject.move(main);
       }
     }
 
