@@ -3,7 +3,7 @@
 A cross-platform tool for designing interactive virtual soundscapes. 
 
 # TO-DO
-• Code refactoring, adding a test framework
+✓ Code refactoring, adding a test framework
 
 • Revising/implementing parametric view windows
 
@@ -17,7 +17,7 @@ A cross-platform tool for designing interactive virtual soundscapes.
 
 • In object edit view, the user-controlled objects in the scene besides the object that's being edited should be set to invisible (or removed from the scene) until exiting the object view mode.
 
-• (Given that the above item is implemented) In object edit view the listener node, which is normally mapped to the head model, can (should?) be mapped to the camera. It is handed over to the head model upon leaving object edit view.
+✓ (Given that the above item is implemented) In object edit view the listener node, which is normally mapped to the head model, can (should?) be mapped to the camera. It is handed over to the head model upon leaving object edit view.
 
 
 ## GUI Details
