@@ -186,7 +186,7 @@ export default class SoundObject {
     this.altitudeHelper.position.y = 0;
     this.raycastSphere.position.copy(pointer);
 
-    if (this.trajectory) this.trajectory.move(pointer);
+    if (this.trajectory) this.trajectory.move(pointer, main.nonScaledMouse, main.perspectiveView);
 
     if (this.cones[0]) {
       for (const i in this.cones) {
