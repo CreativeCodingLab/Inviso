@@ -196,7 +196,7 @@ export default class SoundZone {
           this.splinePoints[i].copy(main.mouse);
           this.updateZone();
           this.selectPoint(this.pointObjects[i]);
-        }
+        }else this.showCursor(true);
       } else {
         // move entire shape
         const dx = main.mouse.x - this.mouseOffsetX;

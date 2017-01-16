@@ -349,6 +349,7 @@ export default class Main {
 
     /* Updating camera controls. */
     this.controls.threeControls.update();
+    if(this.isEditingObject) this.setListenerPosition(this.camera.threeCamera);
 
     /**
      * Differentiating between perspective and bird's-eye views. If the camera is tilted
@@ -400,12 +401,10 @@ export default class Main {
   }
 
   setListenerPosition(object) {
-    // const q = new THREE.Vector3();
-    // object.updateMatrixWorld();
-    // q.setFromMatrixPosition(object.matrixWorld);
-    // console.log(q.z);
-    this.audio.context.listener.setPosition(this.head.position.x, this.head.position.y, this.head.position.z);
-
+    const q = new THREE.Vector3();
+    object.updateMatrixWorld();
+    q.setFromMatrixPosition(object.matrixWorld);
+    this.audio.context.listener.setPosition(q.x, q.y, q.z);
 
     const m = object.matrix;
     const mx = m.elements[12];
@@ -460,11 +459,11 @@ export default class Main {
   editObjectView() {
     new TWEEN.Tween(this.camera.threeCamera.position)
       .to(this.cameraPosition, 800)
-      .onComplete(() => {
-        this.head.position.copy(this.cameraPosition);
-        this.head.lookAt(this.activeObject.containerObject.position);
-        this.axisHelper.position.copy(this.cameraPosition);
-        this.axisHelper.lookAt(this.activeObject.containerObject.position);})
+      // .onComplete(() => {
+      //   this.head.position.copy(this.cameraPosition);
+      //   this.head.lookAt(this.activeObject.containerObject.position);
+      //   this.axisHelper.position.copy(this.cameraPosition);
+      //   this.axisHelper.lookAt(this.activeObject.containerObject.position);})
       .start();
 
     new TWEEN.Tween(this.controls.threeControls.center)
@@ -484,13 +483,11 @@ export default class Main {
     const SOUNDSPATH = 'assets/sounds/';
 
     const x = document.getElementById('soundPicker');
-<<<<<<< Updated upstream
-    if ( this.activeObject.type === 'SoundObject' ) this.activeObject.createCone(SOUNDSPATH + x.files[0].name);
+
     if ( this.activeObject.type === 'SoundZone' ) this.activeObject.loadSound(SOUNDSPATH + x.files[0].name, this.audio);
-=======
+
     if ( this.activeObject.type === 'SoundObject' ) this.activeObject.createCone(SOUNDSPATH + x.files[0].name, this.audio);
-    if ( this.activeObject.type === 'SoundZone' ) this.activeObject.loadSound(SOUNDSPATH + x.files[0].name);
->>>>>>> Stashed changes
+
     if ( this.activeObject.type === 'SoundTrajectory' ) this.activeObject.parentSoundObject.createCone(SOUNDSPATH + x.files[0].name);
 
     if(!this.isEditingObject && this.activeObject.type != 'SoundZone'){
@@ -554,7 +551,7 @@ export default class Main {
   updateDummyHead() {
     this.head = this.scene.getObjectByName('dummyHead', true);
 
-    if (this.head) {
+    if (this.head && !this.isEditingObject) {
       this.axisHelper.rotation.y += -this.yawLeft + this.yawRight;
       this.head.rotation.y += -this.yawLeft + this.yawRight;
       this.axisHelper.translateZ(-this.moveBackwards + this.moveForward);
