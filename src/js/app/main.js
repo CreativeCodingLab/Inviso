@@ -349,6 +349,11 @@ export default class Main {
 
     /* Updating camera controls. */
     this.controls.threeControls.update();
+
+    /**
+     * Hands over the positioning of the listener node from the head model
+     * to the camera in object edit view
+    **/
     if(this.isEditingObject) this.setListenerPosition(this.camera.threeCamera);
 
     /**
