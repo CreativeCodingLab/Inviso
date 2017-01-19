@@ -123,7 +123,8 @@ export default class Interaction {
         main.controls.threeControls.reset();
 
         if (main.isEditingObject) {
-          main.isEditingObject = false;
+
+          main.exitEditObjectView();
         }
       }
     });
@@ -230,7 +231,6 @@ export default class Interaction {
       }
 
       main.setActiveObject(obj);
-      main.setupAudio();
       main.toggleAddObject();
       main.isAddingObject = false;
     }

@@ -96,11 +96,6 @@ export default class Main {
     grid.material.transparent = true;
     this.scene.add(grid);
 
-    // Add AxisHelper
-    this.axisHelper = new THREE.AxisHelper(60);
-    this.axisHelper.rotation.y += Math.PI;
-    this.scene.add(this.axisHelper);
-
     /**
      * The X-Z raycasting plane for determining where on the floor
      * the user is clicking.
@@ -136,9 +131,9 @@ export default class Main {
     }
 
     // Create planar grid
-    this.grid = new Geometry(this.scene);
-    this.grid.make('plane')(5000, 5000, 10, 10);
-    this.grid.place([0, 0, 0], [Math.PI / 2, 0, 0]);
+    // this.grid = new Geometry(this.scene);
+    // this.grid.make('plane')(5000, 5000, 10, 10);
+    // this.grid.place([0, 0, 0], [Math.PI / 2, 0, 0]);
 
     this.trajectory = {
       scene: null,
@@ -308,6 +303,11 @@ export default class Main {
     const dummyHead = new Model(this.scene, this.loader);
     dummyHead.load();
 
+    // AxisHelper for the Head Model
+    this.axisHelper = new THREE.AxisHelper(60);
+    this.axisHelper.rotation.y += Math.PI;
+    this.scene.add(this.axisHelper);
+
     document.querySelector('#add-object-button').onclick = this.toggleAddObject.bind(this);
 
     this.gui = new DatGUI(this);
@@ -461,19 +461,40 @@ export default class Main {
     document.getElementById('soundPicker').click();
   }
 
-  editObjectView() {
+  enterEditObjectView() {
+
     new TWEEN.Tween(this.camera.threeCamera.position)
       .to(this.cameraPosition, 800)
-      // .onComplete(() => {
-      //   this.head.position.copy(this.cameraPosition);
-      //   this.head.lookAt(this.activeObject.containerObject.position);
-      //   this.axisHelper.position.copy(this.cameraPosition);
-      //   this.axisHelper.lookAt(this.activeObject.containerObject.position);})
+      .onComplete(() => {
+        /**
+          * Edit Object View only applies to sound objects. A Sound Object in the scene
+          * is represented with 4 elements: Raycast Sphere Mesh, AxisHelper,
+          * AltitudeHelper Line, and the containerObject which holds the omniSphere
+          * and the cones. To make only the activeObject and nothing else in the scene,
+          * first we set every object after scene defaults (i.e. grid, collider plane,
+          * lights and camera helper) invisible. Then we find the index of the raycast
+          * sphere that belongs to the active object and make this and the following 3
+          * object visible to bring the activeObject back in the scene.
+        **/
+        for(let j = 5; j < this.scene.children.length; j++){
+          this.scene.children[j].visible = false;
+        }
+
+        let activeObjIndex = this.scene.children.indexOf(this.activeObject.raycastSphere);
+        for(let j = activeObjIndex; j < activeObjIndex + 4; j++){
+          this.scene.children[j].visible = true;
+        }
+      })
       .start();
 
     new TWEEN.Tween(this.controls.threeControls.center)
       .to(this.activeObject.containerObject.position, 800)
       .start();
+  }
+
+  exitEditObjectView(){
+    this.isEditingObject = false;
+    for(let i = 5; i < this.scene.children.length; i++) this.scene.children[i].visible = true;
   }
 
   set audio(audio) {
@@ -500,7 +521,7 @@ export default class Main {
       this.cameraPosition.lerpVectors(this.activeObject.containerObject.position, this.head.position,
         500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
 
-      this.editObjectView();
+      this.enterEditObjectView();
     }
   }
 
@@ -512,7 +533,7 @@ export default class Main {
         500 / this.head.position.distanceTo(this.activeObject.containerObject.position),
       );
 
-      this.editObjectView();
+      this.enterEditObjectView();
     }
 
     this.isEditingObject = !this.isEditingObject;
@@ -533,6 +554,7 @@ export default class Main {
    */
   toggleAddObject() {
     if (this.perspectiveView) this.controls.threeControls.reset();
+    if (this.isEditingObject) this.exitEditObjectView();
     this.isAddingObject = !this.isAddingObject;
   }
 
