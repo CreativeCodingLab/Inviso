@@ -80,12 +80,12 @@ export default class SoundObject {
     const cone = new THREE.Mesh(coneGeo, coneMaterial);
 
     cone.sound = this.loadSound(fileName, audio);
-    cone.sound.panner.refDistance = 50;
+    cone.sound.panner.refDistance = 100;
     cone.sound.panner.distanceModel = 'inverse';
     cone.sound.panner.coneInnerAngle = Math.atan(coneWidth / coneHeight) * (180 / Math.PI);
     cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
     cone.sound.panner.coneOuterGain = 0.05;
-    cone.sound.volume.gain.value = Helpers.mapRange(coneHeight, 100, 150, 0.2, 1);
+    cone.sound.volume.gain.value = Helpers.mapRange(coneHeight, 100, 150, 0.5, 2);
 
     cone.name = 'cone';
 
