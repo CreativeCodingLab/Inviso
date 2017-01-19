@@ -23,6 +23,7 @@
   font-size: 10px;
   font-family: 'Roboto Condensed', tahoma, sans-serif;
   line-height: 1.2em;
+  display: none;
 }
 
 .rs-base h1 {
