@@ -70,12 +70,16 @@ export default class Interaction {
         }
 
         if (main.activeObject && main.activeObject.type === 'SoundObject') {
-          main.removeSoundObject(main.activeObject);
+          if(main.isEditingObject){
+            main.activeObject.containerObject.remove(main.activeObject.cones[main.interactiveCone]);
+          }else{
+            main.removeSoundObject(main.activeObject);
 
-          if (main.activeObject.trajectory)
-            main.removeSoundTrajectory(main.activeObject.trajectory);
+            if (main.activeObject.trajectory)
+              main.removeSoundTrajectory(main.activeObject.trajectory);
 
-          main.activeObject = null;
+            main.activeObject = null;
+          }
         }
       }
 
