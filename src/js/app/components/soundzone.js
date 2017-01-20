@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import 'whatwg-fetch';
 
 export default class SoundZone {
   constructor(main, points) {

@@ -121,6 +121,7 @@ export default class Interaction {
 
       if (this.keyboard.eventMatches(event, 'r')) {
         main.controls.threeControls.reset();
+        main.cameraViewer.reset();
 
         if (main.isEditingObject) {
 
@@ -262,8 +263,19 @@ export default class Interaction {
         return obj.isUnderMouse(main.ray);
       });
 
-      if (everyComponent.length > 0) main.setActiveObject(intersectObjects[0]);
-      else main.setActiveObject(null);
+      if (intersectObjects.length > 0) {
+        main.setActiveObject(intersectObjects[0]);
+      }
+      else if (!main.isEditingObject) {
+        main.setActiveObject(null);
+      }
+
+      if (main.isAddingTrajectory || main.isAddingObject || main.activeObject) {
+        main.controls.disablePan();
+      }
+      else {
+        main.controls.enablePan();
+      }
 
       /**
        * If adding a trajectory, ask the trajectory interface to initate a new

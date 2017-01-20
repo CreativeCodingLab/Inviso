@@ -6,6 +6,7 @@ import OBJLoader from 'three-obj-loader';
 import Renderer from './components/renderer';
 import Camera from './components/camera';
 import Light from './components/light';
+import CameraViewer from './components/cameraviewer';
 import Controls from './components/controls';
 import SoundObject from './components/soundobject';
 import SoundTrajectory from './components/soundtrajectory';
@@ -120,7 +121,7 @@ export default class Main {
 
     // Components instantiation
     this.camera = new Camera(this.renderer.threeRenderer);
-    this.controls = new Controls(this.camera.threeCamera, container);
+    this.controls = new Controls(this.camera.threeCamera, document);
     this.light = new Light(this.scene);
     this.loader = new THREE.OBJLoader();
 
@@ -268,8 +269,8 @@ export default class Main {
     this.trajectory.setScene(this.scene);
     this.zone.setScene(this.scene);
 
+    this.cameraViewer = new CameraViewer(this);
     new Interaction(this, this.renderer.threeRenderer, this.scene, this.camera.threecamera, this.controls.threeControls);
-
 
     // Set up rStats if dev environment
     if(Config.isDev) {
@@ -544,7 +545,10 @@ export default class Main {
    * this is called, it will be reset to bird's eye.
    */
   toggleAddTrajectory() {
-    if (this.perspectiveView) this.controls.threeControls.reset();
+    if (this.perspectiveView) {
+      this.controls.threeControls.reset();
+      this.cameraviewer.reset();
+    }
     this.isAddingTrajectory = !this.isAddingTrajectory;
   }
 
@@ -553,7 +557,10 @@ export default class Main {
    * this is called, it will be reset to bird's eye.
    */
   toggleAddObject() {
-    if (this.perspectiveView) this.controls.threeControls.reset();
+    if (this.perspectiveView) {
+      this.controls.threeControls.reset();
+      this.cameraviewer.reset();
+    }
     if (this.isEditingObject) this.exitEditObjectView();
     this.isAddingObject = !this.isAddingObject;
   }

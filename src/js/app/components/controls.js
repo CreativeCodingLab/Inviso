@@ -11,9 +11,29 @@ export default class Controls {
     this.threeControls = new orbitControls(camera, container);
 
     // Controls are only in enabled via 'c' keypress
-    this.threeControls.enabled = false;
+    this.threeControls.enabled = true;
+    this.disableRotate();
 
     this.init();
+  }
+
+  disablePan() {
+    this.threeControls.enablePan = false;
+  }
+  enablePan() {
+    this.threeControls.enablePan = true;
+  }
+
+  disableRotate() {
+    this.threeControls.mouseButtons = {
+        PAN: THREE.MOUSE.LEFT,
+        ZOOM: THREE.MOUSE.MIDDLE
+    }
+  }
+  enableRotate() {
+    this.threeControls.mouseButtons = {
+        ORBIT: THREE.MOUSE.LEFT
+    }
   }
 
   init() {
