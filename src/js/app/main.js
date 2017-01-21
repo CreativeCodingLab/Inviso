@@ -20,7 +20,8 @@ import Model from './model/model';
 
 // Managers
 import Interaction from './managers/interaction';
-import DatGUI from './managers/datGUI';
+import GUIWindow from './managers/guiwindow';
+// import DatGUI from './managers/datGUI';
 
 // data
 import Config from './../data/config';
@@ -309,9 +310,9 @@ export default class Main {
     this.axisHelper.rotation.y += Math.PI;
     this.scene.add(this.axisHelper);
 
-    document.querySelector('#add-object-button').onclick = this.toggleAddObject.bind(this);
+    document.getElementById('add-object-button').onclick = this.toggleAddObject.bind(this);
 
-    this.gui = new DatGUI(this);
+    this.gui = new GUIWindow(this);
 
     // Start render which does not wait for model fully loaded
     this.container.querySelector('#loading').style.display = 'none';
@@ -384,11 +385,13 @@ export default class Main {
     }
 
     /* Making the GUI visible if an object is selected */
-    if (this.activeObject) {
-      document.getElementById('guis').style.display = 'block';
-    } else {
-      document.getElementById('guis').style.display = 'none';
-    }
+    this.gui.display(this.activeObject);
+
+    // if (this.activeObject) {
+    //   document.getElementById('guis').style.display = 'block';
+    // } else {
+    //   document.getElementById('guis').style.display = 'none';
+    // }
 
     requestAnimationFrame(this.render.bind(this)); // Bind the main class instead of window object
   }
@@ -458,10 +461,6 @@ export default class Main {
     }
   }
 
-  loadFile() {
-    document.getElementById('soundPicker').click();
-  }
-
   enterEditObjectView() {
 
     new TWEEN.Tween(this.camera.threeCamera.position)
@@ -506,40 +505,6 @@ export default class Main {
     return this._audio;
   }
 
-  attach() {
-    const SOUNDSPATH = 'assets/sounds/';
-
-    const x = document.getElementById('soundPicker');
-
-    if ( this.activeObject.type === 'SoundZone' ) this.activeObject.loadSound(SOUNDSPATH + x.files[0].name, this.audio);
-
-    if ( this.activeObject.type === 'SoundObject' ) this.activeObject.createCone(SOUNDSPATH + x.files[0].name, this.audio);
-
-    if ( this.activeObject.type === 'SoundTrajectory' ) this.activeObject.parentSoundObject.createCone(SOUNDSPATH + x.files[0].name);
-
-    if(!this.isEditingObject && this.activeObject.type != 'SoundZone'){
-      this.isEditingObject = true;
-      this.cameraPosition.lerpVectors(this.activeObject.containerObject.position, this.head.position,
-        500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
-
-      this.enterEditObjectView();
-    }
-  }
-
-  editObject() {
-    if (!this.isEditingObject) {
-      this.cameraPosition.lerpVectors(
-        this.activeObject.containerObject.position,
-        this.head.position,
-        500 / this.head.position.distanceTo(this.activeObject.containerObject.position),
-      );
-
-      this.enterEditObjectView();
-    }
-
-    this.isEditingObject = !this.isEditingObject;
-  }
-
   /**
    * Sets the trajectory adding state on. If the scene is in perspective view when
    * this is called, it will be reset to bird's eye.
@@ -547,7 +512,7 @@ export default class Main {
   toggleAddTrajectory() {
     if (this.perspectiveView) {
       this.controls.threeControls.reset();
-      this.cameraviewer.reset();
+      this.cameraViewer.reset();
     }
     this.isAddingTrajectory = !this.isAddingTrajectory;
   }
@@ -559,10 +524,11 @@ export default class Main {
   toggleAddObject() {
     if (this.perspectiveView) {
       this.controls.threeControls.reset();
-      this.cameraviewer.reset();
+      this.cameraViewer.reset();
     }
     if (this.isEditingObject) this.exitEditObjectView();
     this.isAddingObject = !this.isAddingObject;
+    document.getElementById('add-object-button').classList.toggle('active', this.isAddingObject);
   }
 
   /**

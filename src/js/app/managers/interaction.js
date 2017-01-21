@@ -19,9 +19,9 @@ export default class Interaction {
     // Listeners
     // Mouse events
     this.renderer.domElement.addEventListener('mousemove', event => this.onMouseMove(main, event), false);
-    this.renderer.domElement.addEventListener('mouseleave', event => this.onMouseLeave(event), false);
+    this.renderer.domElement.addEventListener('mouseleave', event => this.onMouseUp(main,event, false), false);
     this.renderer.domElement.addEventListener('mouseover', event => this.onMouseOver(event), false);
-    this.renderer.domElement.addEventListener('mouseup', event => this.onMouseUp(main, event), false);
+    this.renderer.domElement.addEventListener('mouseup', event => this.onMouseUp(main, event, true), false);
     this.renderer.domElement.addEventListener('mousedown', event => this.onMouseDown(main, event), false);
 
     // Keyboard events
@@ -45,10 +45,6 @@ export default class Interaction {
 
       if (this.keyboard.eventMatches(event, 's')) {
         main.moveBackwards = 1 * main.movementSpeed;
-      }
-
-      if (this.keyboard.eventMatches(event, 'c')) {
-        main.controls.threeControls.enabled = true;
       }
 
       if (this.keyboard.eventMatches(event, 'backspace') ||
@@ -113,10 +109,6 @@ export default class Interaction {
 
       if (this.keyboard.eventMatches(event, 's')) {
         main.moveBackwards = 0;
-      }
-
-      if (this.keyboard.eventMatches(event, 'c')) {
-        main.controls.threeControls.enabled = false;
       }
 
       if (this.keyboard.eventMatches(event, 'r')) {
@@ -203,7 +195,9 @@ export default class Interaction {
     }
   }
 
-  onMouseUp(main, event) {
+  onMouseUp(main, event, hasFocus) {
+    if (!hasFocus) { Config.isMouseOver = false; }
+    if (main.isMouseDown === false) { return; }
     main.setMousePosition(event);
     let obj;
 
@@ -228,7 +222,7 @@ export default class Interaction {
       }
 
       if (obj && obj.type === 'SoundObject') {
-        main.soundObjects.push(obj);
+          main.soundObjects.push(obj);
       }
 
       main.setActiveObject(obj);
@@ -262,6 +256,9 @@ export default class Interaction {
       const intersectObjects = everyComponent.filter((obj) => {
         return obj.isUnderMouse(main.ray);
       });
+
+      // check if adding trajectory
+      main.isAddingTrajectory = (main.isAddingTrajectory && intersectObjects[0] === main.activeObject);
 
       if (intersectObjects.length > 0) {
         main.setActiveObject(intersectObjects[0]);

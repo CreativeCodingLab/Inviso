@@ -39,7 +39,7 @@ export default {
   },
   camera: {
     fov: 45,
-    near: 1,
+    near: 100,
     far: 10000,
     aspect: 1,
     posX: 0,

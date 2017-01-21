@@ -92,6 +92,7 @@ export default class SoundObject {
     this.cones.push(cone);
     this.containerObject.add(cone);
     this.setAudioPosition(cone);
+    return cone;
   }
 
   setAudioPosition(cone) {

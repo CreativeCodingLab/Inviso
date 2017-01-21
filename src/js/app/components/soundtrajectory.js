@@ -15,13 +15,6 @@ export default class SoundTrajectory {
     this.mouseOffsetY = 0;
     this.nonScaledMouseOffsetY = 0;
 
-    this.cursor = new THREE.Mesh(
-      new THREE.SphereGeometry(10),
-      new THREE.MeshBasicMaterial({ color: 0x00ccff }),
-    );
-
-    this.cursor.visible = false;
-
     /**
      * First call to renderPath happens in update trajectory function. From there
      * on the function recursively calls itself at the end of each draw.
@@ -123,7 +116,6 @@ export default class SoundTrajectory {
       scene.remove(obj, true);
     });
 
-    scene.remove(this.cursor);
   }
 
   /**
@@ -135,7 +127,6 @@ export default class SoundTrajectory {
       scene.add(obj);
     });
 
-    scene.add(this.cursor);
   }
 
   /**
@@ -195,7 +186,6 @@ export default class SoundTrajectory {
         pointer.y = this.splinePoints[i].y;
 
         /* Otherwise the mouse position vector is copied to the control point. */
-        this.showCursor(false);
         this.splinePoints[i].copy(pointer);
         this.updateTrajectory();
         this.selectPoint(this.pointObjects[i]);
@@ -249,15 +239,6 @@ export default class SoundTrajectory {
     }
   }
 
-  setCursor(point) {
-    this.cursor.position.copy(point);
-  }
-
-  showCursor(bool) {
-    if (bool === undefined) this.cursor.visible = true;
-    this.cursor.visible = bool;
-  }
-
   setActive() {
     this.isActive = true;
 
@@ -270,7 +251,6 @@ export default class SoundTrajectory {
 
   setInactive() {
     this.deselectPoint();
-    this.showCursor(false);
     this.isActive = false;
 
     this.pointObjects.forEach((obj) => {

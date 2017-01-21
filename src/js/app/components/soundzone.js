@@ -18,12 +18,6 @@ export default class SoundZone {
     this.selectedPoint;
     this.mouseOffsetX = 0, this.mouseOffsetY = 0;
 
-    this.cursor = new THREE.Mesh(
-      new THREE.SphereGeometry(10),
-      new THREE.MeshBasicMaterial({ color: 0x00ccff }),
-    );
-
-    this.cursor.visible = false;
     this.renderPath();
   }
 
@@ -51,6 +45,7 @@ export default class SoundZone {
     const context = audio.context;
     this.sound = {};
 
+    this.sound.name = soundFileName;
     this.sound.source = context.createBufferSource();
     this.sound.volume = context.createGain();
     this.sound.volume.connect(audio.destination);
@@ -139,15 +134,12 @@ export default class SoundZone {
     this.objects.forEach((obj) => {
       this.scene.add(obj);
     });
-
-    this.scene.add(this.cursor);
   }
 
   removeFromScene() {
     this.objects.forEach((obj) => {
       this.scene.remove(obj, true);
     });
-    this.scene.remove(this.cursor);
   }
 
   // raycast to this soundzone
@@ -191,11 +183,10 @@ export default class SoundZone {
         // move selected point
         const i = this.pointObjects.indexOf(this.selectedPoint);
         if (i > -1) {
-          this.showCursor(false);
           this.splinePoints[i].copy(main.mouse);
           this.updateZone();
           this.selectPoint(this.pointObjects[i]);
-        }else this.showCursor(true);
+        }
       } else {
         // move entire shape
         const dx = main.mouse.x - this.mouseOffsetX;
@@ -216,15 +207,6 @@ export default class SoundZone {
     }
   }
 
-  setCursor(point) {
-    this.cursor.position.copy(point);
-  }
-
-  showCursor(bool) {
-    if (bool === undefined) this.cursor.visible = true;
-    this.cursor.visible = bool;
-  }
-
   setActive(main) {
     this.setMouseOffset(main.mouse);
     this.isActive = true;
@@ -234,7 +216,6 @@ export default class SoundZone {
 
   setInactive() {
     this.deselectPoint();
-    this.showCursor(false);
     this.isActive = false;
     this.pointObjects.forEach(obj => (obj.visible = false));
     this.spline.mesh.visible = false;

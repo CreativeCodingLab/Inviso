@@ -1,11 +1,10 @@
 import * as THREE from 'three';
-import Config from '../../data/config';
 import OrbitControls from '../../utils/orbitControls';
 
 // Class that creates and updates the main camera
 export default class CameraViewer {
   constructor(main) {
-    var container = document.body.appendChild(document.createElement('div'));
+    var container = main.container.appendChild(document.createElement('div'));
     container.id = 'cam-control';
     // init camera & orbitcontrols
     var camera = new THREE.PerspectiveCamera(45, 1, 1, 10000);
