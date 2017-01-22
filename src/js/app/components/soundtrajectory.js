@@ -14,6 +14,7 @@ export default class SoundTrajectory {
     this.mouseOffsetX = 0;
     this.mouseOffsetY = 0;
     this.nonScaledMouseOffsetY = 0;
+    this.isSelected = false;
 
     /**
      * First call to renderPath happens in update trajectory function. From there
@@ -93,6 +94,7 @@ export default class SoundTrajectory {
       color: 0x999999,
       linewidth: 2,
       opacity: 0.4,
+      transparent: true
     });
 
     this.spline.mesh = new THREE.Line(geometry, material);

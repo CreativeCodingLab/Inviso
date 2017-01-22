@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 
+import Material from '../helpers/material';
 import Config from '../../data/config';
 import Helpers from '../../utils/helpers';
 
@@ -11,6 +12,7 @@ export default class SoundObject {
     this.posZ = 0;
     this.radius = Config.soundObject.defaultRadius;
     this.cones = [];
+    this.isSelected = false;
 
     this.trajectory = null;
     this.trajectoryClock = Config.soundObject.defaultTrajectoryClock;
@@ -21,12 +23,9 @@ export default class SoundObject {
     this.containerObject = new THREE.Object3D();
 
     const sphereGeometry = new THREE.SphereBufferGeometry(this.radius, 100, 100);
-    const sphereMaterial = new THREE.MeshBasicMaterial({
-      color: 0xFFFFFF,
-      opacity: 0.8,
-      transparent: true,
-    });
-    this.omniSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    this.sphereMaterial = new Material(0xffffff).basic;
+
+    this.omniSphere = new THREE.Mesh(sphereGeometry, this.sphereMaterial);
 
     const raycastSphereGeometry = new THREE.SphereBufferGeometry(150, 100, 100);
     const raycastSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, visible: false });
@@ -36,6 +35,7 @@ export default class SoundObject {
     main.scene.add(this.raycastSphere);
 
     this.axisHelper = new THREE.AxisHelper(100);
+    this.axisHelper.material.transparent = true;
     this.axisHelper.position.copy(main.mouse);
     main.scene.add(this.axisHelper);
 
@@ -43,6 +43,7 @@ export default class SoundObject {
       color: 0x888888,
       dashSize: 30,
       gapSize: 30,
+      transparent: true
     });
     const lineGeometry = new THREE.Geometry();
 
@@ -71,6 +72,7 @@ export default class SoundObject {
     const coneMaterial = new THREE.MeshBasicMaterial({
       color: coneColor,
       opacity: 0.5,
+      transparent: true
     });
 
     coneGeo.translate(0, coneHeight / 2, 0);
@@ -157,6 +159,32 @@ export default class SoundObject {
     return ray.intersectObject(this.containerObject, true).length > 0;
   }
 
+  setOpacity(ratio = Config.soundObject.opacityRatio) {
+    const coneOpacityRatio = ratio - 0.1;
+
+    this.sphereMaterial.opacity = this.opacityValue(ratio);
+    this.axisHelper.material.opacity = this.opacityValue(ratio);
+    this.altitudeHelper.material.opacity = this.opacityValue(ratio);
+
+    if (this.trajectory) {
+      this.trajectory.spline.mesh.material.opacity = this.opacityValue(ratio);
+    }
+
+    this.cones.forEach((c) => {
+      c.material.opacity = this.coneOpacityValue(coneOpacityRatio);
+    });
+  }
+
+  coneOpacityValue(ratio) {
+    const coneOpacity = Config.soundObject.coneOpacity;
+    return this.isSelected ? coneOpacity : coneOpacity * ratio;
+  }
+
+  opacityValue(ratio) {
+    const opacity = Config.soundObject.opacity;
+    return this.isSelected ? opacity : opacity * ratio;
+  }
+
   select(main) {
     this.nonScaledMouseOffsetY = main.nonScaledMouse.y;
   }
@@ -201,6 +229,7 @@ export default class SoundObject {
   }
 
   setActive(main) {
+    this.isSelected = true;
     if (this.trajectory) {
       this.trajectory.setActive();
       this.trajectory.setMouseOffset(main.nonScaledMouse, main.mouse);
@@ -208,6 +237,7 @@ export default class SoundObject {
   }
 
   setInactive() {
+    this.isSelected = false;
     if (this.trajectory) {
       this.trajectory.setInactive();
     }

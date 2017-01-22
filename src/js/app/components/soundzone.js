@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 
+import Config from '../../data/config';
+
 export default class SoundZone {
   constructor(main, points) {
     this.type = 'SoundZone';
     this.isActive = true;
+    this.isSelected = false;
 
     this.mouse = main.mouse;
     this.scene = main.scene;
@@ -19,6 +22,16 @@ export default class SoundZone {
     this.mouseOffsetX = 0, this.mouseOffsetY = 0;
 
     this.renderPath();
+  }
+
+  setOpacity(ratio = Config.soundZone.opacityRatio) {
+    this.shape.material.opacity = this.opacityValue(ratio);
+    this.spline.mesh.material.opacity = this.opacityValue(ratio);
+  }
+
+  opacityValue(ratio) {
+    const opacity = Config.soundZone.opacity;
+    return this.isSelected ? opacity : opacity * ratio;
   }
 
   underUser(audio) {
@@ -116,14 +129,14 @@ export default class SoundZone {
     shapeFill.fromPoints(rotatedPoints);
     const shapeGeometry = new THREE.ShapeGeometry(shapeFill);
     shapeGeometry.rotateX(Math.PI / 2);
-    material = new THREE.MeshBasicMaterial({
+    const shapeMaterial = new THREE.MeshBasicMaterial({
       color: 0xff1169,
       transparent: true,
       opacity: 0.2,
       side: THREE.DoubleSide,
     });
 
-    this.shape = new THREE.Mesh(shapeGeometry, material);
+    this.shape = new THREE.Mesh(shapeGeometry, shapeMaterial);
   }
 
   get objects() {
@@ -208,15 +221,19 @@ export default class SoundZone {
   }
 
   setActive(main) {
-    this.setMouseOffset(main.mouse);
+    this.isSelected = true;
     this.isActive = true;
+
+    this.setMouseOffset(main.mouse);
     this.pointObjects.forEach(obj => (obj.visible = true));
     this.spline.mesh.visible = true;
   }
 
   setInactive() {
-    this.deselectPoint();
+    this.isSelected = false;
     this.isActive = false;
+
+    this.deselectPoint();
     this.pointObjects.forEach(obj => (obj.visible = false));
     this.spline.mesh.visible = false;
   }

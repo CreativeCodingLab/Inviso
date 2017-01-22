@@ -343,7 +343,6 @@ export default class Main {
   }
 
   enterEditObjectView() {
-
     // slightly hacky fix: orbit controls tween works poorly from top view
     if (this.controls.threeControls.getPolarAngle() < 0.01) {
       this.controls.threeControls.constraint.rotateUp(-0.05);
@@ -395,11 +394,21 @@ export default class Main {
         cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
       })
       .start();
+
+    /**
+     * This is unnecessary if we are hiding inactive objects
+    **/
+    this.app.updateOpacities();
   }
 
-  exitEditObjectView(){
+  exitEditObjectView() {
     this.isEditingObject = false;
     for(let i = 5; i < this.scene.children.length; i++) this.scene.children[i].visible = true;
+    
+    /**
+     * This is unnecessary if we are hiding inactive objects
+    **/
+    this.updateOpacities();
     this.editViewLightBox.visible = false;
   }
 
@@ -440,7 +449,7 @@ export default class Main {
 
   /**
    * Sets the the last clicked (active) object.
-   * Calls a "secActive()" function ob the selected object.
+   * Calls a "setActive()" function ob the selected object.
    */
   setActiveObject(obj) {
     if (this.activeObject) {
@@ -452,6 +461,17 @@ export default class Main {
     if (obj) {
       obj.setActive(this);
     }
+
+    this.updateOpacities();
+  }
+
+  updateOpacities() {
+    const everyComponent = [].concat(this.soundObjects, this.soundZones);
+    const opacityRatio = this.isEditingObject ? Config.opacityRatio.editing : Config.opacityRatio.notEditing;
+
+    everyComponent.forEach((selectedObject) => {
+      selectedObject.setOpacity(opacityRatio);
+    });
   }
 
   /* Updates the head model's position and orientation in each frame. */
