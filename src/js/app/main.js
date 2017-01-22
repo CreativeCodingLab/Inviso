@@ -475,26 +475,34 @@ export default class Main {
           * sphere that belongs to the active object and make this and the following 3
           * object visible to bring the activeObject back in the scene.
         **/
-        //for(let j = 5; j < this.scene.children.length; j++){
-        //  this.scene.children[j].visible = false;
-        //}
+        for(let j = 5; j < this.scene.children.length; j++){
+          this.scene.children[j].visible = false;
+        }
 
-        //let activeObjIndex = this.scene.children.indexOf(this.activeObject.raycastSphere);
-        //for(let j = activeObjIndex; j < activeObjIndex + 4; j++){
-        //  this.scene.children[j].visible = true;
-        //}
+        let activeObjIndex = this.scene.children.indexOf(this.activeObject.raycastSphere);
+        for(let j = activeObjIndex; j < activeObjIndex + 4; j++){
+          this.scene.children[j].visible = true;
+        }
       })
       .start();
 
     new TWEEN.Tween(this.controls.threeControls.center)
       .to(this.activeObject.containerObject.position, 800)
       .start();
+
+    /**
+     * This is unnecessary if we are hiding inactive objects
+    **/
+    this.app.updateOpacities();
   }
 
   exitEditObjectView() {
     this.isEditingObject = false;
     for(let i = 5; i < this.scene.children.length; i++) this.scene.children[i].visible = true;
 
+    /**
+     * This is unnecessary if we are hiding inactive objects
+    **/
     this.updateOpacities();
   }
 

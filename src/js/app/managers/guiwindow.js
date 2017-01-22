@@ -483,7 +483,5 @@ export default class GUIWindow {
     else {
       this.app.isEditingObject = false;
     }
-
-    this.app.updateOpacities();
   }
 }
