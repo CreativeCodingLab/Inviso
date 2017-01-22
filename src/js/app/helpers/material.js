@@ -8,6 +8,8 @@ export default class Material {
     this.basic = new THREE.MeshBasicMaterial({
       color,
       side: THREE.DoubleSide,
+      opacity: 0.8,
+      transparent: true
     });
 
     this.standard = new THREE.MeshStandardMaterial({

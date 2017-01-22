@@ -14,6 +14,7 @@ export default class SoundTrajectory {
     this.mouseOffsetX = 0;
     this.mouseOffsetY = 0;
     this.nonScaledMouseOffsetY = 0;
+    this.isSelected = false;
 
     /**
      * First call to renderPath happens in update trajectory function. From there

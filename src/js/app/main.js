@@ -536,6 +536,8 @@ export default class Main {
    * Calls a "secActive()" function ob the selected object.
    */
   setActiveObject(obj) {
+    const everyComponent = [].concat(this.soundObjects, this.soundZones);
+
     if (this.activeObject) {
       this.activeObject.setInactive();
     }
@@ -545,6 +547,10 @@ export default class Main {
     if (obj) {
       obj.setActive(this);
     }
+
+    everyComponent.forEach((selectedObject) => {
+      selectedObject.setOpacity();
+    });
   }
 
   /* Updates the head model's position and orientation in each frame. */
