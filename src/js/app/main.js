@@ -8,9 +8,7 @@ import Camera from './components/camera';
 import Light from './components/light';
 import CameraViewer from './components/cameraviewer';
 import Controls from './components/controls';
-import SoundObject from './components/soundobject';
-import SoundTrajectory from './components/soundtrajectory';
-import SoundZone from './components/soundzone';
+import PathDrawer from './components/pathdrawer';
 
 // Helpers
 import Geometry from './helpers/geometry';
@@ -50,7 +48,7 @@ export default class Main {
 
     this.floor;
     this.counter = 1;
-    this.movementSpeed = 5;
+    this.movementSpeed = 7;
     this.increment = 0.01;
     this.direction = 1;
 
@@ -78,7 +76,7 @@ export default class Main {
     this.placingCone = false;
     this.replacingCone = false;
 
-    this.cameraPosition = new THREE.Vector3();
+    this.cameraDestination = new THREE.Vector3();
 
     this.ray.linePrecision = 10;
 
@@ -102,13 +100,13 @@ export default class Main {
      * The X-Z raycasting plane for determining where on the floor
      * the user is clicking.
      */
-    const geometry = new THREE.PlaneGeometry(5000, 5000);
-    const material = new THREE.MeshBasicMaterial({
+    const planeGeometry = new THREE.PlaneGeometry(5000, 5000);
+    const planeMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       side: THREE.DoubleSide,
       visible: false,
     });
-    this.floor = new THREE.Mesh(geometry, material);
+    this.floor = new THREE.Mesh(planeGeometry, planeMaterial);
     this.floor.rotation.x = Math.PI / 2;
     this.scene.add(this.floor);
 
@@ -132,143 +130,26 @@ export default class Main {
       this.light.place(lights[i]);
     }
 
+    const lightBoxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
+    const lightBoxMat = new THREE.MeshBasicMaterial( {
+      color: 0x00FF99,
+      transparent: true,
+      opacity: 0.1,
+      side: THREE.DoubleSide,
+    } );
+    this.editViewLightBox = new THREE.Mesh(lightBoxGeo, lightBoxMat);
+    this.editViewLightBox.visible = false;
+    this.scene.add(this.editViewLightBox);
+
     // Create planar grid
     // this.grid = new Geometry(this.scene);
     // this.grid.make('plane')(5000, 5000, 10, 10);
     // this.grid.place([0, 0, 0], [Math.PI / 2, 0, 0]);
 
-    this.trajectory = {
-      scene: null,
-      points: [],
-      lines: [],
-      lastPoint: new THREE.Vector3(),
-
-      setScene: function(scene) {
-        this.scene = scene;
-      },
-
-      beginAt: function(point) {
-        this.lastPoint = point;
-        this.points = [point];
-      },
-
-      addPoint: function(point) {
-        if (this.scene === null) {
-          return;
-        }
-
-        const material = new THREE.LineBasicMaterial({
-          linewidth: 2,
-          color: 0x999999
-        });
-
-        const geometry = new THREE.Geometry();
-        geometry.vertices.push(this.lastPoint, point);
-
-        const line = new THREE.Line(geometry,material);
-
-        this.lastPoint = point;
-        this.points.push(point);
-        this.lines.push(line);
-        this.scene.add(line);
-      },
-
-      createObject: function() {
-        const points = simplify(this.points, 10, true);
-        let object;
-
-        if (points.length >= 3) {
-          object = new SoundTrajectory(points);
-        }
-
-        this.clear();
-
-        if (this.scene && object)
-          object.addToScene(this.scene);
-        return object;
-      },
-
-      clear: function() {
-        const scene = this.scene;
-
-        this.lines.forEach(function(line) {
-          scene.remove(line);
-        });
-
-        this.lines = [];
-        this.points = [];
-      }
-    };
-
-    this.zone = {
-      scene: null,              //    the scene
-      points: [],               //    points on path
-      lines: [],                //    lines on the scene
-      lastPoint: new THREE.Vector3(),
-
-      setScene: function(scene) {
-        this.scene = scene;
-      },
-
-      beginAt: function(point) {
-        this.lastPoint = point;
-        this.points = [point];
-      },
-
-      addPoint: function(point) {
-        if (this.scene === null) {
-          return;
-        }
-
-        const material = new THREE.LineBasicMaterial({
-          color: 0xff1169
-        });
-
-        const geometry = new THREE.Geometry();
-        geometry.vertices.push(this.lastPoint, point);
-
-        const line = new THREE.Line(geometry,material);
-
-        this.lastPoint = point;
-        this.points.push(point);
-        this.lines.push(line);
-        this.scene.add(line);
-      },
-
-      createObject: function(main) {
-        // simplify points using algorithm from simplify.js
-        // tolerance = 10 is a somewhat arbitrary number :-\
-        const points = simplify(this.points, 10, true);
-        let object;
-        if (points.length >= 3) {
-          object = new SoundZone(main, points);
-        } else {
-          object = new SoundObject(main);
-        }
-
-        this.clear();
-
-        if (this.scene && object)
-          object.addToScene(this.scene);
-        return object;
-      },
-
-      clear: function() {
-        const scene = this.scene;
-        this.lines.forEach(function(line) {
-          scene.remove(line);
-        });
-        this.lines = [];
-        this.points = [];
-      }
-    };
-
     /**
-     * Setting up the trajectory and zone interfaces. These will return
-     * us the trajectory and zone instances when we ask for them.
+     * Setting up interface to create object/zone/trajectory instances.
      */
-    this.trajectory.setScene(this.scene);
-    this.zone.setScene(this.scene);
+    this.path = new PathDrawer(this.scene);
 
     this.cameraViewer = new CameraViewer(this);
     new Interaction(this, this.renderer.threeRenderer, this.scene, this.camera.threecamera, this.controls.threeControls);
@@ -462,8 +343,20 @@ export default class Main {
   }
 
   enterEditObjectView() {
+    // slightly hacky fix: orbit controls tween works poorly from top view
+    if (this.controls.threeControls.getPolarAngle() < 0.01) {
+      this.controls.threeControls.constraint.rotateUp(-0.05);
+      this.controls.threeControls.update();
+
+      this.cameraViewer.controls.constraint.rotateUp(-0.05);
+      this.cameraViewer.controls.update();
+    }
+
+    this.cameraDestination.lerpVectors(this.activeObject.containerObject.position, this.head.position,
+    500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
+
     new TWEEN.Tween(this.camera.threeCamera.position)
-      .to(this.cameraPosition, 800)
+      .to(this.cameraDestination, 800)
       .onComplete(() => {
         /**
           * Edit Object View only applies to sound objects. A Sound Object in the scene
@@ -471,13 +364,18 @@ export default class Main {
           * AltitudeHelper Line, and the containerObject which holds the omniSphere
           * and the cones. To make only the activeObject and nothing else in the scene,
           * first we set every object after scene defaults (i.e. grid, collider plane,
-          * lights and camera helper) invisible. Then we find the index of the raycast
-          * sphere that belongs to the active object and make this and the following 3
-          * object visible to bring the activeObject back in the scene.
+          * lights, edit view light box and camera helper) invisible. Then we find the
+          * index of the raycast sphere that belongs to the active object and make
+          * this and the following 3 object visible to bring the activeObject back
+          * in the scene.
         **/
-        for(let j = 5; j < this.scene.children.length; j++){
+        for(let j = 6; j < this.scene.children.length; j++){
           this.scene.children[j].visible = false;
         }
+
+        /* Before being made visible, light box is positioned around the active object */
+        this.editViewLightBox.position.copy(this.activeObject.containerObject.position);
+        this.editViewLightBox.visible = true;
 
         let activeObjIndex = this.scene.children.indexOf(this.activeObject.raycastSphere);
         for(let j = activeObjIndex; j < activeObjIndex + 4; j++){
@@ -488,6 +386,13 @@ export default class Main {
 
     new TWEEN.Tween(this.controls.threeControls.center)
       .to(this.activeObject.containerObject.position, 800)
+      .onUpdate(() => {
+        // rotate cam viewer along with world camera
+        var c = this.controls.threeControls;
+        var cv = this.cameraViewer.controls;
+        cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
+        cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
+      })
       .start();
 
     /**
@@ -499,11 +404,12 @@ export default class Main {
   exitEditObjectView() {
     this.isEditingObject = false;
     for(let i = 5; i < this.scene.children.length; i++) this.scene.children[i].visible = true;
-
+    
     /**
      * This is unnecessary if we are hiding inactive objects
     **/
     this.updateOpacities();
+    this.editViewLightBox.visible = false;
   }
 
   set audio(audio) {
@@ -520,6 +426,7 @@ export default class Main {
    */
   toggleAddTrajectory() {
     if (this.perspectiveView) {
+      this.exitEditObjectView();
       this.controls.threeControls.reset();
       this.cameraViewer.reset();
     }

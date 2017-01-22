@@ -148,12 +148,12 @@ export default class Interaction {
       if (main.isAddingTrajectory === true) {
         if (main.activeObject.type === 'SoundObject') {
           main.mouse.y = main.activeObject.containerObject.position.y;
-          main.trajectory.addPoint(main.mouse);
+          main.path.addPoint(main.mouse);
         }
       }
 
       if (main.isAddingObject === true) {
-        main.zone.addPoint(main.mouse);
+        main.path.addPoint(main.mouse);
       }
 
       if (main.activeObject && main.activeObject.type === 'SoundTrajectory') {
@@ -202,28 +202,14 @@ export default class Interaction {
     let obj;
 
     if (main.isAddingTrajectory) {
-      obj = main.trajectory.createObject();
-      main.activeObject.trajectory = obj;
-      obj.parentSoundObject = main.activeObject;
-
-      if (obj && obj.type === 'SoundTrajectory') {
-        main.soundTrajectories.push(obj);
-      }
+      obj = main.path.createObject(main);
 
       main.toggleAddTrajectory();
       main.isAddingTrajectory = false;
     }
 
     if (main.isAddingObject) {
-      obj = main.zone.createObject(main);
-
-      if (obj && obj.type === 'SoundZone') {
-        main.soundZones.push(obj);
-      }
-
-      if (obj && obj.type === 'SoundObject') {
-          main.soundObjects.push(obj);
-      }
+      obj = main.path.createObject(main);
 
       main.setActiveObject(obj);
       main.toggleAddObject();
@@ -282,11 +268,11 @@ export default class Interaction {
        */
       if (main.isAddingTrajectory) {
         main.mouse.y = main.activeObject.containerObject.position.y;
-        main.trajectory.beginAt(main.mouse);
+        main.path.beginAt(main.mouse, main.activeObject);
       }
 
       if (main.isAddingObject) {
-        main.zone.beginAt(main.mouse);
+        main.path.beginAt(main.mouse);
       }
 
       /* If the most recent active object interacted with again, select it: */
