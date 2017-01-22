@@ -76,7 +76,7 @@ export default class Main {
     this.placingCone = false;
     this.replacingCone = false;
 
-    this.cameraPosition = new THREE.Vector3();
+    this.cameraDestination = new THREE.Vector3();
 
     this.ray.linePrecision = 10;
 
@@ -100,13 +100,13 @@ export default class Main {
      * The X-Z raycasting plane for determining where on the floor
      * the user is clicking.
      */
-    const geometry = new THREE.PlaneGeometry(5000, 5000);
-    const material = new THREE.MeshBasicMaterial({
+    const planeGeometry = new THREE.PlaneGeometry(5000, 5000);
+    const planeMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       side: THREE.DoubleSide,
       visible: false,
     });
-    this.floor = new THREE.Mesh(geometry, material);
+    this.floor = new THREE.Mesh(planeGeometry, planeMaterial);
     this.floor.rotation.x = Math.PI / 2;
     this.scene.add(this.floor);
 
@@ -129,6 +129,17 @@ export default class Main {
     for (let i = 0; i < lights.length; i += 1) {
       this.light.place(lights[i]);
     }
+
+    const lightBoxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
+    const lightBoxMat = new THREE.MeshBasicMaterial( {
+      color: 0x00FF99,
+      transparent: true,
+      opacity: 0.1,
+      side: THREE.DoubleSide,
+    } );
+    this.editViewLightBox = new THREE.Mesh(lightBoxGeo, lightBoxMat);
+    this.editViewLightBox.visible = false;
+    this.scene.add(this.editViewLightBox);
 
     // Create planar grid
     // this.grid = new Geometry(this.scene);
@@ -342,8 +353,11 @@ export default class Main {
       this.cameraViewer.controls.update();
     }
 
+    this.cameraDestination.lerpVectors(this.activeObject.containerObject.position, this.head.position,
+    500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
+
     new TWEEN.Tween(this.camera.threeCamera.position)
-      .to(this.cameraPosition, 800)
+      .to(this.cameraDestination, 800)
       .onComplete(() => {
         /**
           * Edit Object View only applies to sound objects. A Sound Object in the scene
@@ -351,13 +365,18 @@ export default class Main {
           * AltitudeHelper Line, and the containerObject which holds the omniSphere
           * and the cones. To make only the activeObject and nothing else in the scene,
           * first we set every object after scene defaults (i.e. grid, collider plane,
-          * lights and camera helper) invisible. Then we find the index of the raycast
-          * sphere that belongs to the active object and make this and the following 3
-          * object visible to bring the activeObject back in the scene.
+          * lights, edit view light box and camera helper) invisible. Then we find the
+          * index of the raycast sphere that belongs to the active object and make
+          * this and the following 3 object visible to bring the activeObject back
+          * in the scene.
         **/
-        for(let j = 5; j < this.scene.children.length; j++){
+        for(let j = 6; j < this.scene.children.length; j++){
           this.scene.children[j].visible = false;
         }
+
+        /* Before being made visible, light box is positioned around the active object */
+        this.editViewLightBox.position.copy(this.activeObject.containerObject.position);
+        this.editViewLightBox.visible = true;
 
         let activeObjIndex = this.scene.children.indexOf(this.activeObject.raycastSphere);
         for(let j = activeObjIndex; j < activeObjIndex + 4; j++){
@@ -381,6 +400,7 @@ export default class Main {
   exitEditObjectView(){
     this.isEditingObject = false;
     for(let i = 5; i < this.scene.children.length; i++) this.scene.children[i].visible = true;
+    this.editViewLightBox.visible = false;
   }
 
   set audio(audio) {
