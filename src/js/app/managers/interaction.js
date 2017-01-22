@@ -112,11 +112,10 @@ export default class Interaction {
       }
 
       if (this.keyboard.eventMatches(event, 'r')) {
-        main.controls.threeControls.reset();
+        main.resetCamera();
         main.cameraViewer.reset();
 
         if (main.isEditingObject) {
-
           main.exitEditObjectView();
         }
       }
