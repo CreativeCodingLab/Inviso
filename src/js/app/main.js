@@ -333,6 +333,15 @@ export default class Main {
 
   enterEditObjectView() {
 
+    // slightly hacky fix: orbit controls tween works poorly from top view
+    if (this.controls.threeControls.getPolarAngle() < 0.01) {
+      this.controls.threeControls.constraint.rotateUp(-0.05);
+      this.controls.threeControls.update();
+
+      this.cameraViewer.controls.constraint.rotateUp(-0.05);
+      this.cameraViewer.controls.update();
+    }
+
     new TWEEN.Tween(this.camera.threeCamera.position)
       .to(this.cameraPosition, 800)
       .onComplete(() => {
@@ -359,6 +368,13 @@ export default class Main {
 
     new TWEEN.Tween(this.controls.threeControls.center)
       .to(this.activeObject.containerObject.position, 800)
+      .onUpdate(() => {
+        // rotate cam viewer along with world camera
+        var c = this.controls.threeControls;
+        var cv = this.cameraViewer.controls;
+        cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
+        cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
+      })
       .start();
   }
 

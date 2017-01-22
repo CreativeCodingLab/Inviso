@@ -162,12 +162,10 @@ export default class GUIWindow {
       var x = this.container.querySelector('.x .value');
       var y = this.container.querySelector('.y .value');
       var z = this.container.querySelector('.z .value');
-      while (x.firstChild) { x.removeChild(x.firstChild); }
-      while (y.firstChild) { y.removeChild(y.firstChild); }
-      while (z.firstChild) { z.removeChild(z.firstChild); }
-      x.appendChild(document.createTextNode(Number(pos.x.toFixed(2))));
-      y.appendChild(document.createTextNode(Number(pos.y.toFixed(2))));
-      z.appendChild(document.createTextNode(Number(pos.z.toFixed(2))));
+
+      this.replaceTextContent(x, pos.x);
+      this.replaceTextContent(y, pos.y);
+      this.replaceTextContent(z, pos.z);
 
       // check if trajectory exists
       if (object.trajectory) {
@@ -185,12 +183,18 @@ export default class GUIWindow {
       }
 
       // get cone information
-      if (object.cones) {
-        object.cones.forEach(function(cone) {
+      if (object.cones && object.cones.length > 0) {
+        var longitudes = this.container.querySelectorAll('.long .value');
+        var latitudes  = this.container.querySelectorAll('.lat .value');
+        object.cones.forEach((cone, i) => {
 
           var lat  = cone.rotation._x * 180/Math.PI,
               long = cone.rotation._y * 180/Math.PI;
-        })
+
+          this.replaceTextContent(longitudes[i], long);
+          this.replaceTextContent(latitudes[i], -lat);
+
+        });
       }
   }
 
@@ -233,11 +237,8 @@ export default class GUIWindow {
       var pos = this.getSoundzonePosition(zone.splinePoints);
       var x = this.container.querySelector('.x .value');
       var z = this.container.querySelector('.z .value');
-      while (x.firstChild) { x.removeChild(x.firstChild); }
-      while (z.firstChild) { z.removeChild(z.firstChild); }
-      x.appendChild(document.createTextNode(Number(pos.x.toFixed(2))));
-      z.appendChild(document.createTextNode(Number(pos.z.toFixed(2))));
-
+      this.replaceTextContent(x, pos.x);
+      this.replaceTextContent(z, pos.z);
   }
 
   // average positions of all the spline points
@@ -313,6 +314,13 @@ export default class GUIWindow {
       return div;
   }
 
+  // updating text in html
+  replaceTextContent(parent, text, sigfigs) {
+    while(parent.firstChild) { parent.removeChild(parent.firstChild); }
+    if (!isNaN(text)) { text = Number((+text).toFixed(sigfigs || 2)); }
+    parent.appendChild(document.createTextNode(text));
+  }
+
   // event handler additions
   addSound(e) {
       var obj = this.obj;
@@ -352,8 +360,7 @@ export default class GUIWindow {
 
                   // replace text with file name
                   cone.filename = file.name;
-                  while(span.firstChild) { span.removeChild(span.firstChild); }
-                  span.appendChild(document.createTextNode(file.name));
+                  self.replaceTextContent(span, file.name);
                   return; // quit early
                 }
               }
@@ -371,8 +378,7 @@ export default class GUIWindow {
               break;
             case 'SoundZone':
               // replace text with file name
-              while(span.firstChild) { span.removeChild(span.firstChild); }
-              span.appendChild(document.createTextNode(file.name));
+              self.replaceTextContent(span, file.name);
 
               // add sound to zone
               obj.loadSound(path, self.app.audio);
@@ -405,17 +411,19 @@ export default class GUIWindow {
       property: 'Longitude',
       value: Number((cone.rotation._y * 180/Math.PI).toFixed(2)),
       type: 'number',
+      cls: 'long',
       suffix: '˚'
     }, elem);
     this.addParameter({
       property: 'Latitude',
       value: Number((cone.rotation._x * 180/Math.PI).toFixed(2)),
       type: 'number',
+      cls: 'lat',
       suffix: '˚'
     }, elem);
     this.addParameter({
       value: 'Delete'
-    }, elem)
+    }, elem);
     // todo: click on a cone to make it vis? accordion?
 
   }
@@ -428,57 +436,22 @@ export default class GUIWindow {
       value:object.movementSpeed,
       suffix:' m/s',
       type:'number'
-    }, elem)
+    }, elem);
+
+    this.addParameter({
+      value: 'Delete'
+    }, elem);
 
     return elem;
   }
   editObject(object) {
-    if(!this.app.isEditingObject){
+    if (!this.app.isEditingObject) {
       this.app.isEditingObject = true;
-
-      var objectPosition = object.containerObject.position;
-      var cameraTo = new THREE.Object3D();
-      var head = this.app.head;
-      var axis = this.app.axisHelper;
-      cameraTo.position.lerpVectors(objectPosition, head.position,
-          500 / head.position.distanceTo(objectPosition));
-      cameraTo.lookAt(objectPosition);
-
-      var tween = new TWEEN.Tween(this.app.camera.threeCamera.position)
-        .to(cameraTo.position, 1000)
-        .onComplete(function() {
-          head.position.copy(cameraTo.position);
-          head.lookAt(objectPosition);
-
-          axis.position.copy(cameraTo.position);
-          axis.lookAt(objectPosition);
-        });
-
-      var tween2 = new TWEEN.Tween(this.app.controls.threeControls.center)
-        .to(objectPosition, 1000);
-      
-
-      // slightly hacky fix: orbit controls tween works poorly from top view
-      if (this.app.controls.threeControls.getPolarAngle() < 0.01) {
-        this.app.controls.threeControls.constraint.rotateUp(-0.05);
-        this.app.controls.threeControls.update();
-
-        this.app.cameraViewer.controls.constraint.rotateUp(-0.05);
-        this.app.cameraViewer.controls.update();
-      }
-      tween.start();
-
-      var c = this.app.controls.threeControls;
-      var cv = this.app.cameraViewer.controls;
-      tween2.onComplete(function() {
-        var pa = cv.getPolarAngle(),
-            aa = cv.getAzimuthalAngle();
-        cv.constraint.rotateUp(pa - c.getPolarAngle());
-        cv.constraint.rotateLeft(aa - c.getAzimuthalAngle());
-      }).start();
+      this.app.enterEditObjectView();
     }
     else {
       this.app.isEditingObject = false;
+      this.app.exitEditObjectView();
     }
   }
 }
