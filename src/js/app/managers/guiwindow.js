@@ -460,7 +460,6 @@ export default class GUIWindow {
 
       var tween2 = new TWEEN.Tween(this.app.controls.threeControls.center)
         .to(objectPosition, 1000);
-      
 
       // slightly hacky fix: orbit controls tween works poorly from top view
       if (this.app.controls.threeControls.getPolarAngle() < 0.01) {
@@ -484,5 +483,7 @@ export default class GUIWindow {
     else {
       this.app.isEditingObject = false;
     }
+
+    this.app.updateOpacities();
   }
 }

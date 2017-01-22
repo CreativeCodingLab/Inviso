@@ -35,6 +35,7 @@ export default class SoundObject {
     main.scene.add(this.raycastSphere);
 
     this.axisHelper = new THREE.AxisHelper(100);
+    this.axisHelper.material.transparent = true;
     this.axisHelper.position.copy(main.mouse);
     main.scene.add(this.axisHelper);
 
@@ -42,6 +43,7 @@ export default class SoundObject {
       color: 0x888888,
       dashSize: 30,
       gapSize: 30,
+      transparent: true
     });
     const lineGeometry = new THREE.Geometry();
 
@@ -157,20 +159,30 @@ export default class SoundObject {
     return ray.intersectObject(this.containerObject, true).length > 0;
   }
 
-  setOpacity() {
-    this.sphereMaterial.opacity = this.opacityValue();
+  setOpacity(ratio = Config.soundObject.opacityRatio) {
+    const coneOpacityRatio = ratio - 0.1;
+
+    this.sphereMaterial.opacity = this.opacityValue(ratio);
+    this.axisHelper.material.opacity = this.opacityValue(ratio);
+    this.altitudeHelper.material.opacity = this.opacityValue(ratio);
+
+    if (this.trajectory) {
+      this.trajectory.spline.mesh.material.opacity = this.opacityValue(ratio);
+    }
 
     this.cones.forEach((c) => {
-      c.material.opacity = this.coneOpacityValue();
+      c.material.opacity = this.coneOpacityValue(coneOpacityRatio);
     });
   }
 
-  coneOpacityValue() {
-    return this.isSelected ? 0.5 : 0.2;
+  coneOpacityValue(ratio) {
+    const coneOpacity = Config.soundObject.coneOpacity;
+    return this.isSelected ? coneOpacity : coneOpacity * ratio;
   }
 
-  opacityValue() {
-    return this.isSelected ? 0.8 : 0.4;
+  opacityValue(ratio) {
+    const opacity = Config.soundObject.opacity;
+    return this.isSelected ? opacity : opacity * ratio;
   }
 
   select(main) {

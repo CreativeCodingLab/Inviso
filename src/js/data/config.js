@@ -12,6 +12,10 @@ export default {
   dpr: 1,
   easing: TWEEN.Easing.Quadratic.InOut,
   duration: 500,
+  opacityRatio: {
+    editing: 0.25,
+    notEditing: 0.6
+  },
   model: {
     path: './assets/models/head.obj',
     scale: 30
@@ -46,6 +50,10 @@ export default {
     posY: 2500,
     posZ: 0
   },
+  soundZone: {
+    opacityRatio: 0.4,
+    opacity: 0.2
+  },
   soundObject: {
     defaultRadius: 50,
     defaultTrajectoryClock: 1,
@@ -53,7 +61,10 @@ export default {
     defaultMovementDirection: 1,
     defaultPosX: 0,
     defaultPosY: 0,
-    defaultPosZ: 0
+    defaultPosZ: 0,
+    opacityRatio: 0.4,
+    opacity: 0.9,
+    coneOpacity: 0.6
   },
   controls: {
     autoRotate: false,

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+import Config from '../../data/config';
+
 export default class SoundZone {
   constructor(main, points) {
     this.type = 'SoundZone';
@@ -22,12 +24,14 @@ export default class SoundZone {
     this.renderPath();
   }
 
-  setOpacity() {
-    this.shapeMaterial.opacity = this.opacityValue();
+  setOpacity(ratio = Config.soundZone.opacityRatio) {
+    this.shapeMaterial.opacity = this.opacityValue(ratio);
+    this.spline.mesh.material.opacity = this.opacityValue(ratio);
   }
 
-  opacityValue() {
-    return this.isSelected ? 0.3 : 0.1;
+  opacityValue(ratio) {
+    const opacity = Config.soundZone.opacity;
+    return this.isSelected ? opacity : opacity * ratio;
   }
 
   underUser(audio) {

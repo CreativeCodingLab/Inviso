@@ -94,6 +94,7 @@ export default class SoundTrajectory {
       color: 0x999999,
       linewidth: 2,
       opacity: 0.4,
+      transparent: true
     });
 
     this.spline.mesh = new THREE.Line(geometry, material);

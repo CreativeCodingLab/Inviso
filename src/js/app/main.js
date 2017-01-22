@@ -462,7 +462,6 @@ export default class Main {
   }
 
   enterEditObjectView() {
-
     new TWEEN.Tween(this.camera.threeCamera.position)
       .to(this.cameraPosition, 800)
       .onComplete(() => {
@@ -476,14 +475,14 @@ export default class Main {
           * sphere that belongs to the active object and make this and the following 3
           * object visible to bring the activeObject back in the scene.
         **/
-        for(let j = 5; j < this.scene.children.length; j++){
-          this.scene.children[j].visible = false;
-        }
+        //for(let j = 5; j < this.scene.children.length; j++){
+        //  this.scene.children[j].visible = false;
+        //}
 
-        let activeObjIndex = this.scene.children.indexOf(this.activeObject.raycastSphere);
-        for(let j = activeObjIndex; j < activeObjIndex + 4; j++){
-          this.scene.children[j].visible = true;
-        }
+        //let activeObjIndex = this.scene.children.indexOf(this.activeObject.raycastSphere);
+        //for(let j = activeObjIndex; j < activeObjIndex + 4; j++){
+        //  this.scene.children[j].visible = true;
+        //}
       })
       .start();
 
@@ -492,9 +491,11 @@ export default class Main {
       .start();
   }
 
-  exitEditObjectView(){
+  exitEditObjectView() {
     this.isEditingObject = false;
     for(let i = 5; i < this.scene.children.length; i++) this.scene.children[i].visible = true;
+
+    this.updateOpacities();
   }
 
   set audio(audio) {
@@ -533,11 +534,9 @@ export default class Main {
 
   /**
    * Sets the the last clicked (active) object.
-   * Calls a "secActive()" function ob the selected object.
+   * Calls a "setActive()" function ob the selected object.
    */
   setActiveObject(obj) {
-    const everyComponent = [].concat(this.soundObjects, this.soundZones);
-
     if (this.activeObject) {
       this.activeObject.setInactive();
     }
@@ -548,8 +547,15 @@ export default class Main {
       obj.setActive(this);
     }
 
+    this.updateOpacities();
+  }
+
+  updateOpacities() {
+    const everyComponent = [].concat(this.soundObjects, this.soundZones);
+    const opacityRatio = this.isEditingObject ? Config.opacityRatio.editing : Config.opacityRatio.notEditing;
+
     everyComponent.forEach((selectedObject) => {
-      selectedObject.setOpacity();
+      selectedObject.setOpacity(opacityRatio);
     });
   }
 
