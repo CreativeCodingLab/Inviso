@@ -48,7 +48,7 @@ export default class Main {
 
     this.floor;
     this.counter = 1;
-    this.movementSpeed = 5;
+    this.movementSpeed = 7;
     this.increment = 0.01;
     this.direction = 1;
 
