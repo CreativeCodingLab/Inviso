@@ -350,10 +350,6 @@ export default class GUIWindow {
                   cone.sound.panner.coneOuterGain = sound.panner.coneOuterGain;
                   cone.sound.volume.gain.value = sound.volume.gain.value;
 
-                  if (sound.source) {
-                    sound.source.stop();
-                  }
-
                   // replace text with file name
                   cone.filename = file.name;
                   while(span.firstChild) { span.removeChild(span.firstChild); }

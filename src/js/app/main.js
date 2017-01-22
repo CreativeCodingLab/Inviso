@@ -8,9 +8,7 @@ import Camera from './components/camera';
 import Light from './components/light';
 import CameraViewer from './components/cameraviewer';
 import Controls from './components/controls';
-import SoundObject from './components/soundobject';
-import SoundTrajectory from './components/soundtrajectory';
-import SoundZone from './components/soundzone';
+import PathDrawer from './components/pathdrawer';
 
 // Helpers
 import Geometry from './helpers/geometry';
@@ -137,138 +135,10 @@ export default class Main {
     // this.grid.make('plane')(5000, 5000, 10, 10);
     // this.grid.place([0, 0, 0], [Math.PI / 2, 0, 0]);
 
-    this.trajectory = {
-      scene: null,
-      points: [],
-      lines: [],
-      lastPoint: new THREE.Vector3(),
-
-      setScene: function(scene) {
-        this.scene = scene;
-      },
-
-      beginAt: function(point) {
-        this.lastPoint = point;
-        this.points = [point];
-      },
-
-      addPoint: function(point) {
-        if (this.scene === null) {
-          return;
-        }
-
-        const material = new THREE.LineBasicMaterial({
-          linewidth: 2,
-          color: 0x999999
-        });
-
-        const geometry = new THREE.Geometry();
-        geometry.vertices.push(this.lastPoint, point);
-
-        const line = new THREE.Line(geometry,material);
-
-        this.lastPoint = point;
-        this.points.push(point);
-        this.lines.push(line);
-        this.scene.add(line);
-      },
-
-      createObject: function() {
-        const points = simplify(this.points, 10, true);
-        let object;
-
-        if (points.length >= 3) {
-          object = new SoundTrajectory(points);
-        }
-
-        this.clear();
-
-        if (this.scene && object)
-          object.addToScene(this.scene);
-        return object;
-      },
-
-      clear: function() {
-        const scene = this.scene;
-
-        this.lines.forEach(function(line) {
-          scene.remove(line);
-        });
-
-        this.lines = [];
-        this.points = [];
-      }
-    };
-
-    this.zone = {
-      scene: null,              //    the scene
-      points: [],               //    points on path
-      lines: [],                //    lines on the scene
-      lastPoint: new THREE.Vector3(),
-
-      setScene: function(scene) {
-        this.scene = scene;
-      },
-
-      beginAt: function(point) {
-        this.lastPoint = point;
-        this.points = [point];
-      },
-
-      addPoint: function(point) {
-        if (this.scene === null) {
-          return;
-        }
-
-        const material = new THREE.LineBasicMaterial({
-          color: 0xff1169
-        });
-
-        const geometry = new THREE.Geometry();
-        geometry.vertices.push(this.lastPoint, point);
-
-        const line = new THREE.Line(geometry,material);
-
-        this.lastPoint = point;
-        this.points.push(point);
-        this.lines.push(line);
-        this.scene.add(line);
-      },
-
-      createObject: function(main) {
-        // simplify points using algorithm from simplify.js
-        // tolerance = 10 is a somewhat arbitrary number :-\
-        const points = simplify(this.points, 10, true);
-        let object;
-        if (points.length >= 3) {
-          object = new SoundZone(main, points);
-        } else {
-          object = new SoundObject(main);
-        }
-
-        this.clear();
-
-        if (this.scene && object)
-          object.addToScene(this.scene);
-        return object;
-      },
-
-      clear: function() {
-        const scene = this.scene;
-        this.lines.forEach(function(line) {
-          scene.remove(line);
-        });
-        this.lines = [];
-        this.points = [];
-      }
-    };
-
     /**
-     * Setting up the trajectory and zone interfaces. These will return
-     * us the trajectory and zone instances when we ask for them.
+     * Setting up interface to create object/zone/trajectory instances.
      */
-    this.trajectory.setScene(this.scene);
-    this.zone.setScene(this.scene);
+    this.path = new PathDrawer(this.scene);
 
     this.cameraViewer = new CameraViewer(this);
     new Interaction(this, this.renderer.threeRenderer, this.scene, this.camera.threecamera, this.controls.threeControls);
@@ -511,6 +381,7 @@ export default class Main {
    */
   toggleAddTrajectory() {
     if (this.perspectiveView) {
+      this.exitEditObjectView();
       this.controls.threeControls.reset();
       this.cameraViewer.reset();
     }
