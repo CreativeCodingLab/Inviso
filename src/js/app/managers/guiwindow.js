@@ -351,6 +351,7 @@ export default class GUIWindow {
                 if (coneToSplice > -1) {
                   var cone = obj.cones[coneToSplice];
                   var sound = cone.sound;
+                  sound.source.stop();
 
                   // copy properties of previous sound
                   cone.sound = obj.loadSound(path, self.app.audio);

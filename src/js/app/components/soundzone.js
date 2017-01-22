@@ -41,10 +41,21 @@ export default class SoundZone {
     }
   }
 
+  // remove sound file
+  clear() {
+    // stop audio stream if currently playing
+    if (this.isPlaying) { 
+      this.sound.source.stop(); 
+    }
+    this.isPlaying = false;
+    this.loaded = false;
+    this.sound = {};
+  }
+
   loadSound(soundFileName, audio) {
     const context = audio.context;
-    this.sound = {};
 
+    this.clear();
     this.sound.name = soundFileName;
     this.sound.source = context.createBufferSource();
     this.sound.volume = context.createGain();
