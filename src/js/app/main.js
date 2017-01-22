@@ -128,7 +128,7 @@ export default class Main {
 
     const lightBoxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
     const lightBoxMat = new THREE.MeshBasicMaterial( {
-      color: 0x00FF99,
+      color: 0x0055FF,
       transparent: true,
       opacity: 0.1,
       side: THREE.DoubleSide,
