@@ -25,7 +25,7 @@ export default class SoundZone {
   }
 
   setOpacity(ratio = Config.soundZone.opacityRatio) {
-    this.shapeMaterial.opacity = this.opacityValue(ratio);
+    this.shape.material.opacity = this.opacityValue(ratio);
     this.spline.mesh.material.opacity = this.opacityValue(ratio);
   }
 
@@ -129,14 +129,14 @@ export default class SoundZone {
     shapeFill.fromPoints(rotatedPoints);
     const shapeGeometry = new THREE.ShapeGeometry(shapeFill);
     shapeGeometry.rotateX(Math.PI / 2);
-    this.shapeMaterial = new THREE.MeshBasicMaterial({
+    const shapeMaterial = new THREE.MeshBasicMaterial({
       color: 0xff1169,
       transparent: true,
       opacity: 0.2,
       side: THREE.DoubleSide,
     });
 
-    this.shape = new THREE.Mesh(shapeGeometry, this.shapeMaterial);
+    this.shape = new THREE.Mesh(shapeGeometry, shapeMaterial);
   }
 
   get objects() {
