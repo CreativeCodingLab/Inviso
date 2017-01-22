@@ -1,7 +1,3 @@
-import * as THREE from 'three';
-import TWEEN from 'tween.js';
-import Config from '../../data/config';
-
 export default class GUIWindow {
   constructor(main) {
     this.id = null,        // uuid of displayed "shape" or "containerObject"
@@ -10,7 +6,7 @@ export default class GUIWindow {
 
     this.app = main;
     this.container = document.getElementById('guis');
-    this.container.style.width = '250px';
+    this.isDisabled = false;
     this.display();
   }
 
@@ -22,6 +18,13 @@ export default class GUIWindow {
         this.hide();
         this.id = this.obj = null;
     }
+  }
+
+  disable() {
+    this.isDisabled = true;
+  }
+  enable() {
+    this.isDisabled = false;
   }
 
   // clear gui
@@ -71,7 +74,7 @@ export default class GUIWindow {
             break;
     }
     this.container.style.opacity = 1;
-    this.container.style.pointerEvents = 'all';
+    this.container.style.pointerEvents = this.isDisabled ? 'none' : 'auto';
   }
 
   // hide gui
@@ -113,20 +116,19 @@ export default class GUIWindow {
           cls: 'z'
       },elem);
 
-      var self = this;
-
       // "edit object" dialog
       this.addParameter({
         value: 'Edit object',
+        cls: 'edit-toggle',
         events: [{
           type: 'click', 
-          callback: function() { self.editObject(object); }
+          callback: this.toggleEditObject.bind(this)
         }]
       });
 
       // insert cone window
-      object.cones.forEach(function(cone) {
-        self.addCone(cone);
+      object.cones.forEach((cone) => {
+        this.addCone(cone);
       });
 
       // "add cone" dialog
@@ -330,6 +332,7 @@ export default class GUIWindow {
       var self = this;
       input.onchange = function(e) {
         var file = e.target.files[0];
+        input.parentNode.reset();
 
         if (file) {
           var path = 'assets/sounds/'+file.name;
@@ -373,7 +376,7 @@ export default class GUIWindow {
               // automatically enter edit mode after brief delay
               window.setTimeout(function() {
                 self.app.isEditingObject = false;
-                self.editObject(obj);
+                self.toggleEditObject();
               }, 500)
               break;
             case 'SoundZone':
@@ -444,12 +447,19 @@ export default class GUIWindow {
 
     return elem;
   }
-  editObject(object) {
+  toggleEditObject() {
+    var span = this.container.querySelector('.edit-toggle .value');
     if (!this.app.isEditingObject) {
+      this.editor = span;
+      this.container.classList.add('editor');
+      this.replaceTextContent(span, 'Exit editor');
       this.app.isEditingObject = true;
       this.app.enterEditObjectView();
     }
     else {
+      this.editor = null;
+      this.container.classList.remove('editor');
+      this.replaceTextContent(span, 'Edit object')
       this.app.isEditingObject = false;
       this.app.exitEditObjectView();
     }

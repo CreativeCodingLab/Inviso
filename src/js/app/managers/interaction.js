@@ -67,7 +67,7 @@ export default class Interaction {
 
         if (main.activeObject && main.activeObject.type === 'SoundObject') {
           if(main.isEditingObject){
-            main.activeObject.containerObject.remove(main.activeObject.cones[main.interactiveCone]);
+            main.activeObject.containerObject.remove(main.interactiveCone);
           }else{
             main.removeSoundObject(main.activeObject);
 
@@ -177,27 +177,50 @@ export default class Interaction {
     }
 
     if (main.isEditingObject) {
-      const intersects3 = main.ray.intersectObject(main.activeObject.raycastSphere);
-      const intersect3 = intersects3[0];
+      let intersect3;
 
-      if (intersects3.length > 0 && main.placingCone) {
-        main.activeObject.cones[main.interactiveCone].lookAt(intersect3.point);
-        main.setPosition(main.activeObject.cones[main.interactiveCone]);
-      } else if (main.isMouseDown) {
-        if(intersects3.length > 0 && main.replacingCone) {
+      if (main.isMouseDown) {
+        // point cone towards mouse pointer
+        intersect3 = main.ray.intersectObject(main.activeObject.raycastSphere)[0];
 
+        if (main.interactiveCone != null && intersect3) {
           const coneRotation = new THREE.Vector3();
           coneRotation.subVectors(intersect3.point, main.activeObject.containerObject.position);
-          main.activeObject.cones[main.interactiveCone].lookAt(coneRotation);
-          main.activeObject.setAudioPosition(main.activeObject.cones[main.interactiveCone]);
+          main.interactiveCone.lookAt(coneRotation);
+          main.activeObject.setAudioPosition(main.interactiveCone);
+
         }
+        else {
+          // console.log('no cone is a snow cone')
+        }
+      }
+      else {
+        intersect3 = main.ray.intersectObjects(main.activeObject.cones)[0];
+
+        // temp set color on hover
+        main.activeObject.cones.forEach(cone => {
+          if (intersect3 && intersect3.object.uuid === cone.uuid) {
+            cone.isHighlighted = true;
+            cone.material.color.set(main.hoverConeColor);
+          }
+          else if (cone.isHighlighted) {
+            cone.isHighlighted = false;
+            cone.material.color.set(cone.baseColor);
+          }
+        });
       }
     }
   }
 
   onMouseUp(main, event, hasFocus) {
+    // turn gui pointer events back on
+    main.gui.enable();
+
+    // mouse leaves the container
     if (!hasFocus) { Config.isMouseOver = false; }
     if (main.isMouseDown === false) { return; }
+
+    // actual mouseup interaction
     main.setMousePosition(event);
     let obj;
 
@@ -216,6 +239,12 @@ export default class Interaction {
       main.isAddingObject = false;
     }
 
+    if (main.isEditingObject) {
+      if (main.interactiveCone) {
+        main.interactiveCone.material.color.set(main.interactiveCone.baseColor);
+      }
+    }
+
     main.isMouseDown = false;
 
     for (const i in main.soundObjects) {
@@ -224,6 +253,9 @@ export default class Interaction {
   }
 
   onMouseDown(main, event) {
+    // turn gui events off when interacting with scene objects
+    main.gui.disable();
+
     /**
      * !keyPressed is added to avoid interaction with object when the camera
      * is being rotated. It can (should) be changed into a flag more specific
@@ -290,58 +322,23 @@ export default class Interaction {
       * In object edit mode a different interaction scheme is followed.
       */
       if (main.isEditingObject) {
-        const intersects2 = main.ray.intersectObjects(main.activeObject.containerObject.children);
+        if (!main.activeObject || !main.activeObject.cones) { 
+          console.log('wheres my cone :(', main.activeObject); //error check
+        }
 
-        if (intersects2.length > 0) {
-          const intersect2 = intersects2[0];
+        // highlight selected cone, unhighlight all unselected cones
+        const intersect2 = main.ray.intersectObjects(main.activeObject.cones)[0];
 
-          switch (intersect2.object.name) {
-            case 'cone': {
-              main.previousInteractiveCone = main.interactiveCone;
+        main.activeObject.cones.forEach(cone => {
+          cone.material.color.set(cone.baseColor);
+        })
 
-              if (main.interactiveCone == intersect2.object.id - main.activeObject.cones[0].id) {
-                main.placingCone = false;
-                main.interactiveCone = null;
-              } else {
-                main.interactiveCone = intersect2.object.id - main.activeObject.cones[0].id;
-                main.replacingCone = true;
-              }
-
-              break;
-            }
-            case 'visibleSphere': {
-              main.replacingCone = false;
-
-              break;
-            }
-            // case 'addButton': {
-            //   const x = document.getElementById('soundPicker');
-            //
-            //   if (main.activeObject.type === 'SoundObject') {
-            //     main.activeObject.createCone(`assets/${x.files[0].name}`);
-            //   }
-            //
-            //   main.previousInteractiveCone = main.interactiveCone;
-            //   main.placingCone = true;
-            //   main.createCone(intersect2.point);
-            //   main.interactiveCone = main.soundCones.length - 1;
-            //
-            //   break;
-            // }
-          }
-        } else {
-          main.previousInteractiveCone = main.interactiveCone;
-          main.placingCone = false;
-          main.replacingCone = false;
+        if (intersect2) {
+          main.interactiveCone = intersect2.object;
+          main.interactiveCone.material.color.set(main.selectedConeColor);
+        }
+        else {
           main.interactiveCone = null;
-        }
-
-        if (main.previousInteractiveCone !== null) {
-          main.activeObject.cones[main.previousInteractiveCone].material.color = new THREE.Color(main.unselectedConeColor);
-        }
-
-        if (main.interactiveCone !== null) {
-          main.activeObject.cones[main.interactiveCone].material.color = new THREE.Color(main.selectedConeColor);
         }
       }
     }

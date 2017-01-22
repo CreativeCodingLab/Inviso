@@ -24,7 +24,7 @@ export default class CameraViewer {
     // init lighting, scene, and renderer
     var scene = new THREE.Scene();
     scene.add(camera);
-    scene.add(new THREE.AmbientLight('#555'));
+    scene.add(new THREE.AmbientLight('#333'));
     var light = new THREE.DirectionalLight( 0xffffff, 1 );
     light.position.set( 0, 2, 2 );
     light.position.multiplyScalar( 20 );
@@ -68,7 +68,15 @@ export default class CameraViewer {
         main.controls.enableRotate();
         uiControls.enableRotate = true;
     }, false );
+
+    document.addEventListener( 'mousedown', function(e) {
+        if (e.target !== renderer.domElement) {
+            container.style.pointerEvents = 'none';
+        }
+    })
+
     document.addEventListener( 'mouseup', function() {
+        container.style.pointerEvents = 'auto';
         main.controls.disableRotate();
         uiControls.enableRotate = false;
     });

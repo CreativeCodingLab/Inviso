@@ -67,14 +67,10 @@ export default class Main {
     this.perspectiveView = false;
     this.keyPressed = false;
 
-    this.unselectedConeColor = new THREE.Color(0x80FFE7);
-    this.selectedConeColor = new THREE.Color(0xFFCCCC);
+    this.selectedConeColor = new THREE.Color(0x80FFE7);
+    this.hoverConeColor = new THREE.Color(0xFFCCCC);
     this.interactiveCone = null;
-    this.previousInteractiveCone = null;
-    this.selectedConeColor;
-    this.unselectedConeColor;
-    this.placingCone = false;
-    this.replacingCone = false;
+    // this.previousInteractiveCone = null;
 
     this.cameraPosition = new THREE.Vector3();
 
@@ -379,6 +375,7 @@ export default class Main {
   }
 
   exitEditObjectView(){
+    if (this.gui.editor) { this.gui.editor.click(); }
     this.isEditingObject = false;
     for(let i = 5; i < this.scene.children.length; i++) this.scene.children[i].visible = true;
   }

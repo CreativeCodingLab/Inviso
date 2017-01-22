@@ -88,6 +88,7 @@ export default class SoundObject {
     cone.sound.volume.gain.value = Helpers.mapRange(coneHeight, 100, 150, 0.5, 2);
 
     cone.name = 'cone';
+    cone.baseColor = coneColor;
 
     this.cones.push(cone);
     this.containerObject.add(cone);
