@@ -462,7 +462,6 @@ export default class Main {
   }
 
   enterEditObjectView() {
-
     new TWEEN.Tween(this.camera.threeCamera.position)
       .to(this.cameraPosition, 800)
       .onComplete(() => {
@@ -489,6 +488,22 @@ export default class Main {
 
     new TWEEN.Tween(this.controls.threeControls.center)
       .to(this.activeObject.containerObject.position, 800)
+      .start();
+  }
+
+  resetCamera() {
+    const tweenDuration = 800;
+    const camNewPosition= { x : 0, y : 2500, z : 0};
+    const targetNewPos = {x : 0, y : 0, z : 0};
+
+    new TWEEN.Tween(this.controls.threeControls.target)
+      .to(targetNewPos, tweenDuration)
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .start();
+
+    new TWEEN.Tween(this.camera.threeCamera.position)
+      .to(camNewPosition, tweenDuration)
+      .easing(TWEEN.Easing.Quadratic.InOut)
       .start();
   }
 
