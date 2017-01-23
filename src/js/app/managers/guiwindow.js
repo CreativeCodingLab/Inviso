@@ -184,16 +184,20 @@ export default class GUIWindow {
         this.addTrajectory(object);
       }
       else {
-        // "add trajectory" dialog
-        var addTrajectoryElem = this.addParameter({
-          value: 'Add trajectory',
-          events: [{
-            type: 'click', 
-            callback: this.app.toggleAddTrajectory.bind(this.app)
-          }]
-        });
-        addTrajectoryElem.id = 'add-trajectory'
+        this.addTrajectoryDialog();
       }
+  }
+
+  // "add trajectory" dialog
+  addTrajectoryDialog() {
+    var addTrajectoryElem = this.addParameter({
+      value: 'Add trajectory',
+      events: [{
+        type: 'click', 
+        callback: this.app.toggleAddTrajectory.bind(this.app)
+      }]
+    });
+    addTrajectoryElem.id = 'add-trajectory'    
   }
 
   // set up initial parameters for a sound object cone
@@ -233,7 +237,13 @@ export default class GUIWindow {
       bind: function() {}
     }, elem);
     this.addParameter({
-      value: 'Delete'
+      value: 'Delete',
+      events:[{
+        type:'click',
+        callback: function() {
+          this.app.removeCone(this.obj, cone)
+        }.bind(this)
+      }]
     }, elem);
     // todo: click on a cone to make it vis? accordion?
 
@@ -264,7 +274,16 @@ export default class GUIWindow {
     }, elem);
 
     this.addParameter({
-      value: 'Delete'
+      value: 'Delete',
+      events:[{
+        type:'click',
+        callback: function() {
+          this.app.removeSoundTrajectory(object.trajectory);
+          object.trajectory = null;
+          elem.parentNode.removeChild(elem);
+          this.addTrajectoryDialog();
+        }.bind(this)
+      }]
     }, elem);
 
     return elem;
