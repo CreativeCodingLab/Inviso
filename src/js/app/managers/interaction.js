@@ -186,11 +186,7 @@ export default class Interaction {
         intersect3 = main.ray.intersectObject(main.activeObject.raycastSphere)[0];
 
         if (main.interactiveCone != null && intersect3) {
-          const coneRotation = new THREE.Vector3();
-          coneRotation.subVectors(intersect3.point, main.activeObject.containerObject.position);
-          main.interactiveCone.lookAt(coneRotation);
-          main.activeObject.setAudioPosition(main.interactiveCone);
-
+          main.activeObject.pointCone(main.interactiveCone, intersect3.point);
         }
         else {
           // console.log('no cone is a snow cone')

@@ -206,6 +206,58 @@ export default class GUIWindow {
     elem.id = 'cone-'+cone.id;
     elem.className = 'cone';
 
+    function setConeRotation(component, lowerBound, upperBound, object, dx) {
+      // clamp lat/long values
+      var lat = cone.lat || 0.0001;
+      var long = cone.long || 0.0001;
+
+      if (component === "lat") {
+        if (long > 0) {
+          lat -= dx * Math.PI / 180;
+        }
+        else {
+          lat += dx * Math.PI / 180;
+        }
+        if (lat > Math.PI) {
+          lat = Math.PI - lat;
+          long = -long;
+        }
+        else if (lat < -Math.PI) {
+          lat = Math.PI - lat;
+          long = -long;
+        }
+      }
+      else {
+        long += dx * Math.PI / 180;
+        if (long > Math.PI *2) {
+          long -= Math.PI * 2;
+        }
+        else if (long < -Math.PI * 2) {
+          long += Math.PI * 2;
+        }
+      }
+
+      // adapted from https://gist.github.com/nicoptere/2f2571db4b454bb18cd9
+      const v = (function lonLatToVector3( lng, lat, out )
+      {
+          //flips the Y axis
+          lat = Math.PI / 2 - lat;
+      
+          //distribute to sphere
+          out.set(
+                      Math.sin( lat ) * Math.sin( lng ),
+                      Math.cos( lat ),
+                      Math.sin( lat ) * Math.cos( lng )
+          );
+      
+          return out;
+      
+      })( long, lat, object.containerObject.position.clone() );
+      if (v.x === 0) { v.x = 0.0001; }
+      const point = object.containerObject.position.clone().addScaledVector(v, 1);
+      object.pointCone(cone, point);
+    }
+
     this.addParameter({
       property: 'File',
       value: cone.filename,
@@ -222,19 +274,19 @@ export default class GUIWindow {
     }, elem);
     this.addParameter({
       property: 'Longitude',
-      value: Number((cone.rotation._y * 180/Math.PI).toFixed(2)),
+      value: Number((cone.long * 180/Math.PI).toFixed(2)),
       type: 'number',
       cls: 'long',
       suffix: '˚',
-      bind: function() {}
+      bind: setConeRotation.bind(this, "long", -Math.PI, Math.PI, this.obj)
     }, elem);
     this.addParameter({
       property: 'Latitude',
-      value: Number((cone.rotation._x * 180/Math.PI).toFixed(2)),
+      value: Number((cone.lat * 180/Math.PI).toFixed(2)),
       type: 'number',
       cls: 'lat',
       suffix: '˚',
-      bind: function() {}
+      bind: setConeRotation.bind(this, "lat", -Math.PI/2,Math.PI/2, this.obj)
     }, elem);
     this.addParameter({
       value: 'Delete',
@@ -373,11 +425,8 @@ export default class GUIWindow {
         const longitudes = this.container.querySelectorAll('.long .value');
 
         object.cones.forEach((cone, i) => {
-          const lat  = cone.rotation._x * 180/Math.PI;
-          const long = cone.rotation._y * 180/Math.PI;
-
-          this.replaceTextContent(longitudes[i], long);
-          this.replaceTextContent(latitudes[i], -lat);
+          this.replaceTextContent(longitudes[i], cone.long * 180 / Math.PI);
+          this.replaceTextContent(latitudes[i], cone.lat * 180 / Math.PI);
         });
       }
   }
@@ -426,7 +475,7 @@ export default class GUIWindow {
               var text = span.innerText || span.textContent;
               let cone = null;
               if (obj.cones && obj.cones.length > 0 && text) {
-                cone = obj.cones.find(c => c.filename === text);
+                cone = obj.cones.find(c => c.filename == text);
               }
 
               // create new cone

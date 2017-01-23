@@ -95,6 +95,8 @@ export default class SoundObject {
       return c;
     }
 
+    cone.long = cone.lat = 0;
+
     this.cones.push(cone);
     this.containerObject.add(cone);
     this.setAudioPosition(cone);
@@ -137,8 +139,8 @@ export default class SoundObject {
       .then(buffer => {
         return context.decodeAudioData(buffer)
           .then((decodedData) => {
-            if (cone && cone.source) {
-              cone.source.stop();
+            if (cone && cone.sound.source) {
+              cone.sound.source.stop();
             }
 
             const sound = {};
@@ -225,10 +227,46 @@ export default class SoundObject {
     }
   }
 
+  pointCone(cone, point) {
+    const coneRotation = new THREE.Vector3();
+    coneRotation.subVectors(point, this.containerObject.position);
+    cone.lookAt(coneRotation);
+    this.setAudioPosition(cone);
+
+    const longlat = (function( vector3 ) {
+        // taken from https://gist.github.com/nicoptere/2f2571db4b454bb18cd9
+        vector3.normalize();
+
+        //longitude = angle of the vector around the Y axis
+        //-( ) : negate to flip the longitude (3d space specific )
+        //- PI / 2 to face the Z axis
+        var lng = -( Math.atan2( -vector3.z, -vector3.x ) ) - Math.PI / 2;
+
+        //to bind between -PI / PI
+        if( lng < - Math.PI )lng += Math.PI*2;
+
+        //latitude : angle between the vector & the vector projected on the XZ plane on a unit sphere
+
+        //project on the XZ plane
+        var p = new THREE.Vector3( vector3.x, 0, vector3.z );
+        //project on the unit sphere
+        p.normalize();
+
+        //compute the angle ( both vectors are normalized, no division by the sum of lengths )
+        var lat = Math.acos( p.dot( vector3 ) );
+
+        //invert if Y is negative to ensure the latitude is between -PI/2 & PI / 2
+        if( vector3.y < 0 ) lat *= -1;
+
+        return [ lng,lat ];
+        
+      })( coneRotation );
+    cone.long = longlat[0];
+    cone.lat = longlat[1];
+  }
+
   removeCone(cone) {
-    if (cone.sound && cone.sound.source) {
-      cone.sound.source.stop();
-    }
+    cone.sound.source.stop();
     const i = this.cones.indexOf(cone);
     this.cones.splice(i, 1);
     this.containerObject.remove(cone);
