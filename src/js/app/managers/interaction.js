@@ -67,7 +67,10 @@ export default class Interaction {
 
         if (main.activeObject && main.activeObject.type === 'SoundObject') {
           if(main.isEditingObject){
-            main.activeObject.containerObject.remove(main.interactiveCone);
+            if (main.interactiveCone) {
+              main.interactiveCone.sound.source.stop();
+              main.activeObject.containerObject.remove(main.interactiveCone);            
+            }
           }else{
             main.removeSoundObject(main.activeObject);
 
@@ -201,7 +204,7 @@ export default class Interaction {
         main.activeObject.cones.forEach(cone => {
           if (intersect3 && intersect3.object.uuid === cone.uuid) {
             cone.isHighlighted = true;
-            cone.material.color.set(main.hoverConeColor);
+            cone.material.color.set(cone.hoverColor());
           }
           else if (cone.isHighlighted) {
             cone.isHighlighted = false;
@@ -326,16 +329,9 @@ export default class Interaction {
           console.log('wheres my cone :(', main.activeObject); //error check
         }
 
-        // highlight selected cone, unhighlight all unselected cones
         const intersect2 = main.ray.intersectObjects(main.activeObject.cones)[0];
-
-        main.activeObject.cones.forEach(cone => {
-          cone.material.color.set(cone.baseColor);
-        })
-
         if (intersect2) {
           main.interactiveCone = intersect2.object;
-          main.interactiveCone.material.color.set(main.selectedConeColor);
         }
         else {
           main.interactiveCone = null;

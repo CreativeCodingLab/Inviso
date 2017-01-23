@@ -1,14 +1,17 @@
 export default class GUIWindow {
   constructor(main) {
-    this.id = null,        // uuid of displayed "shape" or "containerObject"
-    this.obj = null,       // the object whose information is being displayed
-    this.parameters = {},  // list of parameter key-DOM element pairs
+    this.id = null;        // uuid of displayed "shape" or "containerObject"
+    this.obj = null;       // the object whose information is being displayed
+    
+    this.editedParameter = null; // parameter value being manipulated in window
 
     this.app = main;
     this.container = document.getElementById('guis');
     this.isDisabled = false;
     this.display();
   }
+
+  // ------- showing/hiding the overall gui ---------- //
 
   display(obj) {
     if (obj) {
@@ -20,6 +23,7 @@ export default class GUIWindow {
     }
   }
 
+  // disable/enable pointer events
   disable() {
     this.isDisabled = true;
   }
@@ -83,6 +87,9 @@ export default class GUIWindow {
       this.container.style.pointerEvents = 'none';
   }
 
+
+  //----------- initiating objects --------- //
+
   // set up initial parameters for a sound object
   initObjectGUI(object) {
       var mesh = object.containerObject;
@@ -113,7 +120,22 @@ export default class GUIWindow {
           property: 'z',
           value: Number(mesh.position.z.toFixed(2)),
           type: 'number',
-          cls: 'z'
+          cls: 'z',
+          events: [
+          {
+            type:'mousedown',
+            callback: this.startDragging.bind(this)
+          },
+          {
+            type:'mousemove',
+            target: document,
+            callback: this.drag.bind(this)
+          },
+          {
+            type:'mouseup',
+            target: document,
+            callback: this.stopDragging.bind(this)
+          }]
       },elem);
 
       // "edit object" dialog
@@ -156,6 +178,100 @@ export default class GUIWindow {
         addTrajectoryElem.id = 'add-trajectory'
       }
   }
+
+  // set up initial parameters for a sound object cone
+  addCone(cone) {
+    var elem = this.addElem('Cone '+cone.id, document.getElementById('add-cone'));
+    elem.id = 'cone-'+cone.id;
+
+    this.addParameter({
+      property: 'File',
+      value: cone.filename,
+      events: [{
+        type: 'click', 
+        callback: this.addSound.bind(this)
+      }]
+    }, elem);
+    this.addParameter({
+      property: 'Volume',
+      value: Number((cone.sound.volume.gain.value).toFixed(3)),
+      type: 'number'
+    }, elem);
+    this.addParameter({
+      property: 'Longitude',
+      value: Number((cone.rotation._y * 180/Math.PI).toFixed(2)),
+      type: 'number',
+      cls: 'long',
+      suffix: '˚'
+    }, elem);
+    this.addParameter({
+      property: 'Latitude',
+      value: Number((cone.rotation._x * 180/Math.PI).toFixed(2)),
+      type: 'number',
+      cls: 'lat',
+      suffix: '˚'
+    }, elem);
+    this.addParameter({
+      value: 'Delete'
+    }, elem);
+    // todo: click on a cone to make it vis? accordion?
+
+  }
+
+  // set up initial parameters for a sound object trajectory path
+  addTrajectory(object) {
+    var elem = this.addElem('Trajectory');
+    elem.id = 'trajectory';
+
+    this.addParameter({
+      property: 'Speed',
+      value:object.movementSpeed,
+      suffix:' m/s',
+      type:'number'
+    }, elem);
+
+    this.addParameter({
+      value: 'Delete'
+    }, elem);
+
+    return elem;
+  }
+
+  // set up initial parameters for a soundzone
+  initSoundzoneGUI(zone) {
+      var elem = this.addElem('Zone ' + (this.app.soundZones.indexOf(zone)+1));
+      this.addParameter({
+          property: 'File',
+          value: zone.sound ? zone.sound.name.split('/').pop() : 'None',
+          type: 'file-input',
+          events: [{ type: 'click', callback: this.addSound.bind(this) }]
+      },elem);
+
+      this.addParameter({
+          property: 'Volume',
+          value: '75',
+          suffix: '%',
+          type: 'number'
+      },elem);
+
+      var pos = this.getSoundzonePosition(zone.splinePoints);
+      this.addParameter({
+          property: 'x',
+          value: Number(pos.x.toFixed(2)),
+          type: 'number',
+          cls: 'x'
+      },elem);
+
+      this.addParameter({
+          property: 'z',
+          value: Number(pos.z.toFixed(2)),
+          type: 'number',
+          cls: 'z'
+      },elem);
+  }
+
+
+  //----- updating objects -------//
 
   // update parameters of sound object
   updateObjectGUI(object) {
@@ -200,40 +316,7 @@ export default class GUIWindow {
       }
   }
 
-  // set up initial parameters for a soundzone
-  initSoundzoneGUI(zone) {
-      var elem = this.addElem('Zone ' + (this.app.soundZones.indexOf(zone)+1));
-      this.addParameter({
-          property: 'File',
-          value: zone.sound ? zone.sound.name.split('/').pop() : 'None',
-          type: 'file-input',
-          events: [{ type: 'click', callback: this.addSound.bind(this) }]
-      },elem);
-
-      this.addParameter({
-          property: 'Volume',
-          value: '75',
-          suffix: '%',
-          type: 'number'
-      },elem);
-
-      var pos = this.getSoundzonePosition(zone.splinePoints);
-      this.addParameter({
-          property: 'x',
-          value: Number(pos.x.toFixed(2)),
-          type: 'number',
-          cls: 'x'
-      },elem);
-
-      this.addParameter({
-          property: 'z',
-          value: Number(pos.z.toFixed(2)),
-          type: 'number',
-          cls: 'z'
-      },elem);
-  }
-
-  // update parameters of sound object
+  // update parameters of sound zone
   updateSoundzoneGUI(zone) {
       // update position parameters
       var pos = this.getSoundzonePosition(zone.splinePoints);
@@ -253,6 +336,124 @@ export default class GUIWindow {
       return {x: meanX, z: meanZ};
   }
 
+  // ------------ event callbacks ------------ //
+  // attach a sound to an object
+  addSound(e) {
+      var obj = this.obj;
+      var span = e.target;
+      var input = document.getElementById('soundPicker');
+      // listen to click
+      var self = this;
+      input.onchange = function(e) {
+        var file = e.target.files[0];
+        input.parentNode.reset();
+
+        if (file) {
+          var path = 'assets/sounds/'+file.name;
+
+          // load sound onto obect
+          switch (obj.type) {
+            case 'SoundTrajectory': 
+              obj = obj.parentSoundObject;
+            case 'SoundObject':
+              // replace sound attached to existing cone
+              var text = span.innerText || span.textContent;
+              let cone = null;
+              if (obj.cones && obj.cones.length > 0 && text) {
+                cone = obj.cones.find(c => c.filename === text);
+              }
+
+              // create new cone
+              obj.loadSound(path, self.app.audio, cone)
+                .then((sound) => {
+                  if (cone) {
+                    // copy properties of previous cone
+                    sound.panner.refDistance = cone.sound.panner.refDistance;
+                    sound.panner.distanceModel = cone.sound.panner.distanceModel;
+                    sound.panner.coneInnerAngle = cone.sound.panner.coneInnerAngle;
+                    sound.panner.coneOuterAngle = cone.sound.panner.coneOuterAngle;
+                    sound.panner.coneOuterGain = cone.sound.panner.coneOuterGain;
+                    sound.volume.gain.value = cone.sound.volume.gain.value;
+                    cone.sound = sound;
+
+                    // replace text with file name
+                    cone.filename = file.name;
+                    self.replaceTextContent(span, file.name);
+                  }
+                  else {
+                    cone = obj.createCone(sound);
+                    cone.filename = file.name;
+                    self.addCone(cone);
+
+                    // automatically enter edit mode after brief delay
+                    window.setTimeout(function() {
+                      self.app.isEditingObject = false;
+                      self.toggleEditObject();
+                    }, 500);
+                  }
+                })
+                .catch((err) => {
+                  // no file was loaded: do nothing
+                });
+              break;
+            case 'SoundZone':
+
+              // add sound to zone
+              obj.loadSound(path, self.app.audio)
+                .then(() => {
+                  // replace text with file name
+                  self.replaceTextContent(span, file.name);
+                })
+                .catch((err) => {
+                  // no file was loaded: do nothing
+                });
+              break;
+            default:
+              break;
+          }
+        }
+      };
+      input.click();
+  }
+
+  // move into/out of object edit mode
+  toggleEditObject() {
+    var span = this.container.querySelector('.edit-toggle .value');
+    if (!this.app.isEditingObject) {
+      this.editor = span;
+      this.container.classList.add('editor');
+      this.replaceTextContent(span, 'Exit editor');
+      this.app.isEditingObject = true;
+      this.app.enterEditObjectView();
+    }
+    else {
+      this.editor = null;
+      this.container.classList.remove('editor');
+      this.replaceTextContent(span, 'Edit object')
+      this.app.isEditingObject = false;
+      this.app.exitEditObjectView();
+    }
+  }
+
+  startDragging(e) {
+    console.log('hello', e.target)
+    this.editedParameter = e.target;
+  }
+  drag(e) {
+
+  }
+  stopDragging(e) {
+    if (!this.editedParameter) {
+      return;
+    }
+
+    this.editedParameter = null;
+    console.log('bye')
+
+  }
+
+
+  //---------- dom building blocks -----------//
   // add a new div
   addElem(name, siblingAfter) {
       var div = document.createElement('div');
@@ -291,7 +492,12 @@ export default class GUIWindow {
 
       if (p.events) {
           p.events.forEach(function(evt) {
+            if (!evt.target) {
               val['on'+evt.type] = evt.callback;
+            }
+            else {
+              evt.target.addEventListener(evt.type, evt.callback, false)
+            }
           })
       }
 
@@ -323,146 +529,4 @@ export default class GUIWindow {
     parent.appendChild(document.createTextNode(text));
   }
 
-  // event handler additions
-  addSound(e) {
-      var obj = this.obj;
-      var span = e.target;
-      var input = document.getElementById('soundPicker');
-      // listen to click
-      var self = this;
-      input.onchange = function(e) {
-        var file = e.target.files[0];
-        input.parentNode.reset();
-
-        if (file) {
-          var path = 'assets/sounds/'+file.name;
-
-          // load sound onto obect
-          switch (obj.type) {
-            case 'SoundTrajectory': 
-              obj = obj.parentSoundObject;
-            case 'SoundObject':
-              // replace sound attached to existing cone
-              var text = span.innerText || span.textContent;
-              if (obj.cones && obj.cones.length > 0 && text) {
-                var coneToSplice = obj.cones.findIndex(function(cone) {
-                  return cone.filename === text;
-                });
-                if (coneToSplice > -1) {
-                  var cone = obj.cones[coneToSplice];
-                  var sound = cone.sound;
-                  sound.source.stop();
-
-                  // copy properties of previous sound
-                  cone.sound = obj.loadSound(path, self.app.audio);
-                  cone.sound.panner.refDistance = sound.panner.refDistance;
-                  cone.sound.panner.distanceModel = sound.panner.distanceModel;
-                  cone.sound.panner.coneInnerAngle = sound.panner.coneInnerAngle;
-                  cone.sound.panner.coneOuterAngle = sound.panner.coneOuterAngle;
-                  cone.sound.panner.coneOuterGain = sound.panner.coneOuterGain;
-                  cone.sound.volume.gain.value = sound.volume.gain.value;
-
-                  // replace text with file name
-                  cone.filename = file.name;
-                  self.replaceTextContent(span, file.name);
-                  return; // quit early
-                }
-              }
-
-              // create new cone
-              var cone = obj.createCone(path, self.app.audio);
-              cone.filename = file.name;
-              self.addCone(cone);
-
-              // automatically enter edit mode after brief delay
-              window.setTimeout(function() {
-                self.app.isEditingObject = false;
-                self.toggleEditObject();
-              }, 500)
-              break;
-            case 'SoundZone':
-              // replace text with file name
-              self.replaceTextContent(span, file.name);
-
-              // add sound to zone
-              obj.loadSound(path, self.app.audio);
-              break;
-            default:
-              break;
-          }
-        }
-      };
-      input.click();
-  }
-  addCone(cone) {
-    var elem = this.addElem('Cone '+cone.id, document.getElementById('add-cone'));
-    elem.id = 'cone-'+cone.id;
-
-    this.addParameter({
-      property: 'File',
-      value: cone.filename,
-      events: [{
-        type: 'click', 
-        callback: this.addSound.bind(this)
-      }]
-    }, elem);
-    this.addParameter({
-      property: 'Volume',
-      value: Number((cone.sound.volume.gain.value).toFixed(3)),
-      type: 'number'
-    }, elem);
-    this.addParameter({
-      property: 'Longitude',
-      value: Number((cone.rotation._y * 180/Math.PI).toFixed(2)),
-      type: 'number',
-      cls: 'long',
-      suffix: '˚'
-    }, elem);
-    this.addParameter({
-      property: 'Latitude',
-      value: Number((cone.rotation._x * 180/Math.PI).toFixed(2)),
-      type: 'number',
-      cls: 'lat',
-      suffix: '˚'
-    }, elem);
-    this.addParameter({
-      value: 'Delete'
-    }, elem);
-    // todo: click on a cone to make it vis? accordion?
-
-  }
-  addTrajectory(object) {
-    var elem = this.addElem('Trajectory');
-    elem.id = 'trajectory';
-
-    this.addParameter({
-      property: 'Speed',
-      value:object.movementSpeed,
-      suffix:' m/s',
-      type:'number'
-    }, elem);
-
-    this.addParameter({
-      value: 'Delete'
-    }, elem);
-
-    return elem;
-  }
-  toggleEditObject() {
-    var span = this.container.querySelector('.edit-toggle .value');
-    if (!this.app.isEditingObject) {
-      this.editor = span;
-      this.container.classList.add('editor');
-      this.replaceTextContent(span, 'Exit editor');
-      this.app.isEditingObject = true;
-      this.app.enterEditObjectView();
-    }
-    else {
-      this.editor = null;
-      this.container.classList.remove('editor');
-      this.replaceTextContent(span, 'Edit object')
-      this.app.isEditingObject = false;
-      this.app.exitEditObjectView();
-    }
-  }
 }

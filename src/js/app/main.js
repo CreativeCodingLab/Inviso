@@ -67,10 +67,7 @@ export default class Main {
     this.perspectiveView = false;
     this.keyPressed = false;
 
-    this.selectedConeColor = new THREE.Color(0x80FFE7);
-    this.hoverConeColor = new THREE.Color(0xFFCCCC);
     this.interactiveCone = null;
-    // this.previousInteractiveCone = null;
 
     this.cameraDestination = new THREE.Vector3();
 

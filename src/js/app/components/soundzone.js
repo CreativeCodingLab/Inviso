@@ -55,19 +55,26 @@ export default class SoundZone {
   loadSound(soundFileName, audio) {
     const context = audio.context;
 
-    this.clear();
-    this.sound.name = soundFileName;
-    this.sound.source = context.createBufferSource();
-    this.sound.volume = context.createGain();
-    this.sound.volume.connect(audio.destination);
-    this.sound.volume.gain.value = 0.0;
-
-    fetch(soundFileName)
+    let promise = fetch(soundFileName)
       .then(response => response.arrayBuffer())
       .then(buffer => context.decodeAudioData(buffer, (decodedData) => {
+        this.clear();
+        this.sound.name = soundFileName;
+        this.sound.source = context.createBufferSource();
+        this.sound.volume = context.createGain();
+        this.sound.volume.connect(audio.destination);
+        this.sound.volume.gain.value = 0.0;
         this.sound.buffer = decodedData;
         this.loaded = true;
       }));
+
+    promise
+      .catch(err => {
+        alert('could not load file');
+        console.log(err);
+      });
+
+    return promise;
   }
 
   renderPath() {

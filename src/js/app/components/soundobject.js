@@ -62,7 +62,7 @@ export default class SoundObject {
     main.scene.add(this.containerObject);
   }
 
-  createCone(fileName, audio) {
+  createCone(sound) {
     const coneWidth = (Math.random() * 50) + 50;
     const coneHeight = (Math.random() * 50) + 100;
 
@@ -79,7 +79,7 @@ export default class SoundObject {
 
     const cone = new THREE.Mesh(coneGeo, coneMaterial);
 
-    cone.sound = this.loadSound(fileName, audio);
+    cone.sound = sound;
     cone.sound.panner.refDistance = 100;
     cone.sound.panner.distanceModel = 'inverse';
     cone.sound.panner.coneInnerAngle = Math.atan(coneWidth / coneHeight) * (180 / Math.PI);
@@ -89,6 +89,11 @@ export default class SoundObject {
 
     cone.name = 'cone';
     cone.baseColor = coneColor;
+    cone.hoverColor = function() { 
+      let c = this.baseColor.clone();
+      c.offsetHSL(0,-0.05,0.1);
+      return c;
+    }
 
     this.cones.push(cone);
     this.containerObject.add(cone);
@@ -124,34 +129,40 @@ export default class SoundObject {
     m.elements[14] = mz;
   }
 
-  loadSound(soundFileName, audio) {
+  loadSound(soundFileName, audio, cone) {
     const context = audio.context;
 
-    const sound = {};
-    sound.source = context.createBufferSource();
-    sound.source.loop = true;
-    sound.panner = context.createPanner();
-    sound.panner.panningModel = 'HRTF';
-    sound.volume = context.createGain();
-    sound.source.connect(sound.volume);
-    sound.volume.connect(sound.panner);
-    sound.panner.connect(audio.destination);
+    let promise = fetch(soundFileName)
+      .then(response => response.arrayBuffer())
+      .then(buffer => {
+        return context.decodeAudioData(buffer)
+          .then((decodedData) => {
+            if (cone && cone.source) {
+              cone.source.stop();
+            }
 
-    const request = new XMLHttpRequest();
-    request.open('GET', soundFileName, true);
-    request.responseType = 'arraybuffer';
-    request.onload = () => {
-      context.decodeAudioData(request.response, (buffer) => {
-        sound.buffer = buffer;
-        sound.source.buffer = sound.buffer;
-        sound.source.start(context.currentTime + 0.020);
-      }, () => {
-        console.log("Decoding the audio buffer failed");
+            const sound = {};
+            sound.source = context.createBufferSource();
+            sound.source.loop = true;
+            sound.panner = context.createPanner();
+            sound.panner.panningModel = 'HRTF';
+            sound.volume = context.createGain();
+            sound.source.connect(sound.volume);
+            sound.volume.connect(sound.panner);
+            sound.panner.connect(audio.destination);
+            sound.source.buffer = decodedData;
+            sound.source.start(context.currentTime + 0.020);
+            return sound;
+          });
       });
-    };
-    request.send();
 
-    return sound;
+    promise
+      .catch(err => {
+        alert('could not load file');
+        console.log(err);
+      });
+
+    return promise;
   }
 
   isUnderMouse(ray) {
