@@ -3,12 +3,17 @@ export default class GUIWindow {
     this.id = null;        // uuid of displayed "shape" or "containerObject"
     this.obj = null;       // the object whose information is being displayed
     
-    this.editedParameter = null; // parameter value being manipulated in window
+    this.listeners = [];
 
     this.app = main;
     this.container = document.getElementById('guis');
     this.isDisabled = false;
     this.display();
+
+    // add listeners for dragging parameters
+    document.addEventListener('mousemove', this.drag.bind(this));
+    document.addEventListener('mouseup', this.stopDragging.bind(this));
+    this.dragEvent = {};
   }
 
   // ------- showing/hiding the overall gui ---------- //
@@ -31,11 +36,12 @@ export default class GUIWindow {
     this.isDisabled = false;
   }
 
-  // clear gui
+  // clear gui and listeners
   clear() {
     while (this.container.firstChild) {
       this.container.removeChild(this.container.firstChild);
     }
+    this.listeners = [];
   }
 
   // show gui
@@ -95,25 +101,50 @@ export default class GUIWindow {
       var mesh = object.containerObject;
       var elem = this.addElem('Object ' + (this.app.soundObjects.indexOf(object)+1));
 
+      function setObjectPosition(component,dx) {
+        let destination = mesh.position.clone();
+        destination[component] += dx;
+
+        // move all child objects of the object
+        object.containerObject.position.copy(destination);
+        object.axisHelper.position.copy(destination);
+        object.altitudeHelper.position.copy(destination);
+        object.altitudeHelper.position.y = 0;
+        object.raycastSphere.position.copy(destination);
+
+        if (object.trajectory) {
+          // move trajectory
+          object.trajectory.objects.forEach((obj) => {
+            obj.position[component] += dx;
+          })
+          object.trajectory.splinePoints.forEach((pt) => {
+            pt[component] += dx;
+          });
+        }
+      }
+
       this.addParameter({
           property: 'Volume',
           value: '75',
           suffix: '%',
-          type: 'number'
+          type: 'number',
+          bind: function() {}
       },elem);
 
       this.addParameter({
           property: 'x',
           value: Number(mesh.position.x.toFixed(2)),
           type: 'number',
-          cls: 'x'
+          cls: 'x',
+          bind: setObjectPosition.bind(this, "x")
       },elem);
 
       this.addParameter({
           property: 'y',
           value: Number(mesh.position.y.toFixed(2)),
           type: 'number',
-          cls: 'y'
+          cls: 'y',
+          bind: setObjectPosition.bind(this, "y")
       },elem);
 
       this.addParameter({
@@ -121,21 +152,7 @@ export default class GUIWindow {
           value: Number(mesh.position.z.toFixed(2)),
           type: 'number',
           cls: 'z',
-          events: [
-          {
-            type:'mousedown',
-            callback: this.startDragging.bind(this)
-          },
-          {
-            type:'mousemove',
-            target: document,
-            callback: this.drag.bind(this)
-          },
-          {
-            type:'mouseup',
-            target: document,
-            callback: this.stopDragging.bind(this)
-          }]
+          bind: setObjectPosition.bind(this, "z")
       },elem);
 
       // "edit object" dialog
@@ -183,6 +200,7 @@ export default class GUIWindow {
   addCone(cone) {
     var elem = this.addElem('Cone '+cone.id, document.getElementById('add-cone'));
     elem.id = 'cone-'+cone.id;
+    elem.className = 'cone';
 
     this.addParameter({
       property: 'File',
@@ -195,27 +213,41 @@ export default class GUIWindow {
     this.addParameter({
       property: 'Volume',
       value: Number((cone.sound.volume.gain.value).toFixed(3)),
-      type: 'number'
+      type: 'number',
+      bind: function() {}
     }, elem);
     this.addParameter({
       property: 'Longitude',
       value: Number((cone.rotation._y * 180/Math.PI).toFixed(2)),
       type: 'number',
       cls: 'long',
-      suffix: '˚'
+      suffix: '˚',
+      bind: function() {}
     }, elem);
     this.addParameter({
       property: 'Latitude',
       value: Number((cone.rotation._x * 180/Math.PI).toFixed(2)),
       type: 'number',
       cls: 'lat',
-      suffix: '˚'
+      suffix: '˚',
+      bind: function() {}
     }, elem);
     this.addParameter({
       value: 'Delete'
     }, elem);
     // todo: click on a cone to make it vis? accordion?
 
+  }
+
+  // remove cone parameter window
+  removeCone(cone) {
+    const cones = this.container.getElementsByClassName('cone');
+    for (let i = 0; i < cones.length; ++i) {
+      if (cones[i].id.split('-').pop() == cone.id) {
+        cones[i].parentNode.removeChild(cones[i]);
+        return;
+      }
+    }
   }
 
   // set up initial parameters for a sound object trajectory path
@@ -227,7 +259,8 @@ export default class GUIWindow {
       property: 'Speed',
       value:object.movementSpeed,
       suffix:' m/s',
-      type:'number'
+      type:'number',
+      bind: function() {}
     }, elem);
 
     this.addParameter({
@@ -240,6 +273,17 @@ export default class GUIWindow {
   // set up initial parameters for a soundzone
   initSoundzoneGUI(zone) {
       var elem = this.addElem('Zone ' + (this.app.soundZones.indexOf(zone)+1));
+
+      function setZonePosition(component, dx) {
+        zone.objects.forEach((obj) => {
+          obj.position[component] += dx;
+        });
+
+        zone.splinePoints.forEach((pt) => {
+          pt[component] += dx;
+        });
+      }
+
       this.addParameter({
           property: 'File',
           value: zone.sound ? zone.sound.name.split('/').pop() : 'None',
@@ -251,7 +295,8 @@ export default class GUIWindow {
           property: 'Volume',
           value: '75',
           suffix: '%',
-          type: 'number'
+          type: 'number',
+          bind: function() {}
       },elem);
 
       var pos = this.getSoundzonePosition(zone.splinePoints);
@@ -259,14 +304,16 @@ export default class GUIWindow {
           property: 'x',
           value: Number(pos.x.toFixed(2)),
           type: 'number',
-          cls: 'x'
+          cls: 'x',
+          bind: setZonePosition.bind(this, "x")
       },elem);
 
       this.addParameter({
           property: 'z',
           value: Number(pos.z.toFixed(2)),
           type: 'number',
-          cls: 'z'
+          cls: 'z',
+          bind: setZonePosition.bind(this, "z")
       },elem);
   }
 
@@ -302,16 +349,16 @@ export default class GUIWindow {
 
       // get cone information
       if (object.cones && object.cones.length > 0) {
-        var longitudes = this.container.querySelectorAll('.long .value');
-        var latitudes  = this.container.querySelectorAll('.lat .value');
-        object.cones.forEach((cone, i) => {
 
-          var lat  = cone.rotation._x * 180/Math.PI,
-              long = cone.rotation._y * 180/Math.PI;
+        const latitudes = this.container.querySelectorAll('.lat .value');
+        const longitudes = this.container.querySelectorAll('.long .value');
+
+        object.cones.forEach((cone, i) => {
+          const lat  = cone.rotation._x * 180/Math.PI;
+          const long = cone.rotation._y * 180/Math.PI;
 
           this.replaceTextContent(longitudes[i], long);
           this.replaceTextContent(latitudes[i], -lat);
-
         });
       }
   }
@@ -436,20 +483,26 @@ export default class GUIWindow {
   }
 
   startDragging(e) {
-    console.log('hello', e.target)
-    this.editedParameter = e.target;
+
+    const l = this.listeners.find(l => l.elem === e.target || l.elem === e.target.parentNode);
+
+    if (l && l.callback) {
+      this.dragEvent.call = l.callback;
+      this.dragEvent.editing = e.target;
+    }
   }
   drag(e) {
-
+    if (!this.dragEvent.editing) {
+      return;
+    }
+    this.dragEvent.call(e.movementX);
   }
   stopDragging(e) {
-    if (!this.editedParameter) {
+    if (!this.dragEvent.editing) {
       return;
     }
 
-    this.editedParameter = null;
-    console.log('bye')
-
+    this.dragEvent = {};
   }
 
 
@@ -496,9 +549,18 @@ export default class GUIWindow {
               val['on'+evt.type] = evt.callback;
             }
             else {
-              evt.target.addEventListener(evt.type, evt.callback, false)
+              evt.target.addEventListener(evt.type, evt.callback)
             }
           })
+      }
+
+      // shortcut to apply "startDragging" mousedown event
+      if (p.bind) {
+        val.onmousedown = this.startDragging.bind(this);
+        this.listeners.push({
+          elem: val,
+          callback: p.bind
+        })
       }
 
       if (p.suffix) {

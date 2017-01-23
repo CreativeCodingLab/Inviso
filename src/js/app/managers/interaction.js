@@ -68,8 +68,7 @@ export default class Interaction {
         if (main.activeObject && main.activeObject.type === 'SoundObject') {
           if(main.isEditingObject){
             if (main.interactiveCone) {
-              main.interactiveCone.sound.source.stop();
-              main.activeObject.containerObject.remove(main.interactiveCone);            
+              main.removeCone(main.activeObject, main.interactiveCone);
             }
           }else{
             main.removeSoundObject(main.activeObject);

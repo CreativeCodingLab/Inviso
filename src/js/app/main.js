@@ -488,6 +488,11 @@ export default class Main {
     this.soundObjects.splice(i, 1);
   }
 
+  removeCone(object, cone) {
+    object.removeCone(cone);
+    this.gui.removeCone(cone);
+  }
+
   removeSoundTrajectory(soundTrajectory) {
     soundTrajectory.removeFromScene(this.scene);
     const i = this.soundTrajectories.indexOf(soundTrajectory);

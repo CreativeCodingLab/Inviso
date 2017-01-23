@@ -225,6 +225,15 @@ export default class SoundObject {
     }
   }
 
+  removeCone(cone) {
+    if (cone.sound && cone.sound.source) {
+      cone.sound.source.stop();
+    }
+    const i = this.cones.indexOf(cone);
+    this.cones.splice(i, 1);
+    this.containerObject.remove(cone);
+  }
+
   removeFromScene(scene) {
     scene.remove(this.containerObject, true);
     scene.remove(this.altitudeHelper, true);
