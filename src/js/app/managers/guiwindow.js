@@ -123,14 +123,13 @@ export default class GUIWindow {
         }
       }
 
-      this.addParameter({
+/*      this.addParameter({
           property: 'Volume',
-          value: '75',
-          suffix: '%',
+          value: 0,
           type: 'number',
           bind: function() {}
       },elem);
-
+*/
       this.addParameter({
           property: 'x',
           value: Number(mesh.position.x.toFixed(2)),
@@ -206,7 +205,37 @@ export default class GUIWindow {
     elem.id = 'cone-'+cone.id;
     elem.className = 'cone';
 
-    function setConeRotation(component, lowerBound, upperBound, object, dx) {
+    var object = this.obj;
+
+    function changeVolume(dx) {
+      if (cone.sound && cone.sound.volume) {
+
+        // clamp value to (0.5, 2)
+        const volume = Math.max(Math.min(cone.sound.volume.gain.value + dx/50, 2), 0.5);
+
+        if (volume !== cone.sound.volume.gain.value) {
+          // modify cone length
+          cone.sound.volume.gain.value = volume;
+          object.changeLength(cone);
+        }
+      }
+    }
+
+    function changeSpread(dx) {
+      if (cone.sound && cone.sound.spread) {
+        // clamp value to (0.05,1)
+        const spread = Math.max(Math.min(cone.sound.spread + dx/100, 1), 0.05);
+
+        if (spread !== cone.sound.spread) {
+          // modify cone width
+          cone.sound.spread = spread;
+          object.changeRadius(cone);
+        }
+
+      }
+    }
+
+    function setConeRotation(component, dx) {
       // clamp lat/long values
       var lat = cone.lat || 0.0001;
       var long = cone.long || 0.0001;
@@ -254,7 +283,7 @@ export default class GUIWindow {
       
       })( long, lat, object.containerObject.position.clone() );
       if (v.x === 0) { v.x = 0.0001; }
-      const point = object.containerObject.position.clone().addScaledVector(v, 1);
+      const point = object.containerObject.position.clone().add(v);
       object.pointCone(cone, point);
     }
 
@@ -270,7 +299,16 @@ export default class GUIWindow {
       property: 'Volume',
       value: Number((cone.sound.volume.gain.value).toFixed(3)),
       type: 'number',
-      bind: function() {}
+      cls: 'volume',
+      suffix: ' dB',
+      bind: changeVolume
+    }, elem);
+    this.addParameter({
+      property: 'Spread',
+      value: Number((cone.sound.spread).toFixed(3)),
+      type: 'number',
+      cls: 'spread',
+      bind: changeSpread
     }, elem);
     this.addParameter({
       property: 'Longitude',
@@ -278,7 +316,7 @@ export default class GUIWindow {
       type: 'number',
       cls: 'long',
       suffix: '˚',
-      bind: setConeRotation.bind(this, "long", -Math.PI, Math.PI, this.obj)
+      bind: setConeRotation.bind(this, "long")
     }, elem);
     this.addParameter({
       property: 'Latitude',
@@ -286,7 +324,7 @@ export default class GUIWindow {
       type: 'number',
       cls: 'lat',
       suffix: '˚',
-      bind: setConeRotation.bind(this, "lat", -Math.PI/2,Math.PI/2, this.obj)
+      bind: setConeRotation.bind(this, "lat")
     }, elem);
     this.addParameter({
       value: 'Delete',
@@ -355,6 +393,12 @@ export default class GUIWindow {
         });
       }
 
+      function changeVolume(dx) {
+        if (zone.sound && zone.sound.volume) {
+          zone.sound.volume.gain.value += dx;
+        }
+      }
+
       this.addParameter({
           property: 'File',
           value: zone.sound ? zone.sound.name.split('/').pop() : 'None',
@@ -364,10 +408,10 @@ export default class GUIWindow {
 
       this.addParameter({
           property: 'Volume',
-          value: '75',
-          suffix: '%',
+          value: zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A',
           type: 'number',
-          bind: function() {}
+          cls: 'volume',
+          bind: changeVolume
       },elem);
 
       var pos = this.getSoundzonePosition(zone.splinePoints);
@@ -423,22 +467,27 @@ export default class GUIWindow {
 
         const latitudes = this.container.querySelectorAll('.lat .value');
         const longitudes = this.container.querySelectorAll('.long .value');
+        const volumes = this.container.querySelectorAll('.volume .value');
+        const spreads = this.container.querySelectorAll('.spread .value');
 
         object.cones.forEach((cone, i) => {
           this.replaceTextContent(longitudes[i], cone.long * 180 / Math.PI);
           this.replaceTextContent(latitudes[i], cone.lat * 180 / Math.PI);
+          this.replaceTextContent(volumes[i], cone.sound.volume.gain.value, 2, true);
+          this.replaceTextContent(spreads[i], cone.sound.spread, 2, true);
         });
       }
   }
 
   // update parameters of sound zone
   updateSoundzoneGUI(zone) {
-      // update position parameters
       var pos = this.getSoundzonePosition(zone.splinePoints);
       var x = this.container.querySelector('.x .value');
       var z = this.container.querySelector('.z .value');
+      var volume = this.container.querySelector('.volume .value');
       this.replaceTextContent(x, pos.x);
       this.replaceTextContent(z, pos.z);
+      this.replaceTextContent(volume, zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A');
   }
 
   // average positions of all the spline points
@@ -653,9 +702,12 @@ export default class GUIWindow {
   }
 
   // updating text in html
-  replaceTextContent(parent, text, sigfigs) {
+  replaceTextContent(parent, text, sigfigs, float) {
     while(parent.firstChild) { parent.removeChild(parent.firstChild); }
-    if (!isNaN(text)) { text = Number((+text).toFixed(sigfigs || 2)); }
+    if (!isNaN(text)) { 
+      text = (+text).toFixed(sigfigs || 2); 
+      if (!float) text = +text;
+    }
     parent.appendChild(document.createTextNode(text));
   }
 

@@ -429,7 +429,10 @@ export default class Main {
     }
     if (this.isEditingObject) this.exitEditObjectView();
     this.isAddingObject = !this.isAddingObject;
-    document.getElementById('add-object-button').classList.toggle('active', this.isAddingObject);
+
+    var btn = document.getElementById('add-object-button');
+    btn.classList.toggle('active', this.isAddingObject);
+    btn.innerHTML = this.isAddingObject ? '×' : '+';
   }
 
   /**

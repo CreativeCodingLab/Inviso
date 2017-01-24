@@ -63,8 +63,11 @@ export default class SoundObject {
   }
 
   createCone(sound) {
-    const coneWidth = (Math.random() * 50) + 50;
-    const coneHeight = (Math.random() * 50) + 100;
+    sound.volume.gain.value = Math.random()*1.5 + 0.5;
+    sound.spread = Math.random()*0.9 + 0.1;
+
+    const coneWidth = sound.spread * 100;
+    const coneHeight = sound.volume.gain.value * 50 + 50;
 
     const coneGeo = new THREE.CylinderGeometry(coneWidth, 0, coneHeight, 100, 1, true);
     const coneColor = new THREE.Color(0.5, Math.random(), 0.9);
@@ -85,7 +88,7 @@ export default class SoundObject {
     cone.sound.panner.coneInnerAngle = Math.atan(coneWidth / coneHeight) * (180 / Math.PI);
     cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
     cone.sound.panner.coneOuterGain = 0.05;
-    cone.sound.volume.gain.value = Helpers.mapRange(coneHeight, 100, 150, 0.5, 2);
+    // cone.sound.volume.gain.value = Helpers.mapRange(coneHeight, 100, 150, 0.5, 2);
 
     cone.name = 'cone';
     cone.baseColor = coneColor;
@@ -225,6 +228,45 @@ export default class SoundObject {
     if (this.trajectory) {
       this.trajectory.setInactive();
     }
+  }
+
+  changeLength(cone) {
+    const r = cone.sound.spread * 100;
+    const l = cone.sound.volume.gain.value * 50 + 50;
+    cone.sound.panner.coneInnerAngle = Math.atan( r / l) * (180 / Math.PI);
+    cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
+
+    cone.geometry.dynamic = true;
+
+    let circVertices = cone.geometry.vertices.slice(0,-1);
+    let origin = cone.geometry.vertices[cone.geometry.vertices.length-1];
+
+    circVertices.forEach(vertex => {
+      let v = new THREE.Vector3().subVectors(vertex, origin).normalize();
+      vertex.copy(origin.clone().addScaledVector(v, l));
+    })
+
+    cone.geometry.verticesNeedUpdate = true;
+  }
+
+  changeRadius(cone) {
+    const r = cone.sound.spread * 100;
+    const l = cone.sound.volume.gain.value * 50 + 50;
+    cone.sound.panner.coneInnerAngle = Math.atan( r / l) * (180 / Math.PI);
+    cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
+
+    cone.geometry.dynamic = true;
+
+    let circVertices = cone.geometry.vertices.slice(0,-1);
+    let center = new THREE.Vector3();
+    center.lerpVectors(circVertices[0], circVertices[Math.round(circVertices.length/2)], 0.5);
+    
+    circVertices.forEach(vertex => {
+      let v = new THREE.Vector3().subVectors(vertex, center).normalize();
+      vertex.copy(center.clone().addScaledVector(v, r));
+    })
+
+    cone.geometry.verticesNeedUpdate = true;  
   }
 
   pointCone(cone, point) {
