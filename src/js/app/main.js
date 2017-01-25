@@ -93,7 +93,7 @@ export default class Main {
      * The X-Z raycasting plane for determining where on the floor
      * the user is clicking.
      */
-    const planeGeometry = new THREE.PlaneGeometry(5000, 5000);
+    const planeGeometry = new THREE.PlaneGeometry(Config.grid.size*2, Config.grid.size*2);
     const planeMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       side: THREE.DoubleSide,
@@ -363,18 +363,26 @@ export default class Main {
           * this and the following 3 object visible to bring the activeObject back
           * in the scene.
         **/
-        for(let j = 6; j < this.scene.children.length; j++){
-          this.scene.children[j].visible = false;
-        }
+        // for(let j = 6; j < this.scene.children.length; j++){
+        //   console.log(this.scene.children[j]);
+        //   // this.scene.children[j].visible = false;
+        // }
+        [].concat(this.soundObjects, this.soundZones).forEach((object) => {
+          if (object !== this.activeObject) {
+            if (object.type === "SoundObject") {
+              object.axisHelper.visible = false;
+              object.altitudeHelper.visible = false;
+              object.cones.forEach(cone => cone.material.opacity = 0.1);
+              object.omniSphere.material.opacity = 0.2;
+            }
+            else if (object.type === "SoundZone") {
+              object.shape.visible = false;
+            }
+          }
+        });
 
-        /* Before being made visible, light box is positioned around the active object */
-        this.editViewLightBox.position.copy(this.activeObject.containerObject.position);
-        this.editViewLightBox.visible = true;
-
-        let activeObjIndex = this.scene.children.indexOf(this.activeObject.raycastSphere);
-        for(let j = activeObjIndex; j < activeObjIndex + 4; j++){
-          this.scene.children[j].visible = true;
-        }
+        /* lightbox effect */
+        this.renderer.threeRenderer.setClearColor(0xe0eaf0);
       })
       .start();
 
@@ -393,8 +401,20 @@ export default class Main {
   exitEditObjectView(){
     if (this.gui.editor) { this.gui.editor.click(); }
     this.isEditingObject = false;
-    for(let i = 5; i < this.scene.children.length; i++) this.scene.children[i].visible = true;
-    this.editViewLightBox.visible = false;
+    [].concat(this.soundObjects, this.soundZones).forEach((object) => {
+      if (object.type === "SoundObject") {
+        object.axisHelper.visible = true;
+        object.altitudeHelper.visible = true;
+        object.cones.forEach(cone => cone.material.opacity = 0.8);
+        object.omniSphere.material.opacity = 0.8;
+      }
+      else if (object.type === "SoundZone") {
+        object.shape.visible = true;
+      }
+    });
+
+    /* turn off lightbox effect */
+    this.renderer.threeRenderer.setClearColor(0xf0f0f0);
   }
 
   set audio(audio) {
@@ -409,13 +429,13 @@ export default class Main {
    * Sets the trajectory adding state on. If the scene is in perspective view when
    * this is called, it will be reset to bird's eye.
    */
-  toggleAddTrajectory() {
+  toggleAddTrajectory(state) {
     if (this.perspectiveView) {
       this.exitEditObjectView();
       this.controls.threeControls.reset();
       this.cameraViewer.reset();
     }
-    this.isAddingTrajectory = !this.isAddingTrajectory;
+    this.isAddingTrajectory = (state === undefined) ? !this.isAddingTrajectory : state;
   }
 
   /**

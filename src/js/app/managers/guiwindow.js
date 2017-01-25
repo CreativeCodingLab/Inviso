@@ -105,6 +105,9 @@ export default class GUIWindow {
         let destination = mesh.position.clone();
         destination[component] += dx;
 
+        // clamp y to [-300,300]
+        destination.y = Math.min(Math.max(-300,destination.y), 300);
+
         // move all child objects of the object
         object.containerObject.position.copy(destination);
         object.axisHelper.position.copy(destination);
@@ -193,7 +196,7 @@ export default class GUIWindow {
       value: 'Add trajectory',
       events: [{
         type: 'click', 
-        callback: this.app.toggleAddTrajectory.bind(this.app)
+        callback: this.app.toggleAddTrajectory.bind(this.app, true)
       }]
     });
     addTrajectoryElem.id = 'add-trajectory'    
@@ -201,7 +204,7 @@ export default class GUIWindow {
 
   // set up initial parameters for a sound object cone
   addCone(cone) {
-    var elem = this.addElem('Cone '+cone.id, document.getElementById('add-cone'));
+    var elem = this.addElem('', document.getElementById('add-cone'));
     elem.id = 'cone-'+cone.id;
     elem.className = 'cone';
 
@@ -360,7 +363,12 @@ export default class GUIWindow {
       value:object.movementSpeed,
       suffix:' m/s',
       type:'number',
-      bind: function() {}
+      cls:'speed',
+      bind: function(dx) {
+        const speed = object.movementSpeed + dx/10;
+        object.movementSpeed = Math.min(Math.max(-20, speed), 20);
+        object.calculateMovementSpeed();
+      }
     }, elem);
 
     this.addParameter({
@@ -458,7 +466,10 @@ export default class GUIWindow {
         }
         else {
           // update trajectory parameters
-
+          let speed = this.container.querySelector('.speed .value');
+          if (speed) {
+            this.replaceTextContent(speed, object.movementSpeed);
+          }
         }
       }
 
@@ -532,6 +543,7 @@ export default class GUIWindow {
                 .then((sound) => {
                   if (cone) {
                     // copy properties of previous cone
+                    sound.spread = cone.sound.spread;
                     sound.panner.refDistance = cone.sound.panner.refDistance;
                     sound.panner.distanceModel = cone.sound.panner.distanceModel;
                     sound.panner.coneInnerAngle = cone.sound.panner.coneInnerAngle;
@@ -539,6 +551,7 @@ export default class GUIWindow {
                     sound.panner.coneOuterGain = cone.sound.panner.coneOuterGain;
                     sound.volume.gain.value = cone.sound.volume.gain.value;
                     cone.sound = sound;
+                    obj.setAudioPosition(cone);
 
                     // replace text with file name
                     cone.filename = file.name;
@@ -627,10 +640,12 @@ export default class GUIWindow {
   // add a new div
   addElem(name, siblingAfter) {
       var div = document.createElement('div');
-      var title = document.createElement('h4');
-      title.appendChild(document.createTextNode(name));
+      if (name) {
+        var title = document.createElement('h4');
+        title.appendChild(document.createTextNode(name));
 
-      div.appendChild(title);
+        div.appendChild(title);        
+      }
       this.container.insertBefore(div, siblingAfter || null);
       return div;
   }

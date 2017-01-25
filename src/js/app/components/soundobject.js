@@ -73,7 +73,8 @@ export default class SoundObject {
     const coneColor = new THREE.Color(0.5, Math.random(), 0.9);
     const coneMaterial = new THREE.MeshBasicMaterial({
       color: coneColor,
-      opacity: 0.5,
+      opacity: 0.8,
+      transparent:true
     });
 
     coneGeo.translate(0, coneHeight / 2, 0);
@@ -192,6 +193,10 @@ export default class SoundObject {
 
       pointer = this.containerObject.position;
       if (pointer.y > -200 || pointer.y < 200) pointer.y += posY;
+
+      // clamp
+      pointer.y = Math.max(Math.min(pointer.y, 300), -300);
+
       this.nonScaledMouseOffsetY = main.nonScaledMouse.y;
     } else {
       pointer = main.mouse;

@@ -17,6 +17,13 @@ export default class Controls {
     this.init();
   }
 
+  disableZoom() {
+    this.threeControls.enableZoom = false;
+  }
+  enableZoom() {
+    this.threeControls.enableZoom = true;
+  }
+
   disablePan() {
     this.threeControls.enablePan = false;
   }

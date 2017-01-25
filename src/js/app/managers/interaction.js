@@ -225,8 +225,7 @@ export default class Interaction {
     if (main.isAddingTrajectory) {
       obj = main.path.createObject(main);
 
-      main.toggleAddTrajectory();
-      main.isAddingTrajectory = false;
+      main.toggleAddTrajectory(false);
     }
 
     if (main.isAddingObject) {
@@ -273,16 +272,20 @@ export default class Interaction {
         return obj.isUnderMouse(main.ray);
       });
 
-      // check if adding trajectory
+      // if adding trajectory, check that mousedown is valid
       main.isAddingTrajectory = (main.isAddingTrajectory && intersectObjects[0] === main.activeObject);
 
-      if (intersectObjects.length > 0) {
-        main.setActiveObject(intersectObjects[0]);
-      }
-      else if (!main.isEditingObject) {
-        main.setActiveObject(null);
+      // set activeObject to intersected object
+      if (!main.isEditingObject) {
+        if (intersectObjects.length > 0 && !main.isAddingObject) {
+          main.setActiveObject(intersectObjects[0]);
+        }
+        else {
+          main.setActiveObject(null);
+        }
       }
 
+      // disable pan when add or moving an object
       if (main.isAddingTrajectory || main.isAddingObject || main.activeObject) {
         main.controls.disablePan();
       }
