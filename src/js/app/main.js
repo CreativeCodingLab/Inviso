@@ -467,6 +467,9 @@ export default class Main {
     this.activeObject = obj;
 
     if (obj) {
+      if (obj.cones && obj.cones.length > 0) {
+        this.interactiveCone = obj.cones[0];
+      }
       obj.setActive(this);
     }
   }

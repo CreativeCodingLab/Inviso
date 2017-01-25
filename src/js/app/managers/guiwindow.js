@@ -157,6 +157,12 @@ export default class GUIWindow {
           bind: setObjectPosition.bind(this, "z")
       },elem);
 
+      let coneCount = this.addParameter({
+        property: '# of cones',
+        value: object.cones.length
+      }, elem);
+      coneCount.id = 'cone-count';
+
       // "edit object" dialog
       this.addParameter({
         value: 'Edit object',
@@ -169,7 +175,7 @@ export default class GUIWindow {
 
       // insert cone window
       object.cones.forEach((cone) => {
-        this.addCone(cone);
+        this.addCone(cone).style.display = 'none';
       });
 
       // "add cone" dialog
@@ -180,7 +186,7 @@ export default class GUIWindow {
           callback: this.addSound.bind(this)
         }]
       });
-      addConeElem.id = 'add-cone'
+      addConeElem.id = 'add-cone';
 
       if (object.trajectory) {
         this.addTrajectory(object);
@@ -338,8 +344,8 @@ export default class GUIWindow {
         }.bind(this)
       }]
     }, elem);
-    // todo: click on a cone to make it vis? accordion?
 
+    return elem;
   }
 
   // remove cone parameter window
@@ -473,19 +479,26 @@ export default class GUIWindow {
         }
       }
 
+      // update number of cones
+      this.replaceTextContent(document.getElementById('cone-count').querySelector('.value'), object.cones.length);
+
       // get cone information
       if (object.cones && object.cones.length > 0) {
 
-        const latitudes = this.container.querySelectorAll('.lat .value');
-        const longitudes = this.container.querySelectorAll('.long .value');
-        const volumes = this.container.querySelectorAll('.volume .value');
-        const spreads = this.container.querySelectorAll('.spread .value');
+        const cones = this.container.getElementsByClassName('cone');
 
         object.cones.forEach((cone, i) => {
-          this.replaceTextContent(longitudes[i], cone.long * 180 / Math.PI);
-          this.replaceTextContent(latitudes[i], cone.lat * 180 / Math.PI);
-          this.replaceTextContent(volumes[i], cone.sound.volume.gain.value, 2, true);
-          this.replaceTextContent(spreads[i], cone.sound.spread, 2, true);
+          if (cone === this.app.interactiveCone) {
+            cones[i].style.display = 'block';
+            this.replaceTextContent(cones[i].getElementsByTagName('h4')[0], 'Cone ' + (i+1) + ' of ' + object.cones.length);
+            this.replaceTextContent(cones[i].querySelector('.lat .value'), cone.long * 180 / Math.PI);
+            this.replaceTextContent(cones[i].querySelector('.long .value'), cone.lat * 180 / Math.PI);
+            this.replaceTextContent(cones[i].querySelector('.volume .value'), cone.sound.volume.gain.value, 2, true);
+            this.replaceTextContent(cones[i].querySelector('.spread .value'), cone.sound.spread, 2, true); 
+          }
+          else {
+            cones[i].style.display = 'none';
+          }
         });
       }
   }
@@ -555,6 +568,7 @@ export default class GUIWindow {
 
                     // replace text with file name
                     cone.filename = file.name;
+                    self.interactiveCone = cone;
                     self.replaceTextContent(span, file.name);
                   }
                   else {
@@ -565,6 +579,7 @@ export default class GUIWindow {
                     // automatically enter edit mode after brief delay
                     window.setTimeout(function() {
                       self.app.isEditingObject = false;
+                      self.app.interactiveCone = cone;
                       self.toggleEditObject();
                     }, 500);
                   }
@@ -640,12 +655,12 @@ export default class GUIWindow {
   // add a new div
   addElem(name, siblingAfter) {
       var div = document.createElement('div');
-      if (name) {
+      // if (name) {
         var title = document.createElement('h4');
         title.appendChild(document.createTextNode(name));
 
         div.appendChild(title);        
-      }
+      // }
       this.container.insertBefore(div, siblingAfter || null);
       return div;
   }
