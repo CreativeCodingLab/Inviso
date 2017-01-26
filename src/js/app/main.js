@@ -367,6 +367,10 @@ export default class Main {
         //   console.log(this.scene.children[j]);
         //   // this.scene.children[j].visible = false;
         // }
+        if (this.head) {
+          this.head.visible = false;
+          this.axisHelper.visible = false;
+        }
         [].concat(this.soundObjects, this.soundZones).forEach((object) => {
           if (object !== this.activeObject) {
             if (object.type === "SoundObject") {
@@ -376,7 +380,8 @@ export default class Main {
               object.omniSphere.material.opacity = 0.2;
             }
             else if (object.type === "SoundZone") {
-              object.shape.visible = false;
+              object.shape.material.opacity = 0.05;
+              // object.shape.visible = false;
             }
           }
         });
@@ -401,6 +406,10 @@ export default class Main {
   exitEditObjectView(){
     if (this.gui.editor) { this.gui.editor.click(); }
     this.isEditingObject = false;
+    if (this.head) {
+      this.head.visible = true;
+      this.axisHelper.visible = true;
+    }
     [].concat(this.soundObjects, this.soundZones).forEach((object) => {
       if (object.type === "SoundObject") {
         object.axisHelper.visible = true;
@@ -409,7 +418,8 @@ export default class Main {
         object.omniSphere.material.opacity = 0.8;
       }
       else if (object.type === "SoundZone") {
-        object.shape.visible = true;
+        object.shape.material.opacity = 0.2;
+        // object.shape.visible = true;
       }
     });
 

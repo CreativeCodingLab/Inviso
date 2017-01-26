@@ -96,6 +96,24 @@ export default class GUIWindow {
 
   //----------- initiating objects --------- //
 
+  // add navigation arrows
+  addNav(e, elem) {
+    var arrow = document.createElement('div');
+    arrow.className = 'nav nav-' + e.direction;
+
+    let glyph;
+    if (e.type === 'cone') {
+      glyph = e.direction === 'left' ? '‹' : '›';
+    }
+    else {
+      glyph = e.direction === 'left' ? '⦉' : '⦊';
+    }
+
+    arrow.appendChild(document.createTextNode(glyph));
+    elem.appendChild(arrow);
+    arrow.onclick = this.nav.bind(this, e);
+  }
+
   // set up initial parameters for a sound object
   initObjectGUI(object) {
       var mesh = object.containerObject;
@@ -194,6 +212,10 @@ export default class GUIWindow {
       else {
         this.addTrajectoryDialog();
       }
+
+    this.addNav({type: "object", direction: "left"}, elem);
+    this.addNav({type: "object", direction: "right"}, elem);
+
   }
 
   // "add trajectory" dialog
@@ -345,6 +367,10 @@ export default class GUIWindow {
       }]
     }, elem);
 
+    /* Cone navigation */
+    this.addNav({type: "cone", direction: "left"}, elem);
+    this.addNav({type: "cone", direction: "right"}, elem);
+
     return elem;
   }
 
@@ -444,6 +470,10 @@ export default class GUIWindow {
           cls: 'z',
           bind: setZonePosition.bind(this, "z")
       },elem);
+
+    this.addNav({type: "object", direction: "left"}, elem);
+    this.addNav({type: "object", direction: "right"}, elem);
+
   }
 
 
@@ -486,6 +516,8 @@ export default class GUIWindow {
       if (object.cones && object.cones.length > 0) {
 
         const cones = this.container.getElementsByClassName('cone');
+
+        this.app.interactiveCone == this.app.interactiveCone || object.cones[0];
 
         object.cones.forEach((cone, i) => {
           if (cone === this.app.interactiveCone) {
@@ -624,6 +656,25 @@ export default class GUIWindow {
       this.replaceTextContent(span, 'Edit object')
       this.app.isEditingObject = false;
       this.app.exitEditObjectView();
+    }
+  }
+
+  // switch between different cones and objects
+  nav(e) {
+    if (e.type === 'cone') {
+      let i = this.obj.cones.indexOf(this.app.interactiveCone);
+      if (i > -1) {
+        i = e.direction === 'left' ? i - 1 + this.obj.cones.length : i + 1;
+        this.app.interactiveCone = this.obj.cones[i%this.obj.cones.length];
+      }
+    }
+    else {
+      const everyObject = [].concat(this.app.soundObjects/*, this.app.soundZones*/);
+      let i = everyObject.indexOf(this.obj);
+      if (i > -1) {
+        i = e.direction === 'left' ? i - 1 + everyObject.length : i + 1;
+        this.app.setActiveObject(everyObject[i%everyObject.length]);
+      }
     }
   }
 

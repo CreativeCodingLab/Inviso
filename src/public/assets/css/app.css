@@ -102,7 +102,7 @@ body {
 #guis {
   position: absolute;
   top: 40px;
-  width: 250px;
+  width: 220px;
   background-color: rgba(255, 255, 255, 0.6);
   font-family: roboto,'helvetica neue', helvetica, arial, sans-serif;
   box-shadow: 0 0 10px #aaa;
@@ -110,7 +110,8 @@ body {
   -webkit-transition: background-color 200ms ease, color 200ms ease, opacity 200ms ease; }
 
 #guis > div {
-  padding: 15px; }
+  padding: 15px;
+  position: relative; }
 
 #guis > div + div {
   border-top: 0.5px solid #aaa; }
@@ -163,6 +164,27 @@ body {
 #guis.editor .edit-toggle {
   background: #333;
   font-weight: bold; }
+
+#guis .nav {
+  color: rgba(85, 85, 85, 0.5);
+  transition: color 100ms ease;
+  top: 50%;
+  cursor: pointer;
+  padding: 12px;
+  font-size: 40px;
+  position: absolute; }
+
+#guis .nav:hover {
+  color: white;
+  text-shadow: 0 0 10px #aaa; }
+
+#guis .nav-left {
+  transform: translate(-100%, -50%);
+  margin-left: -15px; }
+
+#guis .nav-right {
+  right: 0;
+  transform: translate(100%, -50%); }
 
 input[type="file"] {
   display: none; }
