@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import 'whatwg-fetch';
 
 import Config from '../../data/config';
 import Helpers from '../../utils/helpers';
