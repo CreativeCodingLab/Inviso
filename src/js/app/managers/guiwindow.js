@@ -685,13 +685,16 @@ export default class GUIWindow {
     if (l && l.callback) {
       this.dragEvent.call = l.callback;
       this.dragEvent.editing = e.target;
+      this.dragEvent.x = e.x;
     }
   }
   drag(e) {
     if (!this.dragEvent.editing) {
       return;
     }
-    this.dragEvent.call(e.movementX);
+    const dx = e.x - this.dragEvent.x;
+    this.dragEvent.x = e.x;
+    this.dragEvent.call(dx);
   }
   stopDragging(e) {
     if (!this.dragEvent.editing) {
