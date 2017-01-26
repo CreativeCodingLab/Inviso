@@ -139,29 +139,29 @@ export default class SoundObject {
   loadSound(soundFileName, audio, cone) {
     const context = audio.context;
 
-    let promise = fetch(soundFileName)
-      .then(response => response.arrayBuffer())
-      .then(buffer => {
-        return context.decodeAudioData(buffer)
-          .then((decodedData) => {
-            if (cone && cone.sound.source) {
-              cone.sound.source.stop();
-            }
+    let promise = new Promise(function(resolve, reject) {
 
-            const sound = {};
-            sound.source = context.createBufferSource();
-            sound.source.loop = true;
-            sound.panner = context.createPanner();
-            sound.panner.panningModel = 'HRTF';
-            sound.volume = context.createGain();
-            sound.source.connect(sound.volume);
-            sound.volume.connect(sound.panner);
-            sound.panner.connect(audio.destination);
-            sound.source.buffer = decodedData;
-            sound.source.start(context.currentTime + 0.020);
-            return sound;
-          });
-      });
+      fetch(soundFileName)
+        .then(response => response.arrayBuffer())
+        .then(buffer => context.decodeAudioData(buffer, (decodedData) => {
+          if (cone && cone.sound.source) {
+            cone.sound.source.stop();
+          }
+
+          const sound = {};
+          sound.source = context.createBufferSource();
+          sound.source.loop = true;
+          sound.panner = context.createPanner();
+          sound.panner.panningModel = 'HRTF';
+          sound.volume = context.createGain();
+          sound.source.connect(sound.volume);
+          sound.volume.connect(sound.panner);
+          sound.panner.connect(audio.destination);
+          sound.source.buffer = decodedData;
+          sound.source.start(context.currentTime + 0.020);
+          resolve( sound );
+        }));
+    });
 
     promise
       .catch(err => {
