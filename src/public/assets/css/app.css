@@ -175,8 +175,8 @@ body {
   position: absolute; }
 
 #guis .nav:hover {
-  color: white;
-  text-shadow: 0 0 10px #aaa; }
+  color: #333;
+  text-shadow: 0 0 5px #aaa; }
 
 #guis .nav-left {
   transform: translate(-100%, -50%);

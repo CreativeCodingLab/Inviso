@@ -469,13 +469,17 @@ export default class GUIWindow {
       var elem = this.addElem('Zone ' + (this.app.soundZones.indexOf(zone)+1));
 
       function setZonePosition(component, dx) {
-        zone.objects.forEach((obj) => {
-          obj.position[component] += dx;
-        });
+        zone.containerObject.position[component] += dx;
 
-        zone.splinePoints.forEach((pt) => {
+/*        zone.splinePoints.forEach((pt) => {
           pt[component] += dx;
         });
+*/      }
+
+      const positionGetter = this.getSoundzonePosition;
+
+      function setZoneRotation(dx) {
+        zone.containerObject.rotation.y += dx * Math.PI / 180;
       }
 
       function changeVolume(dx) {
@@ -484,6 +488,7 @@ export default class GUIWindow {
         }
       }
 
+      var pos = zone.containerObject.position;
       this.addParameter({
           property: 'File',
           value: zone.sound ? zone.sound.name.split('/').pop() : 'None',
@@ -499,7 +504,6 @@ export default class GUIWindow {
           bind: changeVolume
       },elem);
 
-      var pos = this.getSoundzonePosition(zone.splinePoints);
       this.addParameter({
           property: 'x',
           value: Number(pos.x.toFixed(2)),
@@ -515,6 +519,15 @@ export default class GUIWindow {
           cls: 'z',
           bind: setZonePosition.bind(this, "z")
       },elem);
+
+    this.addParameter({
+      property: 'Rotation',
+      value: Number((zone.containerObject.rotation.y * 180/Math.PI).toFixed(2)),
+      type: 'number',
+      cls: 'rotation',
+      suffix: '˚',
+      bind: setZoneRotation.bind(this)
+    }, elem);
 
     this.addNav({type: "object", direction: "left"}, elem);
     this.addNav({type: "object", direction: "right"}, elem);
@@ -587,23 +600,15 @@ export default class GUIWindow {
 
   // update parameters of sound zone
   updateSoundzoneGUI(zone) {
-      var pos = this.getSoundzonePosition(zone.splinePoints);
+      var pos = zone.containerObject.position;
       var x = this.container.querySelector('.x .value');
       var z = this.container.querySelector('.z .value');
+      var rotation = this.container.querySelector('.rotation .value');
       var volume = this.container.querySelector('.volume .value');
       this.replaceTextContent(x, pos.x);
       this.replaceTextContent(z, pos.z);
+      this.replaceTextContent(rotation, zone.containerObject.rotation.y * 180 / Math.PI);
       this.replaceTextContent(volume, zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A');
-  }
-
-  // average positions of all the spline points
-  getSoundzonePosition(points) {
-      var reduce = function(a,b) { return a + b; };
-      var meanX = points.map(function(v) { return v.x; })
-                      .reduce(reduce) / points.length;
-      var meanZ = points.map(function(v) { return v.z; })
-                      .reduce(reduce) / points.length;
-      return {x: meanX, z: meanZ};
   }
 
   // ------------ event callbacks ------------ //

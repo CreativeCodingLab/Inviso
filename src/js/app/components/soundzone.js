@@ -19,6 +19,9 @@ export default class SoundZone {
     this.selectedPoint;
     this.mouseOffsetX = 0, this.mouseOffsetY = 0;
 
+    this.containerObject = new THREE.Group();
+    this.isInitialized = false;
+
     this.renderPath();
   }
 
@@ -78,38 +81,59 @@ export default class SoundZone {
     return promise;
   }
 
-  renderPath() {
+  renderPath(args) {
     // splinePoints control the curve of the path
     const points = this.splinePoints;
-    this.pointObjects = (() => {
-      // setup
-      const sphere = new THREE.SphereGeometry(10);
-      const sphereMat = new THREE.MeshBasicMaterial({ color: 0xff1169 });
 
-      const collider = new THREE.SphereGeometry(15);
-      const colliderMat = new THREE.MeshBasicMaterial({
-        color: 0xff1169,
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-      });
+    // setup
+    const sphere = new THREE.SphereGeometry(10);
+    const sphereMat = new THREE.MeshBasicMaterial({ color: 0xff1169 });
 
-      const colliderMesh = new THREE.Mesh(collider, colliderMat);
+    const collider = new THREE.SphereGeometry(15);
+    const colliderMat = new THREE.MeshBasicMaterial({
+      color: 0xff1169,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+    });
 
-      // place a meshgroup at each point in array
-      const pointObjects = [];
-      points.forEach((point) => {
-        const sphereMesh = new THREE.Mesh(sphere, sphereMat.clone());
-        const group = new THREE.Object3D();
+    const colliderMesh = new THREE.Mesh(collider, colliderMat);
 
-        group.add(sphereMesh, colliderMesh.clone());
-        group.position.copy(point);
+    if (!this.isInitialized) {
+      this.pointObjects = (() => {
 
-        pointObjects.push(group);
-      });
-      return pointObjects;
-    })();
+        // place a meshgroup at each point in array
+        const pointObjects = [];
+        points.forEach((point) => {
+          const sphereMesh = new THREE.Mesh(sphere, sphereMat.clone());
+          const group = new THREE.Object3D();
 
+          group.add(sphereMesh, colliderMesh.clone());
+          group.position.copy(point);
+
+          pointObjects.push(group);
+        });
+        return pointObjects;
+      })();
+    }
+    else if (args) {
+      if (args.updateType === "delete") {
+        let splicedPoint = this.pointObjects.splice(args.index, 1);
+        this.containerObject.remove(splicedPoint[0]);
+      }
+      else if (args.updateType === "add") {
+        let insertedPoint = new THREE.Object3D();
+        insertedPoint.add(
+          new THREE.Mesh(sphere, sphereMat.clone()),
+          colliderMesh.clone()
+        );
+        insertedPoint.position.copy(this.splinePoints[args.index]);
+        this.pointObjects.splice(args.index, 0, insertedPoint);
+        this.containerObject.add(insertedPoint);
+      }
+    }
+
+    this.splinePoints = this.pointObjects.map( pt => pt.position );
     this.spline = new THREE.CatmullRomCurve3(this.splinePoints);
     this.spline.type = 'centripetal';
     this.spline.closed = true;
@@ -143,6 +167,7 @@ export default class SoundZone {
     });
 
     this.shape = new THREE.Mesh(shapeGeometry, material);
+
   }
 
   get objects() {
@@ -150,15 +175,32 @@ export default class SoundZone {
   }
 
   addToScene() {
-    this.objects.forEach((obj) => {
-      this.scene.add(obj);
-    });
+    if (!this.isInitialized) {
+      this.isInitialized = true;
+
+      var box = new THREE.Box3().setFromObject( this.shape );
+      box.getCenter( this.containerObject.position );
+      this.scene.add(this.containerObject);
+      this.objects.forEach((obj) => {
+        obj.translateX(-this.containerObject.position.x);
+        obj.translateZ(-this.containerObject.position.z);
+        this.containerObject.add(obj);
+      });
+    }
+    else {
+      this.containerObject.add(this.shape);
+      this.containerObject.add(this.spline.mesh);
+    }
   }
 
-  removeFromScene() {
-    this.objects.forEach((obj) => {
-      this.scene.remove(obj, true);
-    });
+  removeFromScene(scene, isUpdating) {
+    if (isUpdating) {
+      this.containerObject.remove(this.spline.mesh);
+      this.containerObject.remove(this.shape);      
+    }
+    else {
+      this.scene.remove(this.containerObject, true);
+    }
   }
 
   // raycast to this soundzone
@@ -189,10 +231,10 @@ export default class SoundZone {
     this.mouseOffsetY = point.z;
   }
 
-  updateZone() {
+  updateZone(args) {
     const scene = this.spline.mesh.parent;
-    this.removeFromScene(scene);
-    this.renderPath();
+    this.removeFromScene(scene, true);
+    this.renderPath(args);
     this.addToScene(scene);
   }
 
@@ -202,7 +244,7 @@ export default class SoundZone {
         // move selected point
         const i = this.pointObjects.indexOf(this.selectedPoint);
         if (i > -1) {
-          this.splinePoints[i].copy(main.mouse);
+          this.splinePoints[i].copy(new THREE.Vector3().subVectors(main.mouse, this.containerObject.position));
           this.updateZone();
           this.selectPoint(this.pointObjects[i]);
         }
@@ -213,15 +255,8 @@ export default class SoundZone {
         this.mouseOffsetX = main.mouse.x;
         this.mouseOffsetY = main.mouse.z;
 
-        this.objects.forEach((obj) => {
-          obj.position.x += dx;
-          obj.position.z += dy;
-        });
-
-        this.splinePoints.forEach((pt) => {
-          pt.x += dx;
-          pt.z += dy;
-        });
+        this.containerObject.position.x += dx;
+        this.containerObject.position.z += dy;
       }
     }
   }
@@ -263,10 +298,12 @@ export default class SoundZone {
     const i = this.pointObjects.indexOf(this.selectedPoint);
     this.splinePoints.splice(i, 1);
     this.deselectPoint();
-    this.updateZone();
+    this.updateZone({index: i, updateType: "delete"});
   }
 
-  addPoint(position) {
+  addPoint(point) {
+    const position = new THREE.Vector3().subVectors(point, this.containerObject.position);
+
     let closestSplinePoint = 0;
     let prevDistToSplinePoint = -1;
     let minDistance = Number.MAX_VALUE;
@@ -293,7 +330,7 @@ export default class SoundZone {
     }
 
     this.splinePoints.splice(minPoint, 0, position);
-    this.updateZone();
+    this.updateZone({index: minPoint, updateType: "add"});
     this.selectPoint(this.pointObjects[minPoint]);
   }
 
