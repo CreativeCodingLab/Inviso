@@ -337,7 +337,7 @@ export default class Main {
     }
   }
 
-  enterEditObjectView() {
+  enterEditObjectView(isSwitchingViews) {
 
     // slightly hacky fix: orbit controls tween works poorly from top view
     if (this.controls.threeControls.getPolarAngle() < 0.01) {
@@ -348,8 +348,10 @@ export default class Main {
       this.cameraViewer.controls.update();
     }
 
-    this.originalCameraPosition = this.camera.threeCamera.position.clone();
-    this.originalCameraCenter = this.controls.threeControls.center.clone();
+    if (!isSwitchingViews) {
+      this.originalCameraPosition = this.camera.threeCamera.position.clone();
+      this.originalCameraCenter = this.controls.threeControls.center.clone();
+    }
     this.cameraDestination.lerpVectors(this.activeObject.containerObject.position, this.head.position,
     500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
 
@@ -386,9 +388,6 @@ export default class Main {
     }
     this.gui.disableGlobalParameters();
     [].concat(this.soundObjects, this.soundZones).forEach((object) => {
-      if (object.type === "SoundObject") {
-        object.pause();
-      }
       if (object !== this.activeObject) {
         if (object.type === "SoundObject") {
           object.axisHelper.visible = false;
@@ -399,6 +398,17 @@ export default class Main {
         else if (object.type === "SoundZone") {
           object.shape.material.opacity = 0.05;
           // object.shape.visible = false;
+        }
+      }
+
+      if (object.type === "SoundObject") {
+        object.pause();
+        if (object === this.activeObject) {
+          object.axisHelper.visible = true;
+          object.axisHelper.visible = true;
+          object.altitudeHelper.visible = true;
+          object.cones.forEach(cone => cone.material.opacity = 0.8);
+          object.omniSphere.material.opacity = 0.8;
         }
       }
     });

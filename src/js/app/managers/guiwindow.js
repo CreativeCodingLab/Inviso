@@ -155,6 +155,7 @@ export default class GUIWindow {
       var gElem = document.createElement('div');
       gElem.id = "object-globals";
       elem.appendChild(gElem);
+      gElem.style.display = this.app.isEditingObject ? 'none' : 'block';
 
       this.addParameter({
           property: 'x',
@@ -188,7 +189,7 @@ export default class GUIWindow {
 
       // "edit object" dialog
       this.addParameter({
-        value: 'Edit object',
+        value: this.app.isEditingObject ? 'Exit editor' : 'Edit object',
         cls: 'edit-toggle',
         events: [{
           type: 'click', 
@@ -692,6 +693,7 @@ export default class GUIWindow {
       if (i > -1) {
         i = e.direction === 'left' ? i - 1 + everyObject.length : i + 1;
         this.app.setActiveObject(everyObject[i%everyObject.length]);
+        this.app.enterEditObjectView(true);
       }
     }
   }
