@@ -331,8 +331,15 @@ export default class SoundObject {
     }
   }
 
+  pause() {
+    this.isPaused = true;
+  }
+  unpause() {
+    this.isPaused = false;
+  }
+
   followTrajectory() {
-    if (this.trajectory) {
+    if (this.trajectory && !this.isPaused) {
       this.trajectoryClock -= this.movementDirection * this.movementIncrement;
 
       if (this.trajectoryClock >= 1) {

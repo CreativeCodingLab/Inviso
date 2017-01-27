@@ -254,7 +254,9 @@ export default class Main {
      */
     for (const i in this.soundObjects) {
       if (!this.isMouseDown || this.soundObjects[i] !== this.activeObject) {
-        if (this.soundObjects[i].type === 'SoundObject') this.soundObjects[i].followTrajectory();
+        if (this.soundObjects[i].type === 'SoundObject') {
+          this.soundObjects[i].followTrajectory();
+        }
       }
     }
 
@@ -346,49 +348,13 @@ export default class Main {
       this.cameraViewer.controls.update();
     }
 
+    this.originalCameraPosition = this.camera.threeCamera.position.clone();
+    this.originalCameraCenter = this.controls.threeControls.center.clone();
     this.cameraDestination.lerpVectors(this.activeObject.containerObject.position, this.head.position,
     500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
 
     new TWEEN.Tween(this.camera.threeCamera.position)
       .to(this.cameraDestination, 800)
-      .onComplete(() => {
-        /**
-          * Edit Object View only applies to sound objects. A Sound Object in the scene
-          * is represented with 4 elements: Raycast Sphere Mesh, AxisHelper,
-          * AltitudeHelper Line, and the containerObject which holds the omniSphere
-          * and the cones. To make only the activeObject and nothing else in the scene,
-          * first we set every object after scene defaults (i.e. grid, collider plane,
-          * lights, edit view light box and camera helper) invisible. Then we find the
-          * index of the raycast sphere that belongs to the active object and make
-          * this and the following 3 object visible to bring the activeObject back
-          * in the scene.
-        **/
-        // for(let j = 6; j < this.scene.children.length; j++){
-        //   console.log(this.scene.children[j]);
-        //   // this.scene.children[j].visible = false;
-        // }
-        if (this.head) {
-          this.head.visible = false;
-          this.axisHelper.visible = false;
-        }
-        [].concat(this.soundObjects, this.soundZones).forEach((object) => {
-          if (object !== this.activeObject) {
-            if (object.type === "SoundObject") {
-              object.axisHelper.visible = false;
-              object.altitudeHelper.visible = false;
-              object.cones.forEach(cone => cone.material.opacity = 0.1);
-              object.omniSphere.material.opacity = 0.2;
-            }
-            else if (object.type === "SoundZone") {
-              object.shape.material.opacity = 0.05;
-              // object.shape.visible = false;
-            }
-          }
-        });
-
-        /* lightbox effect */
-        this.renderer.threeRenderer.setClearColor(0xe0eaf0);
-      })
       .start();
 
     new TWEEN.Tween(this.controls.threeControls.center)
@@ -401,6 +367,45 @@ export default class Main {
         cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
       })
       .start();
+
+    /**
+      * Edit Object View only applies to sound objects. A Sound Object in the scene
+      * is represented with 4 elements: Raycast Sphere Mesh, AxisHelper,
+      * AltitudeHelper Line, and the containerObject which holds the omniSphere
+      * and the cones. To make only the activeObject and nothing else in the scene,
+      * first we set every object after scene defaults (i.e. grid, collider plane,
+      * lights, edit view light box and camera helper) invisible. Then we find the
+      * index of the raycast sphere that belongs to the active object and make
+      * this and the following 3 object visible to bring the activeObject back
+      * in the scene.
+    **/
+
+    if (this.head) {
+      this.head.visible = false;
+      this.axisHelper.visible = false;
+    }
+    this.gui.disableGlobalParameters();
+    [].concat(this.soundObjects, this.soundZones).forEach((object) => {
+      if (object.type === "SoundObject") {
+        object.pause();
+      }
+      if (object !== this.activeObject) {
+        if (object.type === "SoundObject") {
+          object.axisHelper.visible = false;
+          object.altitudeHelper.visible = false;
+          object.cones.forEach(cone => cone.material.opacity = 0.1);
+          object.omniSphere.material.opacity = 0.2;
+        }
+        else if (object.type === "SoundZone") {
+          object.shape.material.opacity = 0.05;
+          // object.shape.visible = false;
+        }
+      }
+    });
+
+    /* lightbox effect */
+    this.renderer.threeRenderer.setClearColor(0xe0eaf0);
+
   }
 
   exitEditObjectView(){
@@ -410,18 +415,35 @@ export default class Main {
       this.head.visible = true;
       this.axisHelper.visible = true;
     }
+    this.gui.enableGlobalParameters();
     [].concat(this.soundObjects, this.soundZones).forEach((object) => {
       if (object.type === "SoundObject") {
         object.axisHelper.visible = true;
         object.altitudeHelper.visible = true;
         object.cones.forEach(cone => cone.material.opacity = 0.8);
         object.omniSphere.material.opacity = 0.8;
+        object.unpause();
       }
       else if (object.type === "SoundZone") {
         object.shape.material.opacity = 0.2;
         // object.shape.visible = true;
       }
     });
+
+    new TWEEN.Tween(this.camera.threeCamera.position)
+      .to(this.originalCameraPosition, 800)
+      .start();
+
+    new TWEEN.Tween(this.controls.threeControls.center)
+      .to(this.originalCameraCenter, 800)
+      .onUpdate(() => {
+        // rotate cam viewer along with world camera
+        var c = this.controls.threeControls;
+        var cv = this.cameraViewer.controls;
+        cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
+        cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
+      })
+      .start();
 
     /* turn off lightbox effect */
     this.renderer.threeRenderer.setClearColor(0xf0f0f0);

@@ -142,7 +142,7 @@ export default class GUIWindow {
             pt[component] += dx;
           });
         }
-      }
+      }//end setObjectPosition
 
 /*      this.addParameter({
           property: 'Volume',
@@ -151,13 +151,18 @@ export default class GUIWindow {
           bind: function() {}
       },elem);
 */
+      /* global object parameters */
+      var gElem = document.createElement('div');
+      gElem.id = "object-globals";
+      elem.appendChild(gElem);
+
       this.addParameter({
           property: 'x',
           value: Number(mesh.position.x.toFixed(2)),
           type: 'number',
           cls: 'x',
           bind: setObjectPosition.bind(this, "x")
-      },elem);
+      },gElem);
 
       this.addParameter({
           property: 'y',
@@ -165,7 +170,7 @@ export default class GUIWindow {
           type: 'number',
           cls: 'y',
           bind: setObjectPosition.bind(this, "y")
-      },elem);
+      },gElem);
 
       this.addParameter({
           property: 'z',
@@ -173,12 +178,12 @@ export default class GUIWindow {
           type: 'number',
           cls: 'z',
           bind: setObjectPosition.bind(this, "z")
-      },elem);
+      },gElem);
 
       let coneCount = this.addParameter({
         property: '# of cones',
         value: object.cones.length
-      }, elem);
+      }, gElem);
       coneCount.id = 'cone-count';
 
       // "edit object" dialog
@@ -417,6 +422,19 @@ export default class GUIWindow {
     }, elem);
 
     return elem;
+  }
+
+  disableGlobalParameters() {
+    const global = document.getElementById('object-globals');
+    if (global) {
+      global.style.display = 'none';
+    }
+  }
+  enableGlobalParameters() {
+    const global = document.getElementById('object-globals');
+    if (global) {
+      global.style.display = 'block';
+    }
   }
 
   // set up initial parameters for a soundzone
