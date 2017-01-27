@@ -64,10 +64,10 @@ export default class SoundObject {
   }
 
   createCone(sound) {
-    sound.volume.gain.value = Math.random()*1.5 + 0.5;
-    sound.spread = Math.random()*0.9 + 0.1;
+    sound.volume.gain.value = 1;
+    sound.spread = 0.5;
 
-    const coneWidth = sound.spread * 100;
+    const coneWidth = sound.spread * 90;
     const coneHeight = sound.volume.gain.value * 50 + 50;
 
     const coneGeo = new THREE.CylinderGeometry(coneWidth, 0, coneHeight, 100, 1, true);
@@ -136,7 +136,7 @@ export default class SoundObject {
     m.elements[14] = mz;
   }
 
-  loadSound(soundFileName, audio, cone) {
+  loadSound(soundFileName, audio, object) {
     const context = audio.context;
 
     let promise = new Promise(function(resolve, reject) {
@@ -144,8 +144,13 @@ export default class SoundObject {
       fetch(soundFileName)
         .then(response => response.arrayBuffer())
         .then(buffer => context.decodeAudioData(buffer, (decodedData) => {
-          if (cone && cone.sound.source) {
-            cone.sound.source.stop();
+          if (object && object.sound && object.sound.source) {
+            object.sound.source.stop();
+          }
+
+          if (object && object.type === "SoundObject") { 
+            /* attach omnidirectional sound */
+            console.log('attaching omni sound');
           }
 
           const sound = {};
@@ -237,7 +242,7 @@ export default class SoundObject {
   }
 
   changeLength(cone) {
-    const r = cone.sound.spread * 100;
+    const r = cone.sound.spread * 90;
     const l = cone.sound.volume.gain.value * 50 + 50;
     cone.sound.panner.coneInnerAngle = Math.atan( r / l) * (180 / Math.PI);
     cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
@@ -256,7 +261,7 @@ export default class SoundObject {
   }
 
   changeRadius(cone) {
-    const r = cone.sound.spread * 100;
+    const r = cone.sound.spread * 90;
     const l = cone.sound.volume.gain.value * 50 + 50;
     cone.sound.panner.coneInnerAngle = Math.atan( r / l) * (180 / Math.PI);
     cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
@@ -328,6 +333,10 @@ export default class SoundObject {
 
     for (const i in this.cones) {
       this.cones[i].sound.source.stop();
+    }
+
+    if (this.sound && this.sound.source) {
+      this.sound.source.stop();
     }
   }
 

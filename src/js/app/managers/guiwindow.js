@@ -144,12 +144,38 @@ export default class GUIWindow {
         }
       }//end setObjectPosition
 
-/*      this.addParameter({
+      function changeVolume(dx) {
+        if (object.sound && object.sound.volume) {
+          // clamp value to (0.05, 2)
+          const volume = Math.max(Math.min(object.sound.volume.gain.value + dx/50, 2), 0.05);
+          object.sound.volume.gain.value = volume;
+        }
+      }
+
+      this.addParameter({
+          property: 'File',
+          value: object.sound ? object.sound.name.split('/').pop() : 'None',
+          type: 'file-input',
+          events: [{ type: 'click', callback: this.addSound.bind(this) }]
+      },elem).id = "omnisphere-sound-loader";
+
+      this.addParameter({
           property: 'Volume',
-          value: 0,
+          value: object.sound && object.sound.volume ? object.sound.volume.gain.value : 'N/A',
           type: 'number',
-          bind: function() {}
+          cls: 'volume',
+          bind: changeVolume
       },elem);
+/*
+      if (object.sound) {
+        this.addParameter({
+          value: 'Remove sound',
+          events:[{
+            type: 'click',
+            callback: function() {}
+          }]
+        }, elem);
+      }
 */
       /* global object parameters */
       var gElem = document.createElement('div');
@@ -247,8 +273,8 @@ export default class GUIWindow {
     function changeVolume(dx) {
       if (cone.sound && cone.sound.volume) {
 
-        // clamp value to (0.5, 2)
-        const volume = Math.max(Math.min(cone.sound.volume.gain.value + dx/50, 2), 0.5);
+        // clamp value to (0.05, 2)
+        const volume = Math.max(Math.min(cone.sound.volume.gain.value + dx/50, 2), 0.05);
 
         if (volume !== cone.sound.volume.gain.value) {
           // modify cone length
@@ -500,6 +526,11 @@ export default class GUIWindow {
 
   // update parameters of sound object
   updateObjectGUI(object) {
+
+      // update sound volume
+      var volume = this.container.querySelector('.volume .value');
+      this.replaceTextContent(volume, object.sound && object.sound.volume ? object.sound.volume.gain.value : 'N/A');
+
       // update position parameters
       var pos = object.containerObject.position;
       var x = this.container.querySelector('.x .value');
@@ -595,49 +626,66 @@ export default class GUIWindow {
             case 'SoundTrajectory': 
               obj = obj.parentSoundObject;
             case 'SoundObject':
-              // replace sound attached to existing cone
-              var text = span.innerText || span.textContent;
-              let cone = null;
-              if (obj.cones && obj.cones.length > 0 && text) {
-                cone = obj.cones.find(c => c.filename == text);
-              }
-
-              // create new cone
-              obj.loadSound(path, self.app.audio, cone)
-                .then((sound) => {
-                  if (cone) {
-                    // copy properties of previous cone
-                    sound.spread = cone.sound.spread;
-                    sound.panner.refDistance = cone.sound.panner.refDistance;
-                    sound.panner.distanceModel = cone.sound.panner.distanceModel;
-                    sound.panner.coneInnerAngle = cone.sound.panner.coneInnerAngle;
-                    sound.panner.coneOuterAngle = cone.sound.panner.coneOuterAngle;
-                    sound.panner.coneOuterGain = cone.sound.panner.coneOuterGain;
-                    sound.volume.gain.value = cone.sound.volume.gain.value;
-                    cone.sound = sound;
-                    obj.setAudioPosition(cone);
-
-                    // replace text with file name
-                    cone.filename = file.name;
-                    self.interactiveCone = cone;
+              // check if sound is attaching to omnisphere or cone
+              if (span.parentNode.id === "omnisphere-sound-loader") {
+                obj.loadSound(path, self.app.audio, obj)
+                  .then((sound) => {
+                    /* TODO: PROPERLY ATTACH SOUND HERE */
+                    console.log("TODO: DO THIS PROPERLY",sound);
+                    console.log("Attaching omnisphere sound",sound);
+                    obj.sound = sound;
+                    obj.sound.name = file.name;
                     self.replaceTextContent(span, file.name);
-                  }
-                  else {
-                    cone = obj.createCone(sound);
-                    cone.filename = file.name;
-                    self.addCone(cone);
+                  })
+                  .catch((err) => {
+                    console.log('error');
+                  });
+              }
+              else {
+                // replace sound attached to existing cone
+                var text = span.innerText || span.textContent;
+                let cone = null;
+                if (obj.cones && obj.cones.length > 0 && text) {
+                  cone = obj.cones.find(c => c.filename == text);
+                }
 
-                    // automatically enter edit mode after brief delay
-                    window.setTimeout(function() {
-                      self.app.isEditingObject = false;
-                      self.app.interactiveCone = cone;
-                      self.toggleEditObject();
-                    }, 500);
-                  }
-                })
-                .catch((err) => {
-                  // no file was loaded: do nothing
-                });
+                // create new cone
+                obj.loadSound(path, self.app.audio, cone)
+                  .then((sound) => {
+                    if (cone) {
+                      // copy properties of previous cone
+                      sound.spread = cone.sound.spread;
+                      sound.panner.refDistance = cone.sound.panner.refDistance;
+                      sound.panner.distanceModel = cone.sound.panner.distanceModel;
+                      sound.panner.coneInnerAngle = cone.sound.panner.coneInnerAngle;
+                      sound.panner.coneOuterAngle = cone.sound.panner.coneOuterAngle;
+                      sound.panner.coneOuterGain = cone.sound.panner.coneOuterGain;
+                      sound.volume.gain.value = cone.sound.volume.gain.value;
+                      cone.sound = sound;
+                      obj.setAudioPosition(cone);
+
+                      // replace text with file name
+                      cone.filename = file.name;
+                      self.interactiveCone = cone;
+                      self.replaceTextContent(span, file.name);
+                    }
+                    else {
+                      cone = obj.createCone(sound);
+                      cone.filename = file.name;
+                      self.addCone(cone);
+
+                      // automatically enter edit mode after brief delay
+                      window.setTimeout(function() {
+                        self.app.isEditingObject = false;
+                        self.app.interactiveCone = cone;
+                        self.toggleEditObject();
+                      }, 500);
+                    }
+                  })
+                  .catch((err) => {
+                    // no file was loaded: do nothing
+                  });
+              }
               break;
             case 'SoundZone':
 
