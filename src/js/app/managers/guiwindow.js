@@ -542,8 +542,8 @@ export default class GUIWindow {
           if (cone === this.app.interactiveCone) {
             cones[i].style.display = 'block';
             this.replaceTextContent(cones[i].getElementsByTagName('h4')[0], 'Cone ' + (i+1) + ' of ' + object.cones.length);
-            this.replaceTextContent(cones[i].querySelector('.lat .value'), cone.long * 180 / Math.PI);
-            this.replaceTextContent(cones[i].querySelector('.long .value'), cone.lat * 180 / Math.PI);
+            this.replaceTextContent(cones[i].querySelector('.lat .value'), cone.lat * 180 / Math.PI);
+            this.replaceTextContent(cones[i].querySelector('.long .value'), cone.long * 180 / Math.PI);
             this.replaceTextContent(cones[i].querySelector('.volume .value'), cone.sound.volume.gain.value, 2, true);
             this.replaceTextContent(cones[i].querySelector('.spread .value'), cone.sound.spread, 2, true); 
           }
@@ -666,14 +666,12 @@ export default class GUIWindow {
       this.editor = span;
       this.container.classList.add('editor');
       this.replaceTextContent(span, 'Exit editor');
-      this.app.isEditingObject = true;
       this.app.enterEditObjectView();
     }
     else {
       this.editor = null;
       this.container.classList.remove('editor');
       this.replaceTextContent(span, 'Edit object')
-      this.app.isEditingObject = false;
       this.app.exitEditObjectView();
     }
   }
@@ -693,7 +691,7 @@ export default class GUIWindow {
       if (i > -1) {
         i = e.direction === 'left' ? i - 1 + everyObject.length : i + 1;
         this.app.setActiveObject(everyObject[i%everyObject.length]);
-        this.app.enterEditObjectView(true);
+        this.app.tweenToObjectView();
       }
     }
   }

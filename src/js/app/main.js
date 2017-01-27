@@ -337,8 +337,75 @@ export default class Main {
     }
   }
 
-  enterEditObjectView(isSwitchingViews) {
+  tweenToObjectView() {
+    if (this.isEditingObject) {
+      this.cameraDestination.lerpVectors(this.activeObject.containerObject.position, this.head.position,
+      500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
 
+      new TWEEN.Tween(this.camera.threeCamera.position)
+        .to(this.cameraDestination, 800)
+        .start();
+
+      new TWEEN.Tween(this.controls.threeControls.center)
+        .to(this.activeObject.containerObject.position, 800)
+        .onUpdate(() => {
+          // rotate cam viewer along with world camera
+          var c = this.controls.threeControls;
+          var cv = this.cameraViewer.controls;
+          cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
+          cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
+        })
+        .start();
+
+      /**
+        * Edit Object View only applies to sound objects. A Sound Object in the scene
+        * is represented with 4 elements: Raycast Sphere Mesh, AxisHelper,
+        * AltitudeHelper Line, and the containerObject which holds the omniSphere
+        * and the cones. To make only the activeObject and nothing else in the scene,
+        * first we set every object after scene defaults (i.e. grid, collider plane,
+        * lights, edit view light box and camera helper) invisible. Then we find the
+        * index of the raycast sphere that belongs to the active object and make
+        * this and the following 3 object visible to bring the activeObject back
+        * in the scene.
+      **/
+
+      if (this.head) {
+        this.head.visible = false;
+        this.axisHelper.visible = false;
+      }
+      this.gui.disableGlobalParameters();
+      [].concat(this.soundObjects, this.soundZones).forEach((object) => {
+        if (object !== this.activeObject) {
+          if (object.type === "SoundObject") {
+            object.axisHelper.visible = false;
+            object.altitudeHelper.visible = false;
+            object.cones.forEach(cone => cone.material.opacity = 0.1);
+            object.omniSphere.material.opacity = 0.2;
+          }
+          else if (object.type === "SoundZone") {
+            object.shape.material.opacity = 0.05;
+            // object.shape.visible = false;
+          }
+        }
+
+        if (object.type === "SoundObject") {
+          object.pause();
+          if (object === this.activeObject) {
+            object.axisHelper.visible = true;
+            object.axisHelper.visible = true;
+            object.altitudeHelper.visible = true;
+            object.cones.forEach(cone => cone.material.opacity = 0.8);
+            object.omniSphere.material.opacity = 0.8;
+          }
+        }
+      });
+
+      /* lightbox effect */
+      this.renderer.threeRenderer.setClearColor(0xe0eaf0);
+    }
+  }
+
+  enterEditObjectView() {
     // slightly hacky fix: orbit controls tween works poorly from top view
     if (this.controls.threeControls.getPolarAngle() < 0.01) {
       this.controls.threeControls.constraint.rotateUp(-0.05);
@@ -348,74 +415,14 @@ export default class Main {
       this.cameraViewer.controls.update();
     }
 
-    if (!isSwitchingViews) {
+    if (!this.isEditingObject) {
+      this.isEditingObject = true;
+      this.isAddingObject = this.isAddingTrajectory = false;
       this.originalCameraPosition = this.camera.threeCamera.position.clone();
       this.originalCameraCenter = this.controls.threeControls.center.clone();
     }
-    this.cameraDestination.lerpVectors(this.activeObject.containerObject.position, this.head.position,
-    500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
 
-    new TWEEN.Tween(this.camera.threeCamera.position)
-      .to(this.cameraDestination, 800)
-      .start();
-
-    new TWEEN.Tween(this.controls.threeControls.center)
-      .to(this.activeObject.containerObject.position, 800)
-      .onUpdate(() => {
-        // rotate cam viewer along with world camera
-        var c = this.controls.threeControls;
-        var cv = this.cameraViewer.controls;
-        cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
-        cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
-      })
-      .start();
-
-    /**
-      * Edit Object View only applies to sound objects. A Sound Object in the scene
-      * is represented with 4 elements: Raycast Sphere Mesh, AxisHelper,
-      * AltitudeHelper Line, and the containerObject which holds the omniSphere
-      * and the cones. To make only the activeObject and nothing else in the scene,
-      * first we set every object after scene defaults (i.e. grid, collider plane,
-      * lights, edit view light box and camera helper) invisible. Then we find the
-      * index of the raycast sphere that belongs to the active object and make
-      * this and the following 3 object visible to bring the activeObject back
-      * in the scene.
-    **/
-
-    if (this.head) {
-      this.head.visible = false;
-      this.axisHelper.visible = false;
-    }
-    this.gui.disableGlobalParameters();
-    [].concat(this.soundObjects, this.soundZones).forEach((object) => {
-      if (object !== this.activeObject) {
-        if (object.type === "SoundObject") {
-          object.axisHelper.visible = false;
-          object.altitudeHelper.visible = false;
-          object.cones.forEach(cone => cone.material.opacity = 0.1);
-          object.omniSphere.material.opacity = 0.2;
-        }
-        else if (object.type === "SoundZone") {
-          object.shape.material.opacity = 0.05;
-          // object.shape.visible = false;
-        }
-      }
-
-      if (object.type === "SoundObject") {
-        object.pause();
-        if (object === this.activeObject) {
-          object.axisHelper.visible = true;
-          object.axisHelper.visible = true;
-          object.altitudeHelper.visible = true;
-          object.cones.forEach(cone => cone.material.opacity = 0.8);
-          object.omniSphere.material.opacity = 0.8;
-        }
-      }
-    });
-
-    /* lightbox effect */
-    this.renderer.threeRenderer.setClearColor(0xe0eaf0);
-
+    this.tweenToObjectView();
   }
 
   exitEditObjectView(){
@@ -440,24 +447,34 @@ export default class Main {
       }
     });
 
-    new TWEEN.Tween(this.camera.threeCamera.position)
-      .to(this.originalCameraPosition, 800)
-      .start();
+    if (!this.isAddingTrajectory) {
+      new TWEEN.Tween(this.camera.threeCamera.position)
+        .to(this.originalCameraPosition, 800)
+        .start();
 
-    new TWEEN.Tween(this.controls.threeControls.center)
-      .to(this.originalCameraCenter, 800)
-      .onUpdate(() => {
-        // rotate cam viewer along with world camera
-        var c = this.controls.threeControls;
-        var cv = this.cameraViewer.controls;
-        cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
-        cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
-      })
-      .start();
-
+      new TWEEN.Tween(this.controls.threeControls.center)
+        .to(this.originalCameraCenter, 800)
+        .onUpdate(() => {
+          // rotate cam viewer along with world camera
+          var c = this.controls.threeControls;
+          var cv = this.cameraViewer.controls;
+          cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
+          cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
+        })
+        .start();
+    }
     /* turn off lightbox effect */
     this.renderer.threeRenderer.setClearColor(0xf0f0f0);
   }
+
+  reset() {
+    this.controls.threeControls.reset();
+    this.cameraViewer.reset();
+    if (this.isEditingObject) {
+      this.exitEditObjectView();
+    }
+  }
+
 
   set audio(audio) {
     this._audio = audio;
@@ -472,12 +489,8 @@ export default class Main {
    * this is called, it will be reset to bird's eye.
    */
   toggleAddTrajectory(state) {
-    if (this.perspectiveView) {
-      this.exitEditObjectView();
-      this.controls.threeControls.reset();
-      this.cameraViewer.reset();
-    }
     this.isAddingTrajectory = (state === undefined) ? !this.isAddingTrajectory : state;
+    this.reset();
   }
 
   /**
@@ -485,11 +498,7 @@ export default class Main {
    * this is called, it will be reset to bird's eye.
    */
   toggleAddObject() {
-    if (this.perspectiveView) {
-      this.controls.threeControls.reset();
-      this.cameraViewer.reset();
-    }
-    if (this.isEditingObject) this.exitEditObjectView();
+    this.reset();
     this.isAddingObject = !this.isAddingObject;
 
     var btn = document.getElementById('add-object-button');
