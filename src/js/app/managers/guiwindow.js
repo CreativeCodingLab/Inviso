@@ -247,7 +247,6 @@ export default class GUIWindow {
 
     this.addNav({type: "object", direction: "left"}, elem);
     this.addNav({type: "object", direction: "right"}, elem);
-
   }
 
   // "add trajectory" dialog
@@ -470,16 +469,14 @@ export default class GUIWindow {
 
       function setZonePosition(component, dx) {
         zone.containerObject.position[component] += dx;
-
-/*        zone.splinePoints.forEach((pt) => {
-          pt[component] += dx;
-        });
-*/      }
-
-      const positionGetter = this.getSoundzonePosition;
+      }
 
       function setZoneRotation(dx) {
-        zone.containerObject.rotation.y += dx * Math.PI / 180;
+        let rotation = zone.containerObject.rotation.y + dx * Math.PI / 180;
+
+        if (rotation < Math.PI) { rotation += Math.PI*2 }
+        if (rotation > Math.PI) { rotation -= Math.PI*2 }
+        zone.containerObject.rotation.y = rotation;
       }
 
       function changeVolume(dx) {
@@ -528,10 +525,6 @@ export default class GUIWindow {
       suffix: '˚',
       bind: setZoneRotation.bind(this)
     }, elem);
-
-    this.addNav({type: "object", direction: "left"}, elem);
-    this.addNav({type: "object", direction: "right"}, elem);
-
   }
 
 
