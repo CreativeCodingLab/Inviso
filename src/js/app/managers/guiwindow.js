@@ -267,6 +267,13 @@ export default class GUIWindow {
     elem.id = 'cone-'+cone.id;
     elem.className = 'cone';
 
+    // set bg color
+    let color = cone.hoverColor().getHSL();
+    color.h *= 360;
+    color.s *= 100;
+    color.l = Math.max(color.l*100, 70);
+    elem.style.backgroundColor = 'hsl('+color.h+','+color.s+'%,'+color.l+'%)';
+
     var object = this.obj;
 
     function changeVolume(dx) {

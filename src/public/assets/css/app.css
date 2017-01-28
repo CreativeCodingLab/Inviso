@@ -166,6 +166,12 @@ body {
   background: #333;
   font-weight: bold; }
 
+#guis .cone, #guis.editor .cone {
+  color: black; }
+
+#guis .cone .valueSpan, #guis.editor .cone .valueSpan {
+  border-bottom-color: #555; }
+
 #guis .nav {
   color: rgba(85, 85, 85, 0.5);
   transition: color 100ms ease;

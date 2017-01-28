@@ -122,11 +122,13 @@ export default class SoundTrajectory {
    * Removes each object in the object array (that pertain to a single
    * trajectory) from the scene.
    */
-  removeFromScene(scene) {
+  removeFromScene(scene, isUpdating) {
     this.objects.forEach((obj) => {
       scene.remove(obj, true);
     });
-
+    if (!isUpdating) {
+      scene.remove(this.cursor, true);
+    }
   }
 
   /**
@@ -365,7 +367,7 @@ export default class SoundTrajectory {
    */
   updateTrajectory() {
     const scene = this.spline.mesh.parent;
-    this.removeFromScene(scene);
+    this.removeFromScene(scene, true);
     this.renderPath();
     this.addToScene(scene);
   }
