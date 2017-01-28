@@ -152,24 +152,32 @@ export default class Interaction {
         main.path.addPoint(main.mouse);
       }
 
-      if (main.activeObject && main.activeObject.type === 'SoundTrajectory') {
-        const intersection = main.activeObject.objectUnderMouse(main.ray);
-
-        if (main.isMouseDown === true) {
-          // click+drag
+      if (main.activeObject) {
+        if (main.activeObject.type === 'SoundTrajectory') {
           main.activeObject.move(main.mouse, main.nonScaledMouse, main.perspectiveView);
-        } else if (intersection && intersection.object.type === 'Line') { // hover cursor over line
-          main.activeObject.showCursor();
-          main.activeObject.setCursor(intersection.point);
-        } else if (intersection && intersection.object.parent.type === 'Object3D') {
-          main.activeObject.showCursor();
-          main.activeObject.setCursor(intersection.object.parent.position);
-        } else {
-          main.activeObject.showCursor(false);
         }
-      } else if (main.activeObject) {
-        main.activeObject.move(main);
+        else {
+          main.activeObject.move(main);
+        }
       }
+    }//end if(main.isMouseDown...)
+    else if (!main.isMouseDown && main.activeObject) {
+      switch (main.activeObject.type) {
+        case 'SoundTrajectory':
+          break;
+        case 'SoundZone':
+          const intersection = main.activeObject.objectUnderMouse(main.ray);
+          if (intersection) {
+            main.activeObject.showCursor(intersection.object, intersection.point);
+          }
+          else {
+            main.activeObject.hideCursor();
+          }
+          break;
+        default:
+          break;
+      }
+
     }
 
     if (main.isEditingObject) {
@@ -201,7 +209,7 @@ export default class Interaction {
           }
         });
       }
-    }
+    }//end if(main.isEditingObject)
   }
 
   onMouseUp(main, event, hasFocus) {
@@ -272,7 +280,10 @@ export default class Interaction {
       // set activeObject to intersected object
       if (!main.isEditingObject) {
         if (intersectObjects.length > 0 && !main.isAddingObject) {
-          main.setActiveObject(intersectObjects[0]);
+          // if soundzones overlap, keep last selected
+          if (!(main.activeObject && main.activeObject.type === 'SoundZone' && intersectObjects[0].type === 'SoundZone' && intersectObjects.indexOf(main.activeObject) > -1)) {
+            main.setActiveObject(intersectObjects[0]);
+          }
         }
         else {
           main.setActiveObject(null);

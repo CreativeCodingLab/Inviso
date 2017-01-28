@@ -20,6 +20,17 @@ export default class SoundZone {
     this.mouseOffsetX = 0, this.mouseOffsetY = 0;
 
     this.containerObject = new THREE.Group();
+    this.cursor = new THREE.Mesh(
+      new THREE.SphereGeometry(15),
+      new THREE.MeshBasicMaterial({ 
+        color: 0xff1169,
+        transparent: true,
+        opacity: 0.5,
+      })
+    );
+    this.cursor.visible = false;
+    this.containerObject.add(this.cursor);
+
     this.isInitialized = false;
 
     this.renderPath();
@@ -93,7 +104,7 @@ export default class SoundZone {
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0xff1169,
       transparent: true,
-      opacity: 0.2,
+      opacity: 0,
       depthWrite: false,
     });
 
@@ -116,7 +127,7 @@ export default class SoundZone {
     else if (args) {
       if (args.updateType === "delete") {
         let splicedPoint = this.pointObjects.splice(args.index, 1);
-        this.containerObject.remove(splicedPoint[0]);
+        this.containerObject.remove(splicedPoint[0], true);
       }
       else if (args.updateType === "add") {
         let insertedPoint = new THREE.Object3D();
@@ -190,14 +201,8 @@ export default class SoundZone {
     }
   }
 
-  removeFromScene(scene, isUpdating) {
-    if (isUpdating) {
-      this.containerObject.remove(this.spline.mesh);
-      this.containerObject.remove(this.shape);      
-    }
-    else {
-      this.scene.remove(this.containerObject, true);
-    }
+  removeFromScene(scene) {
+    this.scene.remove(this.containerObject, true);
   }
 
   // raycast to this soundzone
@@ -213,14 +218,33 @@ export default class SoundZone {
     const intersects = raycaster.intersectObjects(this.objects, true);
 
     if (intersects.length > 0) {
-      if (intersects[0].object.type === 'Line') {
-        return intersects[Math.floor(intersects.length / 2)];
+      if (intersects[0].object.type === 'Line' || intersects[0].object === this.shape) {
+        return intersects[Math.floor(intersects.length / 2)];        
       }
 
       return intersects[0];
     }
 
     return null;
+  }
+
+  hideCursor() {
+    this.cursor.visible = false;
+  }
+  showCursor(object, point) {
+    if (object !== this.shape) {
+      this.cursor.visible = true;
+      if (object === this.spline.mesh) {
+        const minv = new THREE.Matrix4().getInverse(this.containerObject.matrix);
+        this.cursor.position.copy(point.applyMatrix4(minv));
+      }
+      else {
+        this.cursor.position.copy(object.parent.position);
+      }
+    }
+    else {
+      this.hideCursor();
+    }
   }
 
   setMouseOffset(point) {
@@ -230,7 +254,8 @@ export default class SoundZone {
 
   updateZone(args) {
     const scene = this.spline.mesh.parent;
-    this.removeFromScene(scene, true);
+    this.containerObject.remove(this.spline.mesh, true);
+    this.containerObject.remove(this.shape, true);      
     this.renderPath(args);
     this.addToScene(scene);
   }
@@ -241,6 +266,7 @@ export default class SoundZone {
       const dy = main.mouse.z - this.mouseOffsetY;
       this.mouseOffsetX = main.mouse.x;
       this.mouseOffsetY = main.mouse.z;
+      this.hideCursor();
 
       if (this.selectedPoint) {
         // move selected point
