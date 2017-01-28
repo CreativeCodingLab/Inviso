@@ -542,18 +542,15 @@ export default class GUIWindow {
   updateObjectGUI(object) {
 
       // update sound volume
-      var volume = this.container.querySelector('.volume .value');
-      this.replaceTextContent(volume, object.sound && object.sound.volume ? object.sound.volume.gain.value : 'N/A');
+      this.replaceTextContent('volume', object.sound && object.sound.volume ? object.sound.volume.gain.value : 'N/A');
 
       // update position parameters
-      var pos = object.containerObject.position;
-      var x = this.container.querySelector('.x .value');
-      var y = this.container.querySelector('.y .value');
-      var z = this.container.querySelector('.z .value');
-
-      this.replaceTextContent(x, pos.x);
-      this.replaceTextContent(y, pos.y);
-      this.replaceTextContent(z, pos.z);
+      if (document.getElementById('object-globals').style.display != 'none') {
+        var pos = object.containerObject.position;
+        this.replaceTextContent('x', pos.x);
+        this.replaceTextContent('y', pos.y);
+        this.replaceTextContent('z', pos.z);
+      }
 
       // check if trajectory exists
       if (object.trajectory) {
@@ -566,15 +563,14 @@ export default class GUIWindow {
         }
         else {
           // update trajectory parameters
-          let speed = this.container.querySelector('.speed .value');
           if (speed) {
-            this.replaceTextContent(speed, object.movementSpeed);
+            this.replaceTextContent('speed', object.movementSpeed);
           }
         }
       }
 
       // update number of cones
-      this.replaceTextContent(document.getElementById('cone-count').querySelector('.value'), object.cones.length);
+      this.replaceTextContent(document.getElementById('cone-count'), object.cones.length);
 
       // get cone information
       if (object.cones && object.cones.length > 0) {
@@ -586,11 +582,11 @@ export default class GUIWindow {
         object.cones.forEach((cone, i) => {
           if (cone === this.app.interactiveCone) {
             cones[i].style.display = 'block';
-            this.replaceTextContent(cones[i].getElementsByTagName('h4')[0], 'Cone ' + (i+1) + ' of ' + object.cones.length);
-            this.replaceTextContent(cones[i].querySelector('.lat .value'), cone.lat * 180 / Math.PI);
-            this.replaceTextContent(cones[i].querySelector('.long .value'), cone.long * 180 / Math.PI);
-            this.replaceTextContent(cones[i].querySelector('.volume .value'), cone.sound.volume.gain.value, 2, true);
-            this.replaceTextContent(cones[i].querySelector('.spread .value'), cone.sound.spread, 2, true); 
+            cones[i].getElementsByTagName('h4')[0].textContent = 'Cone ' + (i+1) + ' of ' + object.cones.length;
+            this.replaceTextContent(cones[i].getElementsByClassName('lat')[0], cone.lat * 180 / Math.PI);
+            this.replaceTextContent(cones[i].getElementsByClassName('long')[0], cone.long * 180 / Math.PI);
+            this.replaceTextContent(cones[i].getElementsByClassName('volume')[0], cone.sound.volume.gain.value, 2, true);
+            this.replaceTextContent(cones[i].getElementsByClassName('spread')[0], cone.sound.spread, 2, true); 
           }
           else {
             cones[i].style.display = 'none';
@@ -602,14 +598,10 @@ export default class GUIWindow {
   // update parameters of sound zone
   updateSoundzoneGUI(zone) {
       var pos = zone.containerObject.position;
-      var x = this.container.querySelector('.x .value');
-      var z = this.container.querySelector('.z .value');
-      var rotation = this.container.querySelector('.rotation .value');
-      var volume = this.container.querySelector('.volume .value');
-      this.replaceTextContent(x, pos.x);
-      this.replaceTextContent(z, pos.z);
-      this.replaceTextContent(rotation, zone.containerObject.rotation.y * 180 / Math.PI);
-      this.replaceTextContent(volume, zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A');
+      this.replaceTextContent('x', pos.x);
+      this.replaceTextContent('z', pos.z);
+      this.replaceTextContent('rotation', zone.containerObject.rotation.y * 180 / Math.PI);
+      this.replaceTextContent('volume', zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A');
   }
 
   // ------------ event callbacks ------------ //
@@ -641,7 +633,7 @@ export default class GUIWindow {
                     console.log("Attaching omnisphere sound",sound);
                     obj.sound = sound;
                     obj.sound.name = file.name;
-                    self.replaceTextContent(span, file.name);
+                    span.textContent = file.name;
                   })
                   .catch((err) => {
                     console.log('error');
@@ -673,7 +665,7 @@ export default class GUIWindow {
                       // replace text with file name
                       cone.filename = file.name;
                       self.interactiveCone = cone;
-                      self.replaceTextContent(span, file.name);
+                      span.textContent = file.name;
                     }
                     else {
                       cone = obj.createCone(sound);
@@ -704,7 +696,7 @@ export default class GUIWindow {
               obj.loadSound(path, self.app.audio)
                 .then(() => {
                   // replace text with file name
-                  self.replaceTextContent(span, file.name);
+                  span.textContent = file.name;
                 })
                 .catch((err) => {
                   // no file was loaded: do nothing
@@ -721,10 +713,9 @@ export default class GUIWindow {
   // move into/out of object edit mode
   toggleEditObject() {
     if (!this.app.isEditingObject) {
-      var span = this.container.querySelector('.edit-toggle .value');
-      this.editor = span;
+      this.editor = true;
       this.container.classList.add('editor');
-      this.replaceTextContent(span, 'Exit editor');
+      this.replaceTextContent('edit-toggle', 'Exit editor');
       this.app.enterEditObjectView();
     }
     else {
@@ -734,10 +725,9 @@ export default class GUIWindow {
   }
 
   exitEditObject() {
-    var span = this.container.querySelector('.edit-toggle .value');
-    this.editor = null;
+    this.editor = false;
     this.container.classList.remove('editor');
-    this.replaceTextContent(span, 'Edit object')
+    this.replaceTextContent('edit-toggle', 'Edit object')
   }
 
   // switch between different cones and objects
@@ -869,12 +859,18 @@ export default class GUIWindow {
 
   // updating text in html
   replaceTextContent(parent, text, sigfigs, float) {
-    while(parent.firstChild) { parent.removeChild(parent.firstChild); }
-    if (!isNaN(text)) { 
+    if (typeof parent === 'string') {
+      parent = this.container.getElementsByClassName(parent)[0]
+    }
+    parent = parent.getElementsByClassName('value')[0];
+
+    if (parent.getAttribute('data-value') == text) { return; }
+    parent.setAttribute('data-value', text);
+    if (!isNaN(text)) {
       text = (+text).toFixed(sigfigs || 2); 
       if (!float) text = +text;
     }
-    parent.appendChild(document.createTextNode(text));
+    parent.innerHTML = text;
   }
 
 }
