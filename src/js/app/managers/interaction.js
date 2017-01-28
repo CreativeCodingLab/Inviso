@@ -114,7 +114,7 @@ export default class Interaction {
       }
 
       if (this.keyboard.eventMatches(event, 'r')) {
-        main.reset();
+        main.reset(true);
       }
     });
   }

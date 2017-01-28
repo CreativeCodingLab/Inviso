@@ -149,6 +149,7 @@ export default class GUIWindow {
           // clamp value to (0.05, 2)
           const volume = Math.max(Math.min(object.sound.volume.gain.value + dx/50, 2), 0.05);
           object.sound.volume.gain.value = volume;
+          object.changeRadius();
         }
       }
 
@@ -298,7 +299,7 @@ export default class GUIWindow {
         if (spread !== cone.sound.spread) {
           // modify cone width
           cone.sound.spread = spread;
-          object.changeRadius(cone);
+          object.changeWidth(cone);
         }
 
       }
@@ -679,6 +680,10 @@ export default class GUIWindow {
                       cone.filename = file.name;
                       self.addCone(cone);
 
+                      // this is clumsy but point cone @ direction of head
+                      let v = self.app.head.position.clone();
+                      cone.lookAt(v.sub(obj.containerObject.position));
+
                       // automatically enter edit mode after brief delay
                       window.setTimeout(function() {
                         self.app.isEditingObject = false;
@@ -689,6 +694,7 @@ export default class GUIWindow {
                   })
                   .catch((err) => {
                     // no file was loaded: do nothing
+                    console.log(err);
                   });
               }
               break;
@@ -714,19 +720,24 @@ export default class GUIWindow {
 
   // move into/out of object edit mode
   toggleEditObject() {
-    var span = this.container.querySelector('.edit-toggle .value');
     if (!this.app.isEditingObject) {
+      var span = this.container.querySelector('.edit-toggle .value');
       this.editor = span;
       this.container.classList.add('editor');
       this.replaceTextContent(span, 'Exit editor');
       this.app.enterEditObjectView();
     }
     else {
-      this.editor = null;
-      this.container.classList.remove('editor');
-      this.replaceTextContent(span, 'Edit object')
+      this.exitEditObject();
       this.app.exitEditObjectView();
     }
+  }
+
+  exitEditObject() {
+    var span = this.container.querySelector('.edit-toggle .value');
+    this.editor = null;
+    this.container.classList.remove('editor');
+    this.replaceTextContent(span, 'Edit object')
   }
 
   // switch between different cones and objects

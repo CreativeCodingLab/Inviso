@@ -241,6 +241,13 @@ export default class SoundObject {
     }
   }
 
+  changeRadius() {
+    if (this.sound && this.sound.volume) {
+      const r = 0.5 + 0.5*this.sound.volume.gain.value;
+      this.containerObject.scale.x = this.containerObject.scale.y = this.containerObject.scale.z = r;
+    }
+  }
+
   changeLength(cone) {
     const r = cone.sound.spread * 90;
     const l = cone.sound.volume.gain.value * 50 + 50;
@@ -260,7 +267,7 @@ export default class SoundObject {
     cone.geometry.verticesNeedUpdate = true;
   }
 
-  changeRadius(cone) {
+  changeWidth(cone) {
     const r = cone.sound.spread * 90;
     const l = cone.sound.volume.gain.value * 50 + 50;
     cone.sound.panner.coneInnerAngle = Math.atan( r / l) * (180 / Math.PI);

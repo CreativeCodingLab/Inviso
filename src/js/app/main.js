@@ -426,7 +426,7 @@ export default class Main {
   }
 
   exitEditObjectView(){
-    if (this.gui.editor) { this.gui.editor.click(); }
+    if (this.gui.editor) { this.gui.exitEditObject(); }
     this.isEditingObject = false;
     if (this.head) {
       this.head.visible = true;
@@ -467,7 +467,7 @@ export default class Main {
     this.renderer.threeRenderer.setClearColor(0xf0f0f0);
   }
 
-  reset() {
+  reset(snap) {
     this.controls.threeControls.reset();
     this.cameraViewer.reset();
     if (this.isEditingObject) {
