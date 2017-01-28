@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import Helpers from '../../utils/helpers';
 
 export default class SoundTrajectory {
-  constructor(points) {
+  constructor(main, points) {
     this.type = 'SoundTrajectory';
     this.splinePoints = points;
     this.isActive = true;
@@ -14,6 +14,17 @@ export default class SoundTrajectory {
     this.mouseOffsetX = 0;
     this.mouseOffsetY = 0;
     this.nonScaledMouseOffsetY = 0;
+
+    this.cursor = new THREE.Mesh(
+      new THREE.SphereGeometry(15),
+      new THREE.MeshBasicMaterial({ 
+        color: 0xff1169,
+        transparent: true,
+        opacity: 0.5,
+      })
+    );
+    this.cursor.visible = false;
+    main.scene.add(this.cursor);
 
     /**
      * First call to renderPath happens in update trajectory function. From there
@@ -157,6 +168,19 @@ export default class SoundTrajectory {
     return null;
   }
 
+  hideCursor() {
+    this.cursor.visible = false;
+  }
+  showCursor(object, point) {
+    this.cursor.visible = true;
+    if (object === this.spline.mesh) {
+      this.cursor.position.copy(point);
+    }
+    else {
+      this.cursor.position.copy(object.parent.position);
+    }
+  }
+
   /* Keeps record of the mouse offset after the initial click. */
   setMouseOffset(nonScaledMouse, point) {
     this.mouseOffsetX = point.x;
@@ -166,6 +190,7 @@ export default class SoundTrajectory {
 
   /* Moves a single control point on the spline or the entire trajectory. */
   move(mouse, nonScaledMouse, perspectiveView) {
+    this.hideCursor();
     if (this.selectedPoint) {
       const i = this.pointObjects.indexOf(this.selectedPoint);
       let pointer;
@@ -250,6 +275,7 @@ export default class SoundTrajectory {
   }
 
   setInactive() {
+    this.hideCursor();
     this.deselectPoint();
     this.isActive = false;
 

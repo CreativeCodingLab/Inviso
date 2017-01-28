@@ -161,17 +161,29 @@ export default class Interaction {
         }
       }
     }//end if(main.isMouseDown...)
-    else if (!main.isMouseDown && main.activeObject) {
-      switch (main.activeObject.type) {
+
+    // show cursor on hover
+    else if (!main.isEditingObject && main.activeObject) {
+      // make sure object to raycast to is the trajectory
+      let obj = main.activeObject;
+      if (obj.type === 'SoundObject') {
+        if (obj.trajectory) {
+          obj = obj.trajectory;
+        }
+        else {
+          return;
+        }
+      }
+
+      switch (obj.type) {
         case 'SoundTrajectory':
-          break;
         case 'SoundZone':
-          const intersection = main.activeObject.objectUnderMouse(main.ray);
+          const intersection = obj.objectUnderMouse(main.ray);
           if (intersection) {
-            main.activeObject.showCursor(intersection.object, intersection.point);
+            obj.showCursor(intersection.object, intersection.point);
           }
           else {
-            main.activeObject.hideCursor();
+            obj.hideCursor();
           }
           break;
         default:

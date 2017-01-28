@@ -290,6 +290,7 @@ export default class SoundZone {
   }
 
   setInactive() {
+    this.hideCursor();
     this.deselectPoint();
     this.isActive = false;
     this.pointObjects.forEach(obj => (obj.visible = false));
