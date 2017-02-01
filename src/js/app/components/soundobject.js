@@ -94,7 +94,7 @@ export default class SoundObject {
 
     cone.name = 'cone';
     cone.baseColor = coneColor;
-    cone.hoverColor = function() { 
+    cone.hoverColor = function() {
       let c = this.baseColor.clone();
       c.offsetHSL(0,-0.05,0.1);
       return c;
@@ -148,7 +148,7 @@ export default class SoundObject {
             object.sound.source.stop();
           }
 
-          if (object && object.type === "SoundObject") { 
+          if (object && object.type === "SoundObject") {
             /* attach omnidirectional sound */
             console.log('attaching omni sound');
           }
@@ -244,7 +244,7 @@ export default class SoundObject {
   changeRadius() {
     if (this.sound && this.sound.volume) {
       const r = 0.5 + 0.5*this.sound.volume.gain.value;
-      this.containerObject.scale.x = this.containerObject.scale.y = this.containerObject.scale.z = r;
+      this.omniSphere.scale.x = this.omniSphere.scale.y = this.omniSphere.scale.z = r;
     }
   }
 
@@ -278,13 +278,13 @@ export default class SoundObject {
     let circVertices = cone.geometry.vertices.slice(0,-1);
     let center = new THREE.Vector3();
     center.lerpVectors(circVertices[0], circVertices[Math.round(circVertices.length/2)], 0.5);
-    
+
     circVertices.forEach(vertex => {
       let v = new THREE.Vector3().subVectors(vertex, center).normalize();
       vertex.copy(center.clone().addScaledVector(v, r));
     })
 
-    cone.geometry.verticesNeedUpdate = true;  
+    cone.geometry.verticesNeedUpdate = true;
   }
 
   pointCone(cone, point) {
@@ -319,7 +319,7 @@ export default class SoundObject {
         if( vector3.y < 0 ) lat *= -1;
 
         return [ lng,lat ];
-        
+
       })( coneRotation );
     cone.long = longlat[0];
     cone.lat = longlat[1];
