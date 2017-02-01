@@ -136,6 +136,14 @@ export default class SoundObject {
     m.elements[14] = mz;
   }
 
+  setOmniAudioPosition(cone) {
+
+    const q = new THREE.Vector3();
+    cone.updateMatrixWorld();
+    q.setFromMatrixPosition(cone.matrixWorld);
+    this.sound.panner.setPosition(q.x, q.y, q.z);
+  }
+
   loadSound(soundFileName, audio, object) {
     const context = audio.context;
 
@@ -221,6 +229,10 @@ export default class SoundObject {
       for (const i in this.cones) {
         this.setAudioPosition(this.cones[i]);
       }
+    }
+
+    if (this.sound){
+      this.setOmniAudioPosition(this.omniSphere);
     }
   }
 
@@ -385,6 +397,9 @@ export default class SoundObject {
         for (const i in this.cones) {
           this.setAudioPosition(this.cones[i]);
         }
+      }
+      if (this.sound) {
+        this.setOmniAudioPosition(this.omniSphere);
       }
     }
   }

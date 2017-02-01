@@ -2,7 +2,7 @@ export default class GUIWindow {
   constructor(main) {
     this.id = null;        // uuid of displayed "shape" or "containerObject"
     this.obj = null;       // the object whose information is being displayed
-    
+
     this.listeners = [];
 
     this.app = main;
@@ -66,7 +66,7 @@ export default class GUIWindow {
                 this.updateObjectGUI(obj);
             }
             break;
-        case 'SoundZone': 
+        case 'SoundZone':
             if (this.id !== obj.shape.uuid) {
                 // init a new gui
                 this.clear();
@@ -219,7 +219,7 @@ export default class GUIWindow {
         value: this.app.isEditingObject ? 'Exit editor' : 'Edit object',
         cls: 'edit-toggle',
         events: [{
-          type: 'click', 
+          type: 'click',
           callback: this.toggleEditObject.bind(this)
         }]
       });
@@ -233,7 +233,7 @@ export default class GUIWindow {
       var addConeElem = this.addParameter({
         value: 'Add cone',
         events: [{
-          type: 'click', 
+          type: 'click',
           callback: this.addSound.bind(this)
         }]
       });
@@ -255,11 +255,11 @@ export default class GUIWindow {
     var addTrajectoryElem = this.addParameter({
       value: 'Add trajectory',
       events: [{
-        type: 'click', 
+        type: 'click',
         callback: this.app.toggleAddTrajectory.bind(this.app, true)
       }]
     });
-    addTrajectoryElem.id = 'add-trajectory'    
+    addTrajectoryElem.id = 'add-trajectory'
   }
 
   // set up initial parameters for a sound object cone
@@ -341,16 +341,16 @@ export default class GUIWindow {
       {
           //flips the Y axis
           lat = Math.PI / 2 - lat;
-      
+
           //distribute to sphere
           out.set(
                       Math.sin( lat ) * Math.sin( lng ),
                       Math.cos( lat ),
                       Math.sin( lat ) * Math.cos( lng )
           );
-      
+
           return out;
-      
+
       })( long, lat, object.containerObject.position.clone() );
       if (v.x === 0) { v.x = 0.0001; }
       const point = object.containerObject.position.clone().add(v);
@@ -361,7 +361,7 @@ export default class GUIWindow {
       property: 'File',
       value: cone.filename,
       events: [{
-        type: 'click', 
+        type: 'click',
         callback: this.addSound.bind(this)
       }]
     }, elem);
@@ -560,7 +560,7 @@ export default class GUIWindow {
 
         // check if option to add trajectory still exists
         var addTrajectory = document.getElementById('add-trajectory');
-        if (addTrajectory) { 
+        if (addTrajectory) {
           this.container.removeChild(addTrajectory);
           this.addTrajectory(object);
         }
@@ -590,7 +590,7 @@ export default class GUIWindow {
             this.replaceTextContent(cones[i].querySelector('.lat .value'), cone.lat * 180 / Math.PI);
             this.replaceTextContent(cones[i].querySelector('.long .value'), cone.long * 180 / Math.PI);
             this.replaceTextContent(cones[i].querySelector('.volume .value'), cone.sound.volume.gain.value, 2, true);
-            this.replaceTextContent(cones[i].querySelector('.spread .value'), cone.sound.spread, 2, true); 
+            this.replaceTextContent(cones[i].querySelector('.spread .value'), cone.sound.spread, 2, true);
           }
           else {
             cones[i].style.display = 'none';
@@ -629,7 +629,7 @@ export default class GUIWindow {
 
           // load sound onto obect
           switch (obj.type) {
-            case 'SoundTrajectory': 
+            case 'SoundTrajectory':
               obj = obj.parentSoundObject;
             case 'SoundObject':
               // check if sound is attaching to omnisphere or cone
@@ -637,11 +637,13 @@ export default class GUIWindow {
                 obj.loadSound(path, self.app.audio, obj)
                   .then((sound) => {
                     /* TODO: PROPERLY ATTACH SOUND HERE */
-                    console.log("TODO: DO THIS PROPERLY",sound);
-                    console.log("Attaching omnisphere sound",sound);
+                    sound.panner.distanceModel = 'inverse';
+                    sound.panner.refDistance = 100;
                     obj.sound = sound;
                     obj.sound.name = file.name;
                     self.replaceTextContent(span, file.name);
+                    console.log("TODO: DO THIS PROPERLY",sound);
+                    console.log("Attaching omnisphere sound",sound);
                   })
                   .catch((err) => {
                     console.log('error');
@@ -795,14 +797,14 @@ export default class GUIWindow {
         var title = document.createElement('h4');
         title.appendChild(document.createTextNode(name));
 
-        div.appendChild(title);        
+        div.appendChild(title);
       // }
       this.container.insertBefore(div, siblingAfter || null);
       return div;
   }
 
   // add a line for the parameter in the UI
-  // parameter p can contain properties: 
+  // parameter p can contain properties:
   //      property
   //      value
   //      cls:     class name for quicker dom access
@@ -870,8 +872,8 @@ export default class GUIWindow {
   // updating text in html
   replaceTextContent(parent, text, sigfigs, float) {
     while(parent.firstChild) { parent.removeChild(parent.firstChild); }
-    if (!isNaN(text)) { 
-      text = (+text).toFixed(sigfigs || 2); 
+    if (!isNaN(text)) {
+      text = (+text).toFixed(sigfigs || 2);
       if (!float) text = +text;
     }
     parent.appendChild(document.createTextNode(text));
