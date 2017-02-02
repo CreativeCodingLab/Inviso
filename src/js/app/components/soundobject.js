@@ -28,6 +28,7 @@ export default class SoundObject {
       transparent: true,
     });
     this.omniSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    this.omniSphere.name = 'omniSphere';
 
     const raycastSphereGeometry = new THREE.SphereBufferGeometry(150, 100, 100);
     const raycastSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, visible: false });
@@ -85,8 +86,6 @@ export default class SoundObject {
     const cone = new THREE.Mesh(coneGeo, coneMaterial);
 
     cone.sound = sound;
-    cone.sound.panner.refDistance = 100;
-    cone.sound.panner.distanceModel = 'inverse';
     cone.sound.panner.coneInnerAngle = Math.atan(coneWidth / coneHeight) * (180 / Math.PI);
     cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
     cone.sound.panner.coneOuterGain = 0.05;
@@ -108,40 +107,34 @@ export default class SoundObject {
     return cone;
   }
 
-  setAudioPosition(cone) {
-    const p = new THREE.Vector3();
-    const q = new THREE.Vector3();
-    const m = cone.matrixWorld;
-
-    const mx = m.elements[12];
-    const my = m.elements[13];
-    const mz = m.elements[14];
-
-    const vec = new THREE.Vector3(0, 0, 1);
-
-    p.setFromMatrixPosition(cone.matrixWorld);
-
-    cone.updateMatrixWorld();
-    q.setFromMatrixPosition(cone.matrixWorld);
-    cone.sound.panner.setPosition(q.x, q.y, q.z);
-
-    m.elements[12] = m.elements[13] = m.elements[14] = 0;
-
-    vec.applyProjection(m);
-    vec.normalize();
-    cone.sound.panner.setOrientation(vec.x, vec.y, vec.z);
-
-    m.elements[12] = mx;
-    m.elements[13] = my;
-    m.elements[14] = mz;
-  }
-
-  setOmniAudioPosition(cone) {
+  setAudioPosition(object) {
 
     const q = new THREE.Vector3();
-    cone.updateMatrixWorld();
-    q.setFromMatrixPosition(cone.matrixWorld);
-    this.sound.panner.setPosition(q.x, q.y, q.z);
+    object.updateMatrixWorld();
+    q.setFromMatrixPosition(object.matrixWorld);
+    object.sound.panner.setPosition(q.x, q.y, q.z);
+
+    if (object.name == 'cone') {
+      const p = new THREE.Vector3();
+      const q = new THREE.Vector3();
+      const m = object.matrixWorld;
+
+      const mx = m.elements[12];
+      const my = m.elements[13];
+      const mz = m.elements[14];
+
+      const vec = new THREE.Vector3(0, 0, 1);
+
+      m.elements[12] = m.elements[13] = m.elements[14] = 0;
+
+      vec.applyProjection(m);
+      vec.normalize();
+      object.sound.panner.setOrientation(vec.x, vec.y, vec.z);
+
+      m.elements[12] = mx;
+      m.elements[13] = my;
+      m.elements[14] = mz;
+    }
   }
 
   loadSound(soundFileName, audio, object) {
@@ -166,6 +159,8 @@ export default class SoundObject {
           sound.source.loop = true;
           sound.panner = context.createPanner();
           sound.panner.panningModel = 'HRTF';
+          sound.panner.distanceModel = 'inverse';
+          sound.panner.refDistance = 100;
           sound.volume = context.createGain();
           sound.source.connect(sound.volume);
           sound.volume.connect(sound.panner);
@@ -231,8 +226,8 @@ export default class SoundObject {
       }
     }
 
-    if (this.sound){
-      this.setOmniAudioPosition(this.omniSphere);
+    if (this.omniSphere.sound){
+      this.setAudioPosition(this.omniSphere);
     }
   }
 
@@ -254,8 +249,8 @@ export default class SoundObject {
   }
 
   changeRadius() {
-    if (this.sound && this.sound.volume) {
-      const r = 0.5 + 0.5*this.sound.volume.gain.value;
+    if (this.omniSphere.sound && this.omniSphere.sound.volume) {
+      const r = 0.5 + 0.5*this.omniSphere.sound.volume.gain.value;
       this.omniSphere.scale.x = this.omniSphere.scale.y = this.omniSphere.scale.z = r;
     }
   }
@@ -354,8 +349,8 @@ export default class SoundObject {
       this.cones[i].sound.source.stop();
     }
 
-    if (this.sound && this.sound.source) {
-      this.sound.source.stop();
+    if (this.omniSphere.sound && this.omniSphere.sound.source) {
+      this.omniSphere.sound.source.stop();
     }
   }
 
@@ -398,8 +393,8 @@ export default class SoundObject {
           this.setAudioPosition(this.cones[i]);
         }
       }
-      if (this.sound) {
-        this.setOmniAudioPosition(this.omniSphere);
+      if (this.omniSphere.sound) {
+        this.setAudioPosition(this.omniSphere);
       }
     }
   }

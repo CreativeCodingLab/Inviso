@@ -637,11 +637,10 @@ export default class GUIWindow {
                 obj.loadSound(path, self.app.audio, obj)
                   .then((sound) => {
                     /* TODO: PROPERLY ATTACH SOUND HERE */
-                    sound.panner.distanceModel = 'inverse';
-                    sound.panner.refDistance = 100;
-                    obj.sound = sound;
-                    obj.sound.name = file.name;
+                    obj.omniSphere.sound = sound;
+                    obj.omniSphere.sound.name = file.name;
                     self.replaceTextContent(span, file.name);
+                    obj.setAudioPosition(obj.omniSphere)
                     console.log("TODO: DO THIS PROPERLY",sound);
                     console.log("Attaching omnisphere sound",sound);
                   })
@@ -685,6 +684,7 @@ export default class GUIWindow {
                       // this is clumsy but point cone @ direction of head
                       let v = self.app.head.position.clone();
                       cone.lookAt(v.sub(obj.containerObject.position));
+                      obj.setAudioPosition(cone);
 
                       // automatically enter edit mode after brief delay
                       window.setTimeout(function() {
