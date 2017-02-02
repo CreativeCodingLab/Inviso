@@ -145,24 +145,24 @@ export default class GUIWindow {
       }//end setObjectPosition
 
       function changeVolume(dx) {
-        if (object.sound && object.sound.volume) {
+        if (object.omniSphere.sound && object.omniSphere.sound.volume) {
           // clamp value to (0.05, 2)
-          const volume = Math.max(Math.min(object.sound.volume.gain.value + dx/50, 2), 0.05);
-          object.sound.volume.gain.value = volume;
+          const volume = Math.max(Math.min(object.omniSphere.sound.volume.gain.value + dx/50, 2), 0.05);
+          object.omniSphere.sound.volume.gain.value = volume;
           object.changeRadius();
         }
       }
 
       this.addParameter({
           property: 'File',
-          value: object.sound ? object.sound.name.split('/').pop() : 'None',
+          value: object.omniSphere.sound ? object.omniSphere.sound.name.split('/').pop() : 'None',
           type: 'file-input',
           events: [{ type: 'click', callback: this.addSound.bind(this) }]
       },elem).id = "omnisphere-sound-loader";
 
       this.addParameter({
           property: 'Volume',
-          value: object.sound && object.sound.volume ? object.sound.volume.gain.value : 'N/A',
+          value: object.omniSphere.sound && object.omniSphere.sound.volume ? object.omniSphere.sound.volume.gain.value : 'N/A',
           type: 'number',
           cls: 'volume',
           bind: changeVolume
@@ -543,7 +543,7 @@ export default class GUIWindow {
 
       // update sound volume
       var volume = this.container.querySelector('.volume .value');
-      this.replaceTextContent(volume, object.sound && object.sound.volume ? object.sound.volume.gain.value : 'N/A');
+      this.replaceTextContent(volume, object.omniSphere.sound && object.omniSphere.sound.volume ? object.omniSphere.sound.volume.gain.value : 'N/A');
 
       // update position parameters
       var pos = object.containerObject.position;
