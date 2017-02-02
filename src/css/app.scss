@@ -27,11 +27,12 @@
   padding: 0px 10px;
   padding-bottom: 4px;
   cursor: pointer;
-  background-color: #60a;
+  background-color: #0066ff;
   font-size: 30px;
 }
 #add-object-button.active {
-  background-color: #0066ff;
+  background-color: #f44b76
+;
 }
 
 #guis{
@@ -51,7 +52,7 @@
 #guis > div+div {
   border-top:0.5px solid #aaa;
 }
-#guis h4 { 
+#guis h4 {
   position:relative;
   margin: 0;
   font-weight:400;
@@ -59,8 +60,8 @@
 #guis h4+* {
   margin-top:1em;
 }
-#guis div>span { 
-  font-size: 0.8em; 
+#guis div>span {
+  font-size: 0.8em;
   vertical-align: top;
 }
 
@@ -99,7 +100,7 @@
 }
 
 #guis .cone, #guis.editor .cone {
-  color: black;  
+  color: black;
 }
 #guis .cone .valueSpan, #guis.editor .cone .valueSpan {
   border-bottom-color: #555;

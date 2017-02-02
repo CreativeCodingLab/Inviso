@@ -93,11 +93,11 @@ body {
   padding: 0px 10px;
   padding-bottom: 4px;
   cursor: pointer;
-  background-color: #60a;
+  background-color: #0066ff;
   font-size: 30px; }
 
 #add-object-button.active {
-  background-color: #0066ff; }
+  background-color: #f44b76; }
 
 #guis {
   position: absolute;
