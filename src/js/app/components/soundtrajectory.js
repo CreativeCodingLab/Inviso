@@ -312,7 +312,7 @@ export default class SoundTrajectory {
 
   deselectPoint() {
     if (this.selectedPoint) {
-      this.selectedPoint.children[0].material.color.set(0xff0055);
+      this.selectedPoint.children[0].material.color.set(0x999999);
       this.selectedPoint = null;
     }
   }

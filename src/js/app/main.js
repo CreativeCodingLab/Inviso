@@ -422,6 +422,12 @@ export default class Main {
       this.originalCameraCenter = this.controls.threeControls.center.clone();
     }
 
+    if (this.activeObject.type == 'SoundTrajectory') {
+      // return control to parent sound object
+      this.activeObject.deselectPoint();
+      this.activeObject = this.activeObject.parentSoundObject;
+    }
+
     this.tweenToObjectView();
   }
 

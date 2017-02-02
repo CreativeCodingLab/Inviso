@@ -109,10 +109,10 @@ export default class SoundObject {
 
   setAudioPosition(object) {
 
-    const q = new THREE.Vector3();
+    const o = new THREE.Vector3();
     object.updateMatrixWorld();
-    q.setFromMatrixPosition(object.matrixWorld);
-    object.sound.panner.setPosition(q.x, q.y, q.z);
+    o.setFromMatrixPosition(object.matrixWorld);
+    object.sound.panner.setPosition(o.x, o.y, o.z);
 
     if (object.name == 'cone') {
       const p = new THREE.Vector3();
@@ -383,9 +383,11 @@ export default class SoundObject {
         }
       }
 
-      this.containerObject.position.copy(this.trajectory.spline.getPointAt(this.trajectoryClock));
-      this.altitudeHelper.position.copy(this.trajectory.spline.getPointAt(this.trajectoryClock));
-      this.axisHelper.position.copy(this.trajectory.spline.getPointAt(this.trajectoryClock));
+      let pointOnTrajectory = this.trajectory.spline.getPointAt(this.trajectoryClock);
+      this.containerObject.position.copy(pointOnTrajectory);
+      this.raycastSphere.position.copy(pointOnTrajectory);
+      this.altitudeHelper.position.copy(pointOnTrajectory);
+      this.axisHelper.position.copy(pointOnTrajectory);
       this.altitudeHelper.position.y = 0;
 
       if (this.cones[0]) {
