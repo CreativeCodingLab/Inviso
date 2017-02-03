@@ -78,13 +78,19 @@
   border-bottom: 1px dotted #555;
   display:inline-block;
 
+  max-width:90px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+#guis {
   -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Chrome/Safari/Opera */
-     -khtml-user-select: none; /* Konqueror */
-       -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  not supported by any browser */
+  -webkit-user-select: none; /* Chrome/Safari/Opera */
+   -khtml-user-select: none; /* Konqueror */
+     -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                not supported by any browser */
 }
 
 .property + .valueSpan { margin-left:80px; }
@@ -97,19 +103,27 @@
   border-bottom-color:white;
 }
 
-#guis .edit-toggle:before {
-  content:'( ';
-}
-#guis .edit-toggle:after {
-  content:' )';
-}
-
 #guis .edit-toggle {
   line-height:1.2em;
   color:indigo;
 }
 #guis.editor .edit-toggle {
   color:skyblue;
+}
+
+#guis .remove-file {
+  padding:0 2px;
+  margin: 0 2px;
+  color: #f44b76;
+  cursor:pointer;
+  font-size:20px;
+  line-height:11px;
+  display:inline-block;
+  vertical-align: top;
+  font-weight:bold;
+}
+#guis .remove-file:hover {
+  color:pink;
 }
 
 #guis .cone, #guis.editor .cone {

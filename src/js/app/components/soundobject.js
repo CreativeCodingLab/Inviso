@@ -145,13 +145,14 @@ export default class SoundObject {
       fetch(soundFileName)
         .then(response => response.arrayBuffer())
         .then(buffer => context.decodeAudioData(buffer, (decodedData) => {
-          if (object && object.sound && object.sound.source) {
-            object.sound.source.stop();
-          }
-
           if (object && object.type === "SoundObject") {
             /* attach omnidirectional sound */
             console.log('attaching omni sound');
+            object = object.omniSphere;
+          }
+
+          if (object && object.sound && object.sound.source) {
+            object.sound.source.stop();
           }
 
           const sound = {};
@@ -252,6 +253,9 @@ export default class SoundObject {
     if (this.omniSphere.sound && this.omniSphere.sound.volume) {
       const r = 0.5 + 0.5*this.omniSphere.sound.volume.gain.value;
       this.omniSphere.scale.x = this.omniSphere.scale.y = this.omniSphere.scale.z = r;
+    }
+    else {
+      this.omniSphere.scale.x = this.omniSphere.scale.y = this.omniSphere.scale.z = 1;
     }
   }
 

@@ -151,6 +151,7 @@ export default class GUIWindow {
           property: 'File',
           value: object.omniSphere.sound ? object.omniSphere.sound.name.split('/').pop() : 'None',
           type: 'file-input',
+          display: object.omniSphere.sound,
           events: [{ type: 'click', callback: this.addSound.bind(this) }]
       },elem).id = "omnisphere-sound-loader";
 
@@ -482,6 +483,7 @@ export default class GUIWindow {
           property: 'File',
           value: zone.sound ? zone.sound.name.split('/').pop() : 'None',
           type: 'file-input',
+          display: zone.sound,
           events: [{ type: 'click', callback: this.addSound.bind(this) }]
       },elem);
 
@@ -620,16 +622,22 @@ export default class GUIWindow {
               if (span.parentNode.id === "omnisphere-sound-loader") {
                 obj.loadSound(path, self.app.audio, obj)
                   .then((sound) => {
-                    /* TODO: PROPERLY ATTACH SOUND HERE */
+                    // check for existing sound
+                    if (obj.omniSphere.sound) {
+                      // copy properties of previous sound
+                      sound.volume.gain.value = obj.omniSphere.sound.volume.gain.value;
+                      sound.panner.refDistance = obj.omniSphere.sound.panner.refDistance;
+                      sound.panner.distanceModel = obj.omniSphere.sound.panner.distanceModel;
+                    }
                     obj.omniSphere.sound = sound;
                     obj.omniSphere.sound.name = file.name;
                     self.replaceTextContent(span, file.name);
-                    obj.setAudioPosition(obj.omniSphere)
-                    console.log("TODO: DO THIS PROPERLY",sound);
-                    console.log("Attaching omnisphere sound",sound);
+                    obj.setAudioPosition(obj.omniSphere);
+                    span.nextSibling.style.display = 'inline-block';
                   })
                   .catch((err) => {
-                    console.log('error');
+                    // no file was loaded: do nothing
+                    console.log(err);
                   });
               }
               else {
@@ -692,9 +700,11 @@ export default class GUIWindow {
                 .then(() => {
                   // replace text with file name
                   self.replaceTextContent(span, file.name);
+                  span.nextSibling.style.display = 'inline-block';
                 })
                 .catch((err) => {
                   // no file was loaded: do nothing
+                  console.log(err);
                 });
               break;
             default:
@@ -703,6 +713,22 @@ export default class GUIWindow {
         }
       };
       input.click();
+  }
+
+  detachSound(fileSpan, removeSpan) {
+    fileSpan.innerHTML = 'None';
+    removeSpan.style.display = 'none';
+
+    if (this.obj.type === "SoundObject") {
+      if (this.obj.omniSphere.sound && this.obj.omniSphere.sound.source) {
+        this.obj.omniSphere.sound.source.stop();
+        this.obj.omniSphere.sound = null;
+        this.obj.changeRadius();
+      }
+    }
+    if (this.obj.type === "SoundZone") {
+      this.obj.clear();
+    }
   }
 
   // move into/out of object edit mode
@@ -858,6 +884,16 @@ export default class GUIWindow {
       // append all values to dom
       if (p.property != undefined) { div.appendChild(prop); }
       if (p.value != undefined) { div.appendChild(val); }
+
+      if (p.type == 'file-input') {
+        var removeFile = document.createElement('span');
+        removeFile.appendChild(document.createTextNode('×'));
+        removeFile.className = 'remove-file';
+        div.appendChild(removeFile);
+
+        removeFile.style.display = p.display ? 'inline-block' : 'none';
+        removeFile.onclick = this.detachSound.bind(this, val, removeFile);
+      }
 
       container.append(div);
       return div;

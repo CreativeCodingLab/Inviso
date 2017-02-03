@@ -148,7 +148,7 @@ export default class SoundTrajectory {
    */
   isUnderMouse(raycaster) {
     if (this.isActive) {
-      return raycaster.intersectObjects(this.objects).length > 0;
+      return raycaster.intersectObjects(this.objects, true).length > 0;
     }
   }
 
