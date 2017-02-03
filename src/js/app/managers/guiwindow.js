@@ -99,15 +99,9 @@ export default class GUIWindow {
   // add navigation arrows
   addNav(e, elem) {
     var arrow = document.createElement('div');
-    arrow.className = 'nav nav-' + e.direction;
+    arrow.className = 'nav nav-' + e.direction + ' nav-' + e.type;
 
-    let glyph;
-    if (e.type === 'cone') {
-      glyph = e.direction === 'left' ? '‹' : '›';
-    }
-    else {
-      glyph = e.direction === 'left' ? '⦉' : '⦊';
-    }
+    let glyph = e.direction === 'left' ? '‹' : '›';
 
     arrow.appendChild(document.createTextNode(glyph));
     elem.appendChild(arrow);
@@ -213,16 +207,6 @@ export default class GUIWindow {
         value: object.cones.length
       }, gElem);
       coneCount.id = 'cone-count';
-
-      // "edit object" dialog
-      this.addParameter({
-        value: this.app.isEditingObject ? 'Exit editor' : 'Edit object',
-        cls: 'edit-toggle',
-        events: [{
-          type: 'click',
-          callback: this.toggleEditObject.bind(this)
-        }]
-      });
 
       // insert cone window
       object.cones.forEach((cone) => {
@@ -731,7 +715,6 @@ export default class GUIWindow {
       this.app.enterEditObjectView();
     }
     else {
-      this.exitEditObject();
       this.app.exitEditObjectView();
     }
   }
@@ -794,13 +777,23 @@ export default class GUIWindow {
   // add a new div
   addElem(name, siblingAfter) {
       var div = document.createElement('div');
-      // if (name) {
-        var title = document.createElement('h4');
-        title.appendChild(document.createTextNode(name));
+      var title = document.createElement('h4');
+      title.appendChild(document.createTextNode(name));
 
-        div.appendChild(title);
-      // }
+      div.appendChild(title);
       this.container.insertBefore(div, siblingAfter || null);
+
+      if (this.obj.type == "SoundObject") {
+        // "edit object" dialog
+        this.addParameter({
+          value: this.app.isEditingObject ? 'Exit editor' : 'Edit object',
+          cls: 'edit-toggle',
+          events: [{
+            type: 'click',
+            callback: this.toggleEditObject.bind(this)
+          }]
+        }, title);        
+      }
       return div;
   }
 
@@ -872,12 +865,13 @@ export default class GUIWindow {
 
   // updating text in html
   replaceTextContent(parent, text, sigfigs, float) {
-    while(parent.firstChild) { parent.removeChild(parent.firstChild); }
+    // while(parent.firstChild) { parent.removeChild(parent.firstChild); }
     if (!isNaN(text)) {
       text = (+text).toFixed(sigfigs || 2);
       if (!float) text = +text;
     }
-    parent.appendChild(document.createTextNode(text));
+    parent.innerHTML = text;
+    // parent.appendChild(document.createTextNode(text));
   }
 
 }

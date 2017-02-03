@@ -55,7 +55,9 @@
 #guis h4 {
   position:relative;
   margin: 0;
+  margin-top:0.2em;
   font-weight:400;
+  text-align:center;
 }
 #guis h4+* {
   margin-top:1em;
@@ -94,9 +96,20 @@
 #guis.editor .valueSpan {
   border-bottom-color:white;
 }
+
+#guis .edit-toggle:before {
+  content:'( ';
+}
+#guis .edit-toggle:after {
+  content:' )';
+}
+
+#guis .edit-toggle {
+  line-height:1.2em;
+  color:indigo;
+}
 #guis.editor .edit-toggle {
-  background:#333;
-  font-weight:bold;
+  color:skyblue;
 }
 
 #guis .cone, #guis.editor .cone {
@@ -106,27 +119,32 @@
   border-bottom-color: #555;
 }
 
+#guis.editor .nav-object {
+  color:rgba(220,220,220,0.5);
+}
+#guis.editor .nav-object:hover {
+  color:white;
+}
 #guis .nav {
   color:rgba(85,85,85,0.5);
   transition: color 100ms ease;
 
-  top:50%;
+  top:0;
   cursor:pointer;
-  padding:12px;
+  padding:0 12px;
   font-size:40px;
   position:absolute;
+  line-height:1.1em;
 }
 #guis .nav:hover {
   color:#333;
   text-shadow:0 0 5px #aaa;
 }
 #guis .nav-left {
-  transform:translate(-100%,-50%);
-  margin-left:-15px;
+  left:0;
 }
 #guis .nav-right {
   right:0;
-  transform:translate(100%,-50%);
 }
 
 input[type="file"] {

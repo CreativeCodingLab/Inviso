@@ -408,10 +408,10 @@ export default class Main {
   enterEditObjectView() {
     // slightly hacky fix: orbit controls tween works poorly from top view
     if (this.controls.threeControls.getPolarAngle() < 0.01) {
-      this.controls.threeControls.constraint.rotateUp(-0.05);
+      this.controls.threeControls.constraint.rotateUp(-0.02);
       this.controls.threeControls.update();
 
-      this.cameraViewer.controls.constraint.rotateUp(-0.05);
+      this.cameraViewer.controls.constraint.rotateUp(-0.02);
       this.cameraViewer.controls.update();
     }
 
@@ -453,7 +453,7 @@ export default class Main {
       }
     });
 
-    if (!this.isAddingTrajectory) {
+    if (!this.isAddingTrajectory && !this.isAddingObject) {
       new TWEEN.Tween(this.camera.threeCamera.position)
         .to(this.originalCameraPosition, 800)
         .start();
@@ -504,8 +504,8 @@ export default class Main {
    * this is called, it will be reset to bird's eye.
    */
   toggleAddObject() {
-    this.reset();
     this.isAddingObject = !this.isAddingObject;
+    this.reset();
 
     var btn = document.getElementById('add-object-button');
     btn.classList.toggle('active', this.isAddingObject);
