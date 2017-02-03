@@ -111,7 +111,7 @@ export default class GUIWindow {
   // set up initial parameters for a sound object
   initObjectGUI(object) {
       var mesh = object.containerObject;
-      var elem = this.addElem('Object ' + (this.app.soundObjects.indexOf(object)+1));
+      var elem = this.addElem('Object ' + (this.app.soundObjects.indexOf(object)+1), true);
 
       function setObjectPosition(component,dx) {
         let destination = mesh.position.clone();
@@ -248,7 +248,7 @@ export default class GUIWindow {
 
   // set up initial parameters for a sound object cone
   addCone(cone) {
-    var elem = this.addElem('', document.getElementById('add-cone'));
+    var elem = this.addElem('', false, document.getElementById('add-cone'));
     elem.id = 'cone-'+cone.id;
     elem.className = 'cone';
 
@@ -775,7 +775,7 @@ export default class GUIWindow {
 
   //---------- dom building blocks -----------//
   // add a new div
-  addElem(name, siblingAfter) {
+  addElem(name, addEditParameter, siblingAfter) {
       var div = document.createElement('div');
       var title = document.createElement('h4');
       title.appendChild(document.createTextNode(name));
@@ -783,7 +783,7 @@ export default class GUIWindow {
       div.appendChild(title);
       this.container.insertBefore(div, siblingAfter || null);
 
-      if (this.obj.type == "SoundObject") {
+      if (addEditParameter) {
         // "edit object" dialog
         this.addParameter({
           value: this.app.isEditingObject ? 'Exit editor' : 'Edit object',
