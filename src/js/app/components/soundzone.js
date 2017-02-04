@@ -18,11 +18,12 @@ export default class SoundZone {
     this.isPlaying = false;
     this.selectedPoint;
     this.mouseOffsetX = 0, this.mouseOffsetY = 0;
+    this.volume = 1;
 
     this.containerObject = new THREE.Group();
     this.cursor = new THREE.Mesh(
       new THREE.SphereGeometry(15),
-      new THREE.MeshBasicMaterial({ 
+      new THREE.MeshBasicMaterial({
         color: 0xff1169,
         transparent: true,
         opacity: 0.5,
@@ -38,12 +39,18 @@ export default class SoundZone {
 
   underUser(audio) {
     if (this.sound && !this.isPlaying && this.loaded) {
+
+
+
       this.sound.source = audio.context.createBufferSource();
-      this.sound.source.loop = true;
-      this.sound.source.connect(audio.destination);
+      this.sound.source.gain.value = this.volume;
       this.sound.source.buffer = this.sound.buffer;
+      this.sound.source.loop = true;
+      this.sound.source.connect(this.sound.volume);
+
       this.sound.source.start(audio.context.currentTime);
-      this.sound.volume.gain.setTargetAtTime(0.3, audio.context.currentTime + 0.1, 0.1);
+
+      this.sound.volume.gain.setTargetAtTime(1.0, audio.context.currentTime + 0.1, 0.1);
       this.isPlaying = true;
     }
   }
@@ -51,7 +58,7 @@ export default class SoundZone {
   notUnderUser(audio) {
     if (this.sound && this.isPlaying && this.loaded) {
       this.sound.volume.gain.setTargetAtTime(0.0, audio.context.currentTime, 0.05);
-      this.sound.source.stop(audio.context.currentTime + 0.2);
+      this.sound.source.stop(audio.context.currentTime + 0.1);
       this.isPlaying = false;
     }
   }
@@ -59,8 +66,8 @@ export default class SoundZone {
   // remove sound file
   clear() {
     // stop audio stream if currently playing
-    if (this.isPlaying) { 
-      this.sound.source.stop(); 
+    if (this.isPlaying) {
+      this.sound.source.stop();
     }
     this.isPlaying = false;
     this.loaded = false;
@@ -219,7 +226,7 @@ export default class SoundZone {
 
     if (intersects.length > 0) {
       if (intersects[0].object.type === 'Line' || intersects[0].object === this.shape) {
-        return intersects[Math.floor(intersects.length / 2)];        
+        return intersects[Math.floor(intersects.length / 2)];
       }
 
       return intersects[0];
@@ -255,7 +262,7 @@ export default class SoundZone {
   updateZone(args) {
     const scene = this.spline.mesh.parent;
     this.containerObject.remove(this.spline.mesh, true);
-    this.containerObject.remove(this.shape, true);      
+    this.containerObject.remove(this.shape, true);
     this.renderPath(args);
     this.addToScene(scene);
   }

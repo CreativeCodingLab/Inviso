@@ -422,7 +422,7 @@ export default class GUIWindow {
       cls:'speed',
       bind: function(dx) {
         const speed = object.movementSpeed + dx/10;
-        object.movementSpeed = Math.min(Math.max(-20, speed), 20);
+        object.movementSpeed = Math.min(Math.max(-40, speed), 40);
         object.calculateMovementSpeed();
       }
     }, elem);
@@ -473,8 +473,11 @@ export default class GUIWindow {
       }
 
       function changeVolume(dx) {
-        if (zone.sound && zone.sound.volume) {
-          zone.sound.volume.gain.value += dx;
+        if (zone.sound) {
+
+          const volume = Math.max(Math.min(zone.sound.source.gain.value + dx/50, 2), 0.0);
+          zone.volume = volume;
+          zone.sound.source.gain.value = volume;
         }
       }
 
@@ -489,7 +492,7 @@ export default class GUIWindow {
 
       this.addParameter({
           property: 'Volume',
-          value: zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A',
+          value: zone.sound ? zone.sound.source.gain.value : 'N/A',
           type: 'number',
           cls: 'volume',
           bind: changeVolume
@@ -595,7 +598,7 @@ export default class GUIWindow {
       this.replaceTextContent(x, pos.x);
       this.replaceTextContent(z, pos.z);
       this.replaceTextContent(rotation, zone.containerObject.rotation.y * 180 / Math.PI);
-      this.replaceTextContent(volume, zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A');
+      this.replaceTextContent(volume, zone.sound ? zone.sound.source.gain.value : 'N/A');
   }
 
   // ------------ event callbacks ------------ //
@@ -818,7 +821,7 @@ export default class GUIWindow {
             type: 'click',
             callback: this.toggleEditObject.bind(this)
           }]
-        }, title);        
+        }, title);
       }
       return div;
   }
