@@ -43,18 +43,21 @@ export default class SoundZone {
       this.sound.source = audio.context.createBufferSource();
       this.sound.source.buffer = this.sound.buffer;
       this.sound.source.loop = true;
-      this.sound.source.connect(this.sound.volume);
+      this.sound.source.volume = audio.context.createGain();
+      this.sound.source.volume.gain.value = this.volume;
+      this.sound.source.connect(this.sound.source.volume);
+      this.sound.source.volume.connect(this.sound.volume);
 
       this.sound.source.start(audio.context.currentTime);
 
-      // this.sound.volume.gain.setTargetAtTime(this.volume, audio.context.currentTime + 0.1, 0.1);
+      this.sound.volume.gain.setTargetAtTime(1.0, audio.context.currentTime + 0.1, 0.1);
       this.isPlaying = true;
     }
   }
 
   notUnderUser(audio) {
     if (this.sound && this.isPlaying && this.loaded) {
-      // this.sound.volume.gain.setTargetAtTime(0.0, audio.context.currentTime, 0.05);
+      this.sound.volume.gain.setTargetAtTime(0.0, audio.context.currentTime, 0.05);
       this.sound.source.stop(audio.context.currentTime + 0.1);
       this.isPlaying = false;
     }
@@ -81,8 +84,11 @@ export default class SoundZone {
         this.sound.name = soundFileName;
         this.sound.source = context.createBufferSource();
         this.sound.volume = context.createGain();
+        this.sound.source.volume = context.createGain();
+        this.sound.source.connect(this.sound.source.volume);
+        this.sound.source.volume.connect(this.sound.volume);
         this.sound.volume.connect(audio.destination);
-        this.sound.volume.gain.value = 1.0;
+        this.sound.volume.gain.value = 0.0;
         this.sound.buffer = decodedData;
         this.loaded = true;
       }));

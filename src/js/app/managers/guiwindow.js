@@ -461,11 +461,11 @@ export default class GUIWindow {
       }
 
       function changeVolume(dx) {
-        if (zone.sound && zone.sound.volume) {
+        if (zone.sound) {
 
-          const volume = Math.max(Math.min(zone.sound.volume.gain.value + dx/50, 2), 0.0);
+          const volume = Math.max(Math.min(zone.sound.source.volume.gain.value + dx/50, 2), 0.0);
           zone.volume = volume;
-          zone.sound.volume.gain.value = volume;
+          zone.sound.source.volume.gain.value = volume;
         }
       }
 
@@ -480,7 +480,7 @@ export default class GUIWindow {
 
       this.addParameter({
           property: 'Volume',
-          value: zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A',
+          value: zone.sound ? zone.sound.source.volume.gain.value : 'N/A',
           type: 'number',
           cls: 'volume',
           bind: changeVolume
@@ -586,7 +586,7 @@ export default class GUIWindow {
       this.replaceTextContent(x, pos.x);
       this.replaceTextContent(z, pos.z);
       this.replaceTextContent(rotation, zone.containerObject.rotation.y * 180 / Math.PI);
-      this.replaceTextContent(volume, zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A');
+      this.replaceTextContent(volume, zone.sound ? zone.sound.source.volume.gain.value : 'N/A');
   }
 
   // ------------ event callbacks ------------ //
