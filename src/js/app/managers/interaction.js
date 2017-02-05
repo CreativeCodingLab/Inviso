@@ -281,7 +281,7 @@ export default class Interaction {
        *
        * If there is indeed an intersected object, set it as the activeObject.
        */
-      const everyComponent = [].concat(main.soundObjects, main.soundZones, main.soundTrajectories);
+      const everyComponent = [].concat(main.soundObjects, main.soundTrajectories, main.soundZones);
       const intersectObjects = everyComponent.filter((obj) => {
         return obj.isUnderMouse(main.ray);
       });
