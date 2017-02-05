@@ -77,7 +77,7 @@ export default {
   },
   ambientLight: {
     enabled: true,
-    color: 0x909090
+    color: 0x777777
   },
   directionalLight: {
     enabled: true,
@@ -85,11 +85,11 @@ export default {
     intensity: 1,
     multiplyScalar: 50,
     hue: 0.1,
-    saturation: 1,
-    lightness: 0.95,
-    x: -1,
-    y: 1.75,
-    z: 1
+    saturation: 0,
+    lightness: 0.5,
+    x: 0,
+    y: 30,
+    z: 0
   },
   shadow: {
     enabled: true,
@@ -97,12 +97,12 @@ export default {
     bias: 0,
     mapWidth: 2048,
     mapHeight: 2048,
-    near: 250,
-    far: 400,
-    top: 100,
-    right: 100,
-    bottom: -100,
-    left: -100
+    near: 0,
+    far: 2048,
+    top: 2048,
+    right: 2048,
+    bottom: -2048,
+    left: -2048
   },
   pointLight: {
     enabled: false,

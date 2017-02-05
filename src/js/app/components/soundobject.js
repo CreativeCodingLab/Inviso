@@ -29,6 +29,7 @@ export default class SoundObject {
     });
     this.omniSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     this.omniSphere.name = 'omniSphere';
+    this.omniSphere.castShadow = true;
 
     const raycastSphereGeometry = new THREE.SphereBufferGeometry(150, 100, 100);
     const raycastSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, visible: false });

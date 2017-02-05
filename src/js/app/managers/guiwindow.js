@@ -162,17 +162,7 @@ export default class GUIWindow {
           cls: 'volume',
           bind: changeVolume
       },elem);
-/*
-      if (object.sound) {
-        this.addParameter({
-          value: 'Remove sound',
-          events:[{
-            type: 'click',
-            callback: function() {}
-          }]
-        }, elem);
-      }
-*/
+
       /* global object parameters */
       var gElem = document.createElement('div');
       gElem.id = "object-globals";
@@ -473,11 +463,11 @@ export default class GUIWindow {
       }
 
       function changeVolume(dx) {
-        if (zone.sound) {
+        if (zone.sound && zone.sound.volume) {
 
-          const volume = Math.max(Math.min(zone.sound.source.gain.value + dx/50, 2), 0.0);
+          const volume = Math.max(Math.min(zone.sound.volume.gain.value + dx/50, 2), 0.0);
           zone.volume = volume;
-          zone.sound.source.gain.value = volume;
+          zone.sound.volume.gain.value = volume;
         }
       }
 
@@ -492,7 +482,7 @@ export default class GUIWindow {
 
       this.addParameter({
           property: 'Volume',
-          value: zone.sound ? zone.sound.source.gain.value : 'N/A',
+          value: zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A',
           type: 'number',
           cls: 'volume',
           bind: changeVolume
@@ -598,7 +588,7 @@ export default class GUIWindow {
       this.replaceTextContent(x, pos.x);
       this.replaceTextContent(z, pos.z);
       this.replaceTextContent(rotation, zone.containerObject.rotation.y * 180 / Math.PI);
-      this.replaceTextContent(volume, zone.sound ? zone.sound.source.gain.value : 'N/A');
+      this.replaceTextContent(volume, zone.sound && zone.sound.volume ? zone.sound.volume.gain.value : 'N/A');
   }
 
   // ------------ event callbacks ------------ //

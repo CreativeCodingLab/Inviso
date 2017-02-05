@@ -103,6 +103,16 @@ export default class Main {
     this.floor.rotation.x = Math.PI / 2;
     this.scene.add(this.floor);
 
+    const shadowFloor = new THREE.Mesh(planeGeometry.clone(), new THREE.MeshLambertMaterial({
+      color:0xf0f0f0,
+      side:THREE.DoubleSide,
+    }) );
+    shadowFloor.rotation.x = Math.PI / 2;
+    shadowFloor.position.y = -300;
+    shadowFloor.receiveShadow = true;
+    this.scene.add(shadowFloor);
+
+
     // Get Device Pixel Ratio first for retina
     if (window.devicePixelRatio) {
       Config.dpr = window.devicePixelRatio;
@@ -114,30 +124,11 @@ export default class Main {
     // Components instantiation
     this.camera = new Camera(this.renderer.threeRenderer);
     this.controls = new Controls(this.camera.threeCamera, document);
-    this.light = new Light(this.scene);
     this.loader = new THREE.OBJLoader();
+    this.light = new Light(this.scene);
 
     // Create and place lights in scene
-    const lights = ['ambient', 'directional'];
-    for (let i = 0; i < lights.length; i += 1) {
-      this.light.place(lights[i]);
-    }
-
-    const lightBoxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
-    const lightBoxMat = new THREE.MeshBasicMaterial( {
-      color: 0x0055FF,
-      transparent: true,
-      opacity: 0.1,
-      side: THREE.DoubleSide,
-    } );
-    this.editViewLightBox = new THREE.Mesh(lightBoxGeo, lightBoxMat);
-    this.editViewLightBox.visible = false;
-    this.scene.add(this.editViewLightBox);
-
-    // Create planar grid
-    // this.grid = new Geometry(this.scene);
-    // this.grid.make('plane')(5000, 5000, 10, 10);
-    // this.grid.place([0, 0, 0], [Math.PI / 2, 0, 0]);
+    ['ambient', 'directional'].forEach(l => this.light.place(l));
 
     /**
      * Setting up interface to create object/zone/trajectory instances.
