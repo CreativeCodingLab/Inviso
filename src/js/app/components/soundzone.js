@@ -171,15 +171,15 @@ export default class SoundZone {
     shapeFill.fromPoints(rotatedPoints);
     const shapeGeometry = new THREE.ShapeGeometry(shapeFill);
     shapeGeometry.rotateX(Math.PI / 2);
-    material = new THREE.MeshBasicMaterial({
+    material = new THREE.MeshLambertMaterial({
       color: 0xff1169,
       transparent: true,
       opacity: 0.2,
-      side: THREE.DoubleSide,
+      side: THREE.BackSide,
+      premultipliedAlpha: true
     });
 
     this.shape = new THREE.Mesh(shapeGeometry, material);
-
   }
 
   get objects() {

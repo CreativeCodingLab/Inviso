@@ -38,9 +38,7 @@ export default class GUIWindow {
 
   // clear gui and listeners
   clear() {
-    while (this.container.firstChild) {
-      this.container.removeChild(this.container.firstChild);
-    }
+    this.container.innerHTML = '';
     this.listeners = [];
   }
 
@@ -779,7 +777,7 @@ export default class GUIWindow {
     if (!this.dragEvent.editing) {
       return;
     }
-    const dx = e.x - this.dragEvent.x;
+    const dx = (e.x == undefined) ? e.movementX : e.x - this.dragEvent.x;
     this.dragEvent.x = e.x;
     this.dragEvent.call(dx);
   }
@@ -791,7 +789,58 @@ export default class GUIWindow {
     this.dragEvent = {};
   }
 
+addSwipeEvents(div, title, isObject) {
+    // add touch interactions
+    let x = null,
+        y = null,
+        dx = null,
+        dy = null;
+    // let bgColor;
+    title.onmousedown = function(e) {
+      x = e.clientX;
+      y = e.clientY;
+      // bgColor = div.style.backgroundColor;
+      // div.style.backgroundColor = '#ddd'
+    };
 
+    div.onmousemove = function(e) {
+      if (x == null || y == null) { return; }
+      dx = e.clientX - x;
+      dy = e.clientY - y;
+      if ( Math.abs(dx) > 15 ) {
+        if (dx > 0) {
+          title.style.marginLeft = Math.min(dx-10/2, 50) + 'px';
+        }
+        else {
+          title.style.marginLeft = Math.max(dx+10/2, -50) + 'px';
+        }
+      }
+      else {
+        title.style.marginLeft = 0;
+      }
+    };
+
+    var self = this;
+
+    div.onmouseup = function() {
+      if (x == null || y == null) { return; }
+      // div.style.backgroundColor = bgColor;
+      title.style.marginLeft = 0;
+      if (Math.abs(dx) >= 40) {
+        const direction = dx < 0 ? "left" : "right";
+        const objectType = isObject ? "object" : "cone";
+        self.nav({direction: direction, type:objectType});        
+      }
+      x = y = dx = dy = null;
+    };
+
+    div.onmouseleave = function (e) {
+      if (x == null || y == null) { return; }
+      if (e.target.parentNode != div) {
+        div.onmouseup();
+      }
+    };    
+  }
   //---------- dom building blocks -----------//
   // add a new div
   addElem(name, addEditParameter, siblingAfter) {
@@ -812,6 +861,10 @@ export default class GUIWindow {
             callback: this.toggleEditObject.bind(this)
           }]
         }, title);
+      }
+
+      if (addEditParameter || siblingAfter) {
+        this.addSwipeEvents(div, title, addEditParameter);
       }
       return div;
   }

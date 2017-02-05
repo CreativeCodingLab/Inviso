@@ -26,6 +26,7 @@ export default class SoundObject {
       color: 0xFFFFFF,
       opacity: 0.8,
       transparent: true,
+      premultipliedAlpha: true
     });
     this.omniSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     this.omniSphere.name = 'omniSphere';

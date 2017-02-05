@@ -96,7 +96,7 @@ export default class Main {
     const planeGeometry = new THREE.PlaneGeometry(Config.grid.size*2, Config.grid.size*2);
     const planeMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
-      side: THREE.DoubleSide,
+      side: THREE.BackSide,
       visible: false,
     });
     this.floor = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -105,7 +105,7 @@ export default class Main {
 
     const shadowFloor = new THREE.Mesh(planeGeometry.clone(), new THREE.MeshLambertMaterial({
       color:0xf0f0f0,
-      side:THREE.DoubleSide,
+      side:THREE.BackSide,
     }) );
     shadowFloor.rotation.x = Math.PI / 2;
     shadowFloor.position.y = -300;
