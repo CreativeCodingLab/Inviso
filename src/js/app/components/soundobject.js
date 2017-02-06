@@ -141,6 +141,8 @@ export default class SoundObject {
 
   loadSound(soundFileName, audio, object) {
     const context = audio.context;
+    this.mainMixer = context.createGain();
+    const mainMixer = this.mainMixer;
 
     let promise = new Promise(function(resolve, reject) {
 
@@ -167,7 +169,8 @@ export default class SoundObject {
           sound.volume = context.createGain();
           sound.source.connect(sound.volume);
           sound.volume.connect(sound.panner);
-          sound.panner.connect(audio.destination);
+          sound.panner.connect(mainMixer);
+          mainMixer.connect(audio.destination);
           sound.source.buffer = decodedData;
           sound.source.start(context.currentTime + 0.020);
           resolve( sound );
@@ -365,6 +368,13 @@ export default class SoundObject {
   }
   unpause() {
     this.isPaused = false;
+  }
+
+  mute() {
+    if (this.mainMixer) this.mainMixer.gain.value = 0;
+  }
+  unmute() {
+    if (this.mainMixer) this.mainMixer.gain.value = 1;
   }
 
   followTrajectory() {

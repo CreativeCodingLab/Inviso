@@ -83,11 +83,13 @@ export default class SoundZone {
         this.clear();
         this.sound.name = soundFileName;
         this.sound.source = context.createBufferSource();
+        this.mainMixer = context.createGain();
         this.sound.volume = context.createGain();
         this.sound.source.volume = context.createGain();
         this.sound.source.connect(this.sound.source.volume);
         this.sound.source.volume.connect(this.sound.volume);
-        this.sound.volume.connect(audio.destination);
+        this.sound.volume.connect(this.mainMixer);
+        this.mainMixer.connect(audio.destination);
         this.sound.volume.gain.value = 0.0;
         this.sound.buffer = decodedData;
         this.loaded = true;
@@ -378,5 +380,12 @@ export default class SoundZone {
       this.selectedPoint.children[0].material.color.set('red');
       this.selectedPoint = null;
     }
+  }
+
+  mute() {
+    this.mainMixer.gain.value = 0;
+  }
+  unmute() {
+    this.mainMixer.gain.value = 1;
   }
 }

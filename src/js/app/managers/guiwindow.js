@@ -724,6 +724,17 @@ export default class GUIWindow {
 
   // move into/out of object edit mode
   toggleEditObject() {
+
+    // Mutes the objects besides the one being edited
+    for(var i in this.app.soundObjects){
+      if ( this.app.soundObjects[i] !== this.app.activeObject ){
+        this.app.soundObjects[i].mute();
+      }
+    }
+    for(var i in this.app.soundZones){
+      this.app.soundZones[i].mute();
+    }
+
     if (!this.app.isEditingObject) {
       var span = this.container.querySelector('.edit-toggle .value');
       this.editor = span;
@@ -737,6 +748,15 @@ export default class GUIWindow {
   }
 
   exitEditObject() {
+
+    // Unmutes the objects besides the one being edited
+    for(var i in this.app.soundObjects){
+      this.app.soundObjects[i].unmute();
+    }
+    for(var i in this.app.soundZones){
+      this.app.soundZones[i].unmute();
+    }
+
     var span = this.container.querySelector('.edit-toggle .value');
     this.editor = null;
     this.container.classList.remove('editor');
@@ -829,7 +849,7 @@ addSwipeEvents(div, title, isObject) {
       if (Math.abs(dx) >= 40) {
         const direction = dx < 0 ? "left" : "right";
         const objectType = isObject ? "object" : "cone";
-        self.nav({direction: direction, type:objectType});        
+        self.nav({direction: direction, type:objectType});
       }
       x = y = dx = dy = null;
     };
@@ -839,7 +859,7 @@ addSwipeEvents(div, title, isObject) {
       if (e.target.parentNode != div) {
         div.onmouseup();
       }
-    };    
+    };
   }
   //---------- dom building blocks -----------//
   // add a new div
