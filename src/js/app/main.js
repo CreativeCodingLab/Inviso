@@ -501,6 +501,8 @@ export default class Main {
     var btn = document.getElementById('add-object-button');
     btn.classList.toggle('active', this.isAddingObject);
     btn.innerHTML = this.isAddingObject ? '×' : '+';
+
+    document.getElementById('help-add').style.display = 'none';
   }
 
   /**

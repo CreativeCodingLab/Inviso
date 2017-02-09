@@ -32,6 +32,7 @@ export default class Interaction {
       }
 
       if (this.keyboard.eventMatches(event, 'w')) {
+        document.getElementById('help-head').style.display = 'none';
         main.moveForward = 1 * main.movementSpeed;
       }
 
@@ -340,7 +341,7 @@ export default class Interaction {
       * In object edit mode a different interaction scheme is followed.
       */
       if (main.isEditingObject) {
-        if (!main.activeObject || !main.activeObject.cones) { 
+        if (!main.activeObject || !main.activeObject.cones) {
           console.log('wheres my cone :(', main.activeObject); //error check
         }
 

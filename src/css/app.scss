@@ -31,8 +31,7 @@
   font-size: 30px;
 }
 #add-object-button.active {
-  background-color: #f44b76
-;
+  background-color: #f44b76;
 }
 
 #guis{
@@ -180,4 +179,22 @@ input[type="file"] {
 #cam-control:active {
   cursor:grabbing;
   cursor:-webkit-grabbing;
+}
+
+.help-bubble {
+  z-index: 1;
+  float: left;
+  position:absolute;
+  right: 270px;
+  top: 10px;
+  padding:10px;
+  color:#FFF;
+  background:#777;
+  opacity: 0.75;
+  -webkit-border-radius:10px;
+  -moz-border-radius:10px;
+  border-radius:10px;
+  display: block;
+  font-size:12px;
+  line-height:1.25em;
 }

@@ -65,9 +65,12 @@ export default class CameraViewer {
 
     // add listeners
     container.addEventListener( 'mousedown', function() {
+
+      document.getElementById('help-camera').style.display = 'none';
+      
         if (!main.isAddingObject && !main.isAddingTrajectory) {
             main.controls.enableRotate();
-            uiControls.enableRotate = true;            
+            uiControls.enableRotate = true;
         }
     }, false );
 
