@@ -370,7 +370,7 @@ export default class GUIWindow {
       bind: setConeRotation.bind(this, "lat")
     }, elem);
     this.addParameter({
-      value: 'Delete',
+      value: 'Remove Cone',
       events:[{
         type:'click',
         callback: function() {

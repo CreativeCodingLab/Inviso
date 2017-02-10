@@ -77,7 +77,7 @@ body {
 
 #UIContainer {
   position: absolute;
-  right: 220px;
+  right: 200px;
   top: 0%;
   column-count: 1; }
 
@@ -245,8 +245,6 @@ input[type="file"] {
   z-index: 1;
   float: left;
   position: absolute;
-  right: 270px;
-  top: 10px;
   padding: 10px;
   color: #FFF;
   background: #777;

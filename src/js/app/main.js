@@ -97,7 +97,7 @@ export default class Main {
     const planeMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       side: THREE.BackSide,
-      visible: false,
+      visible: false
     });
     this.floor = new THREE.Mesh(planeGeometry, planeMaterial);
     this.floor.rotation.x = Math.PI / 2;
@@ -106,6 +106,8 @@ export default class Main {
     const shadowFloor = new THREE.Mesh(planeGeometry.clone(), new THREE.MeshLambertMaterial({
       color:0xf0f0f0,
       side:THREE.BackSide,
+      transparent: true,
+      opacity: 0.5
     }) );
     shadowFloor.rotation.x = Math.PI / 2;
     shadowFloor.position.y = -300;
@@ -392,7 +394,7 @@ export default class Main {
       });
 
       /* lightbox effect */
-      this.renderer.threeRenderer.setClearColor(0xe0eaf0);
+      this.renderer.threeRenderer.setClearColor(0xaaeeff);
     }
   }
 
