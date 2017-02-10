@@ -1,3 +1,5 @@
+import Helpers from '../../utils/helpers';
+
 export default class GUIWindow {
   constructor(main) {
     this.id = null;        // uuid of displayed "shape" or "containerObject"
@@ -464,6 +466,7 @@ export default class GUIWindow {
         if (zone.sound) {
 
           const volume = Math.max(Math.min(zone.sound.source.volume.gain.value + dx/50, 2), 0.0);
+          zone.shape.material.opacity = Helpers.mapRange(volume, 0, 2, 0.05, 0.35);
           zone.volume = volume;
           zone.sound.source.volume.gain.value = volume;
         }
