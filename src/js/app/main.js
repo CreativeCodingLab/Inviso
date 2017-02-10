@@ -424,8 +424,8 @@ export default class Main {
     this.tweenToObjectView();
   }
 
-  exitEditObjectView(){
-    if (this.gui.editor) { this.gui.exitEditObject(); }
+  exitEditObjectView(reset){
+    if (this.gui.editor) { this.gui.exitEditorGui(); }
     this.isEditingObject = false;
     if (this.head) {
       this.head.visible = true;
@@ -446,7 +446,7 @@ export default class Main {
       }
     });
 
-    if (!this.isAddingTrajectory && !this.isAddingObject) {
+    if (!this.isAddingTrajectory && !this.isAddingObject && !reset) {
       new TWEEN.Tween(this.camera.threeCamera.position)
         .to(this.originalCameraPosition, 800)
         .start();
@@ -466,14 +466,13 @@ export default class Main {
     this.renderer.threeRenderer.setClearColor(0xf0f0f0);
   }
 
-  reset(snap) {
+  reset() {
+    if (this.isEditingObject) {
+      this.exitEditObjectView(true);
+    }
     this.controls.threeControls.reset();
     this.cameraViewer.reset();
-    if (this.isEditingObject) {
-      this.exitEditObjectView();
-    }
   }
-
 
   set audio(audio) {
     this._audio = audio;
@@ -551,6 +550,27 @@ export default class Main {
     if (intersects.length > 0) {
       this.mouse = intersects[0].point;
     }
+  }
+
+  muteAll(excludedSounds) {
+    var sounds = [].concat(this.soundObjects, this.soundZones);
+
+    if (excludedSounds) { 
+      excludedSounds = [].concat(excludedSounds);
+      sounds = sounds.filter(sound => excludedSounds.indexOf(sound) > -1);
+    }
+
+    sounds.forEach(sound => sound.mute());
+  }
+  unmuteAll(excludedSounds) {
+    var sounds = [].concat(this.soundObjects, this.soundZones);
+
+    if (excludedSounds) { 
+      excludedSounds = [].concat(excludedSounds);
+      sounds = sounds.filter(sound => excludedSounds.indexOf(sound) > -1);
+    }
+
+    sounds.forEach(sound => sound.unmute());
   }
 
   removeSoundZone(soundZone) {

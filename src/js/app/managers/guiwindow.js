@@ -589,7 +589,7 @@ export default class GUIWindow {
       this.replaceTextContent(x, pos.x);
       this.replaceTextContent(z, pos.z);
       this.replaceTextContent(rotation, zone.containerObject.rotation.y * 180 / Math.PI);
-      this.replaceTextContent(volume, zone.sound ? zone.sound.source.volume.gain.value : 'N/A');
+      this.replaceTextContent(volume, zone.sound && zone.sound.source ? zone.sound.source.volume.gain.value : 'N/A');
   }
 
   // ------------ event callbacks ------------ //
@@ -617,7 +617,7 @@ export default class GUIWindow {
                 obj.loadSound(path, self.app.audio, obj)
                   .then((sound) => {
                     // check for existing sound
-                    if (obj.omniSphere.sound) {
+                    if (obj.omniSphere.sound && obj.omniSphere.sound.volume) {
                       // copy properties of previous sound
                       sound.volume.gain.value = obj.omniSphere.sound.volume.gain.value;
                       sound.panner.refDistance = obj.omniSphere.sound.panner.refDistance;
@@ -728,21 +728,13 @@ export default class GUIWindow {
   // move into/out of object edit mode
   toggleEditObject() {
 
-    // Mutes the objects besides the one being edited
-    for(var i in this.app.soundObjects){
-      if ( this.app.soundObjects[i] !== this.app.activeObject ){
-        this.app.soundObjects[i].mute();
-      }
-    }
-    for(var i in this.app.soundZones){
-      this.app.soundZones[i].mute();
-    }
-
     if (!this.app.isEditingObject) {
       var span = this.container.querySelector('.edit-toggle .value');
       this.editor = span;
       this.container.classList.add('editor');
       this.replaceTextContent(span, 'Exit editor');
+      // Mutes the objects besides the one being edited
+      this.app.muteAll(this.app.activeObject);
       this.app.enterEditObjectView();
     }
     else {
@@ -750,16 +742,9 @@ export default class GUIWindow {
     }
   }
 
-  exitEditObject() {
+  exitEditorGui() {
 
-    // Unmutes the objects besides the one being edited
-    for(var i in this.app.soundObjects){
-      this.app.soundObjects[i].unmute();
-    }
-    for(var i in this.app.soundZones){
-      this.app.soundZones[i].unmute();
-    }
-
+    this.app.unmuteAll();
     var span = this.container.querySelector('.edit-toggle .value');
     this.editor = null;
     this.container.classList.remove('editor');
