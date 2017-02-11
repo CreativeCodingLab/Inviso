@@ -19,7 +19,6 @@ import Model from './model/model';
 // Managers
 import Interaction from './managers/interaction';
 import GUIWindow from './managers/guiwindow';
-// import DatGUI from './managers/datGUI';
 
 // data
 import Config from './../data/config';
@@ -32,6 +31,7 @@ let rS, bS, glS, tS;
 export default class Main {
   constructor(container) {
     OBJLoader(THREE);
+    this.overrideTriangulate();
     this.setupAudio();
 
     this.mouse = new THREE.Vector3();
@@ -614,5 +614,100 @@ export default class Main {
     soundTrajectory.removeFromScene(this.scene);
     const i = this.soundTrajectories.indexOf(soundTrajectory);
     this.soundTrajectories.splice(i, 1);
+  }
+
+/**
+  (didn't know where I should put this) 
+
+  overrides three.js triangulate with libtess.js algorithm for the conversion of a curve to a filled (2D) path. still doesn't produce desired behavior with some non-simple paths 
+
+  adapted from libtess example page https://brendankenny.github.io/libtess.js/examples/simple_triangulation/index.html
+  */
+  overrideTriangulate() {
+    var tessy = (function initTesselator() {
+      // function called for each vertex of tesselator output
+      function vertexCallback(data, polyVertArray) {
+        // console.log(data[0], data[1]);
+        polyVertArray[polyVertArray.length] = data[0];
+        polyVertArray[polyVertArray.length] = data[1];
+      }
+      function begincallback(type) {
+        if (type !== libtess.primitiveType.GL_TRIANGLES) {
+          console.log('expected TRIANGLES but got type: ' + type);
+        }
+      }
+      function errorcallback(errno) {
+        console.log('error callback');
+        console.log('error number: ' + errno);
+      }
+      // callback for when segments intersect and must be split
+      function combinecallback(coords, data, weight) {
+        // console.log('combine callback');
+        return [coords[0], coords[1], coords[2]];
+      }
+      function edgeCallback(flag) {
+        // don't really care about the flag, but need no-strip/no-fan behavior
+        // console.log('edge flag: ' + flag);
+      }
+
+      var tessy = new libtess.GluTesselator();
+      tessy.gluTessProperty(libtess.gluEnum.GLU_TESS_WINDING_RULE, libtess.windingRule.GLU_TESS_WINDING_NONZERO);
+      tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_VERTEX_DATA, vertexCallback);
+      tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_BEGIN, begincallback);
+      tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_ERROR, errorcallback);
+      tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_COMBINE, combinecallback);
+      tessy.gluTessCallback(libtess.gluEnum.GLU_TESS_EDGE_FLAG, edgeCallback);
+
+      return tessy;
+    })();
+
+    THREE.ShapeUtils.triangulate = function ( contour, indices ) {
+
+      if ( contour.length < 3 ) return null;
+
+      var triangles = [];
+      var map = {};
+
+      var result = [];
+      var vertIndices = [];
+
+      // libtess will take 3d verts and flatten to a plane for tesselation
+      // since only doing 2d tesselation here, provide z=1 normal to skip
+      // iterating over verts only to get the same answer.
+      // comment out to test normal-generation code
+      tessy.gluTessNormal(0, 0, 1);
+
+      tessy.gluTessBeginPolygon(triangles);
+      
+      // shape should be a single contour without holes anyway...
+      tessy.gluTessBeginContour();
+      contour.forEach((pt, i) => {
+        var coord = [pt.x, pt.y, 0];
+        tessy.gluTessVertex(coord, coord);
+        map[coord[0] + ',' + coord[1]] = i; // store in map
+      })
+      tessy.gluTessEndContour();
+
+      // finish polygon
+      tessy.gluTessEndPolygon();
+
+      // use map to convert points back to triangles of contour
+      var nTri = triangles.length;
+
+      for (var i = 0; i < nTri; i+=6) {
+        var a = map[ triangles[i] + ',' + triangles[i+1] ],
+            b = map[ triangles[i+2] + ',' + triangles[i+3] ],
+            c = map[ triangles[i+4] + ',' + triangles[i+5] ];
+
+        if (a == undefined || b == undefined || c == undefined) {continue;}
+        vertIndices.push([a, b, c]);
+        result.push( [ contour[ a ],
+                       contour[ b ],
+                       contour[ c ] ] );
+      }
+
+      if ( indices ) return vertIndices;
+      return result;
+    };
   }
 }
