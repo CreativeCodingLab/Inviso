@@ -127,6 +127,16 @@ export default class GUIWindow {
         object.altitudeHelper.position.y = 0;
         object.raycastSphere.position.copy(destination);
 
+        if (object.cones[0]) {
+          for (const i in object.cones) {
+            object.setAudioPosition(this.cones[i]);
+          }
+        }
+
+        if (object.omniSphere.sound){
+          object.setAudioPosition(object.omniSphere);
+        }
+
         if (object.trajectory) {
           // move trajectory
           object.trajectory.objects.forEach((obj) => {
