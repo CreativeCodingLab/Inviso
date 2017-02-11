@@ -57,7 +57,7 @@ export default class SoundZone {
 
   notUnderUser(audio) {
     if (this.sound && this.isPlaying && this.loaded) {
-      this.sound.volume.gain.setTargetAtTime(0.0, audio.context.currentTime, 0.05);
+      this.sound.volume.gain.setTargetAtTime(0.0, audio.context.currentTime, 0.02);
       this.sound.source.stop(audio.context.currentTime + 0.1);
       this.isPlaying = false;
     }
