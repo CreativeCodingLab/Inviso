@@ -40,7 +40,7 @@
   width:220px;
   background-color:rgba(255,255,255,0.6);
   font-family:roboto,'helvetica neue', helvetica, arial, sans-serif;
-  box-shadow: 0 0 10px #aaa;
+  box-shadow: 0 0 5px #aaa;
   transition:background-color 200ms ease, color 200ms ease, opacity 200ms ease;
   -webkit-transition:background-color 200ms ease, color 200ms ease, opacity 200ms ease;
 }
@@ -213,4 +213,5 @@ input[type="file"] {
   display: block;
   font-size:12px;
   line-height:1.25em;
+  pointer-events: none;
 }
