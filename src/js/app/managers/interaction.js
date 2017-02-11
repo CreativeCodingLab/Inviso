@@ -48,8 +48,32 @@ export default class Interaction {
         main.moveBackwards = 1 * main.movementSpeed;
       }
 
+      if (this.keyboard.eventMatches(event, 'e')) {
+        this.data = main.export();
+
+        const a = document.createElement('a');
+        const blob = new Blob([this.data], {'type':'text/plain'});
+        a.href = window.URL.createObjectURL(blob);
+        a.download = 'export.json';
+        a.click();
+      }
+
+      if (this.keyboard.eventMatches(event, 'i')) {
+        const i = document.getElementById('import');
+        i.click();
+        i.addEventListener('change', handleFiles, false);
+
+        function handleFiles() {
+          const reader = new FileReader();
+          reader.addEventListener('load', (e) => {
+            main.import(e.target.result);
+          });
+          reader.readAsText(this.files[0]);
+        }
+      }
+
       if (this.keyboard.eventMatches(event, 'backspace') ||
-         this.keyboard.eventMatches(event, 'delete')) {
+        this.keyboard.eventMatches(event, 'delete')) {
 
         if (main.activeObject && main.activeObject.type === 'SoundTrajectory') {
           if (main.activeObject.selectedPoint && main.activeObject.splinePoints.length > 3) {
@@ -338,8 +362,8 @@ export default class Interaction {
       }
 
       /**
-      * In object edit mode a different interaction scheme is followed.
-      */
+       * In object edit mode a different interaction scheme is followed.
+       */
       if (main.isEditingObject) {
         if (!main.activeObject || !main.activeObject.cones) {
           console.log('wheres my cone :(', main.activeObject); //error check

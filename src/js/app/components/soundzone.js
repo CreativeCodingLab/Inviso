@@ -5,10 +5,12 @@ export default class SoundZone {
   constructor(main, points) {
     this.type = 'SoundZone';
     this.isActive = true;
+    this.audio = main.audio;
 
     this.mouse = main.mouse;
     this.scene = main.scene;
 
+    this.points = points;
     this.splinePoints = points;
     this.pointObjects;
     this.spline;
@@ -77,6 +79,7 @@ export default class SoundZone {
 
   loadSound(soundFileName, audio, mute) {
     const context = audio.context;
+    this.filename = soundFileName;
 
     let promise = fetch(soundFileName)
       .then(response => response.arrayBuffer())
@@ -402,5 +405,21 @@ export default class SoundZone {
         this.mainMixer.gain.value = 1;
       }
     }
+  }
+
+  toJSON() {
+    console.log(this.points);
+    return JSON.stringify({
+      position: this.containerObject.position,
+      points: this.splinePoints,
+      filename: this.filename
+    });
+  }
+
+  fromJSON(json) {
+    let object = JSON.parse(json);
+    this.containerObject.position.copy(object.position);
+
+    this.loadSound(object.filename, this.audio, false);
   }
 }
