@@ -668,9 +668,9 @@ export default class GUIWindow {
                       self.addCone(cone);
 
                       // this is clumsy but point cone @ direction of head
-                      obj.pointCone(cone, self.app.head.position);
-                      // let v = self.app.head.position.clone();
-                      // cone.lookAt(v.sub(obj.containerObject.position));
+                      let direction = self.app.camera.threeCamera.position.clone();
+                      direction.y = obj.containerObject.position.y;
+                      obj.pointCone(cone, direction);
                       obj.setAudioPosition(cone);
 
                       // automatically enter edit mode after brief delay

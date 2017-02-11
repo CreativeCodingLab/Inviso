@@ -345,8 +345,9 @@ export default class Main {
 
   tweenToObjectView() {
     if (this.isEditingObject) {
-      this.cameraDestination.lerpVectors(this.activeObject.containerObject.position, this.head.position,
-      500 / this.head.position.distanceTo(this.activeObject.containerObject.position));
+      let vec = new THREE.Vector3().subVectors(this.camera.threeCamera.position, this.activeObject.containerObject.position).normalize();
+      vec.y = this.activeObject.containerObject.position.y;
+      this.cameraDestination = this.activeObject.containerObject.position.clone().addScaledVector(vec, 1000);
 
       new TWEEN.Tween(this.camera.threeCamera.position)
         .to(this.cameraDestination, 800)
@@ -459,9 +460,7 @@ export default class Main {
       }
     });
 
-    console.log('what')
     if (!this.isAddingTrajectory && !this.isAddingObject && !reset) {
-      console.log('hey',this.originalCameraPosition);
       new TWEEN.Tween(this.camera.threeCamera.position)
         .to(this.originalCameraPosition, 800)
         .start();
