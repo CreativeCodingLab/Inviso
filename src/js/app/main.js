@@ -261,7 +261,7 @@ export default class Main {
     for (const i in this.soundObjects) {
       if (!this.isMouseDown || this.soundObjects[i] !== this.activeObject) {
         if (this.soundObjects[i].type === 'SoundObject') {
-          this.soundObjects[i].followTrajectory();
+          this.soundObjects[i].followTrajectory(this.isMuted);
         }
       }
     }

@@ -385,18 +385,18 @@ export default class SoundObject {
       this.cones.forEach(cone => cone.sound.mainMixer.gain.value = 0);
       if (this.omniSphere.sound && this.omniSphere.sound.mainMixer) {
         this.omniSphere.sound.mainMixer.gain.value = 0;
-      }      
+      }
     }
     else {
       this.cones.forEach(cone => cone.sound.mainMixer.gain.value = 1);
       if (this.omniSphere.sound && this.omniSphere.sound.mainMixer) {
         this.omniSphere.sound.mainMixer.gain.value = 1;
-      } 
+      }
     }
   }
 
-  followTrajectory() {
-    if (this.trajectory && !this.isPaused) {
+  followTrajectory(mute) {
+    if (this.trajectory && !this.isPaused && !this.isMuted && !mute) {
       this.trajectoryClock -= this.movementDirection * this.movementIncrement;
 
       if (this.trajectoryClock >= 1) {
