@@ -675,9 +675,10 @@ export default class GUIWindow {
 
                       // automatically enter edit mode after brief delay
                       window.setTimeout(function() {
-                        self.app.isEditingObject = false;
                         self.app.interactiveCone = cone;
-                        self.toggleEditObject();
+                        if (!self.app.isEditingObject) {
+                          self.toggleEditObject();
+                        }
                       }, 500);
                     }
                   })

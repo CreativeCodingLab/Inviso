@@ -459,7 +459,9 @@ export default class Main {
       }
     });
 
+    console.log('what')
     if (!this.isAddingTrajectory && !this.isAddingObject && !reset) {
+      console.log('hey',this.originalCameraPosition);
       new TWEEN.Tween(this.camera.threeCamera.position)
         .to(this.originalCameraPosition, 800)
         .start();
