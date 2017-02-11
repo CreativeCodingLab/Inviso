@@ -139,10 +139,9 @@ export default class SoundObject {
     }
   }
 
-  loadSound(soundFileName, audio, object) {
+  loadSound(soundFileName, audio, mute, object) {
     const context = audio.context;
-    this.mainMixer = context.createGain();
-    const mainMixer = this.mainMixer;
+    const mainMixer = context.createGain();
 
     let promise = new Promise(function(resolve, reject) {
 
@@ -160,6 +159,7 @@ export default class SoundObject {
           }
 
           const sound = {};
+          sound.mainMixer = mainMixer;
           sound.source = context.createBufferSource();
           sound.source.loop = true;
           sound.panner = context.createPanner();
@@ -171,6 +171,7 @@ export default class SoundObject {
           sound.volume.connect(sound.panner);
           sound.panner.connect(mainMixer);
           mainMixer.connect(audio.destination);
+          mainMixer.gain.value = mute ? 0 : 1;
           sound.source.buffer = decodedData;
           sound.source.start(context.currentTime + 0.020);
           resolve( sound );
@@ -370,11 +371,28 @@ export default class SoundObject {
     this.isPaused = false;
   }
 
-  mute() {
-    if (this.mainMixer) this.mainMixer.gain.value = 0;
+  mute(main) {
+    this.isMuted = true;
+    this.checkMuteState(main);
   }
-  unmute() {
-    if (this.mainMixer) this.mainMixer.gain.value = 1;
+  unmute(main) {
+    this.isMuted = false;
+    this.checkMuteState(main);
+  }
+
+  checkMuteState(main) {
+    if (main.isMuted || this.isMuted) {
+      this.cones.forEach(cone => cone.sound.mainMixer.gain.value = 0);
+      if (this.omniSphere.sound && this.omniSphere.sound.mainMixer) {
+        this.omniSphere.sound.mainMixer.gain.value = 0;
+      }      
+    }
+    else {
+      this.cones.forEach(cone => cone.sound.mainMixer.gain.value = 1);
+      if (this.omniSphere.sound && this.omniSphere.sound.mainMixer) {
+        this.omniSphere.sound.mainMixer.gain.value = 1;
+      } 
+    }
   }
 
   followTrajectory() {

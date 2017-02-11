@@ -71,10 +71,11 @@ export default class SoundZone {
     }
     this.isPlaying = false;
     this.loaded = false;
+    this.mainMixer = null;
     this.sound = {};
   }
 
-  loadSound(soundFileName, audio) {
+  loadSound(soundFileName, audio, mute) {
     const context = audio.context;
 
     let promise = fetch(soundFileName)
@@ -90,6 +91,7 @@ export default class SoundZone {
         this.sound.source.volume.connect(this.sound.volume);
         this.sound.volume.connect(this.mainMixer);
         this.mainMixer.connect(audio.destination);
+        this.mainMixer.gain.value = mute ? 0 : 1;
         this.sound.volume.gain.value = 0.0;
         this.sound.buffer = decodedData;
         this.loaded = true;
@@ -382,10 +384,23 @@ export default class SoundZone {
     }
   }
 
-  mute() {
-    this.mainMixer.gain.value = 0;
+  mute(main) {
+    this.isMuted = true;
+    this.checkMuteState(main);
   }
-  unmute() {
-    this.mainMixer.gain.value = 1;
+  unmute(main) {
+    this.isMuted = false;
+    this.checkMuteState(main);
+  }
+
+  checkMuteState(main) {
+    if (this.mainMixer) {
+      if (main.isMuted || this.isMuted) {
+        this.mainMixer.gain.value = 0;
+      }
+      else {
+        this.mainMixer.gain.value = 1;
+      }
+    }
   }
 }

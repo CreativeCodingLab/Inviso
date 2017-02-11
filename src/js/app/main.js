@@ -39,6 +39,7 @@ export default class Main {
     this.ray = new THREE.Raycaster();
     this.walkingRay = new THREE.Raycaster();
 
+    this.isMuted = false;
     this.isMouseDown = false;
     this.isAddingTrajectory = false;
     this.isAddingObject = false;
@@ -177,7 +178,19 @@ export default class Main {
     this.axisHelper.rotation.y += Math.PI;
     this.scene.add(this.axisHelper);
 
+    // ui elements
     document.getElementById('add-object-button').onclick = this.toggleAddObject.bind(this);
+    var self = this;
+    document.getElementById('mute-button').onclick = function() {
+      self.toggleGlobalMute();
+      this.style.display = 'none';
+      document.getElementById('unmute-button').style.display = 'block';
+    }
+    document.getElementById('unmute-button').onclick = function() {
+      self.toggleGlobalMute();
+      this.style.display = 'none';
+      document.getElementById('mute-button').style.display = 'block';
+    }
 
     this.gui = new GUIWindow(this);
 
@@ -552,25 +565,31 @@ export default class Main {
     }
   }
 
+  toggleGlobalMute() {
+    this.isMuted = !this.isMuted;
+    [].concat(this.soundObjects, this.soundZones).forEach(sound => sound.checkMuteState(this));
+  }
+
   muteAll(excludedSounds) {
     var sounds = [].concat(this.soundObjects, this.soundZones);
 
     if (excludedSounds) { 
       excludedSounds = [].concat(excludedSounds);
-      sounds = sounds.filter(sound => excludedSounds.indexOf(sound) > -1);
+      sounds = sounds.filter(sound => excludedSounds.indexOf(sound) < 0);
     }
 
-    sounds.forEach(sound => sound.mute());
+    sounds.forEach(sound => sound.mute(this));
   }
+
   unmuteAll(excludedSounds) {
     var sounds = [].concat(this.soundObjects, this.soundZones);
 
     if (excludedSounds) { 
       excludedSounds = [].concat(excludedSounds);
-      sounds = sounds.filter(sound => excludedSounds.indexOf(sound) > -1);
+      sounds = sounds.filter(sound => excludedSounds.indexOf(sound) < 0);
     }
 
-    sounds.forEach(sound => sound.unmute());
+    sounds.forEach(sound => sound.unmute(this));
   }
 
   removeSoundZone(soundZone) {

@@ -614,7 +614,7 @@ export default class GUIWindow {
             case 'SoundObject':
               // check if sound is attaching to omnisphere or cone
               if (span.parentNode.id === "omnisphere-sound-loader") {
-                obj.loadSound(path, self.app.audio, obj)
+                obj.loadSound(path, self.app.audio, self.app.isMuted, obj)
                   .then((sound) => {
                     // check for existing sound
                     if (obj.omniSphere.sound && obj.omniSphere.sound.volume) {
@@ -690,7 +690,7 @@ export default class GUIWindow {
             case 'SoundZone':
 
               // add sound to zone
-              obj.loadSound(path, self.app.audio)
+              obj.loadSound(path, self.app.audio, self.app.isMuted)
                 .then(() => {
                   // replace text with file name
                   self.replaceTextContent(span, file.name);

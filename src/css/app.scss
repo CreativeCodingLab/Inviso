@@ -181,6 +181,23 @@ input[type="file"] {
   cursor:-webkit-grabbing;
 }
 
+#play-mute-button {
+  position:absolute;
+  left:20px;
+}
+#play-mute-button img {
+  cursor:pointer;
+  width:30px;
+  height:30px;
+  opacity:0.5;
+}
+#play-mute-button img:hover {
+  opacity:0.66;
+}
+#unmute-button {
+  display: none;
+}
+
 .help-bubble {
   z-index: 1;
   float: left;
