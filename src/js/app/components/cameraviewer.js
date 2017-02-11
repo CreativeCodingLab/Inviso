@@ -88,10 +88,6 @@ export default class CameraViewer {
         }
     })
 
-    document.addEventListener( 'mouseleave', function() {
-        container.style.pointerEvents = 'auto';
-        main.controls.enable();
-    });
     document.addEventListener( 'mouseup', function() {
         container.style.pointerEvents = 'auto';
         main.controls.enable();

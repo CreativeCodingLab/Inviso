@@ -635,55 +635,62 @@ export default class GUIWindow {
                   });
               }
               else {
-                // replace sound attached to existing cone
-                var text = span.innerText || span.textContent;
-                let cone = null;
-                if (obj.cones && obj.cones.length > 0 && text) {
-                  cone = obj.cones.find(c => c.filename == text);
+
+                function attachCone() {
+                  // replace sound attached to existing cone
+                  var text = span.innerText || span.textContent;
+                  let cone = null;
+                  if (obj.cones && obj.cones.length > 0 && text) {
+                    cone = obj.cones.find(c => c.filename == text);
+                  }
+
+                  // create new cone
+                  obj.loadSound(path, self.app.audio, cone)
+                    .then((sound) => {
+                      if (cone) {
+                        // copy properties of previous cone
+                        sound.spread = cone.sound.spread;
+                        sound.panner.refDistance = cone.sound.panner.refDistance;
+                        sound.panner.distanceModel = cone.sound.panner.distanceModel;
+                        sound.panner.coneInnerAngle = cone.sound.panner.coneInnerAngle;
+                        sound.panner.coneOuterAngle = cone.sound.panner.coneOuterAngle;
+                        sound.panner.coneOuterGain = cone.sound.panner.coneOuterGain;
+                        sound.volume.gain.value = cone.sound.volume.gain.value;
+                        cone.sound = sound;
+                        obj.setAudioPosition(cone);
+
+                        // replace text with file name
+                        cone.filename = file.name;
+                        self.app.interactiveCone = cone;
+                        self.replaceTextContent(span, file.name);
+                      }
+                      else {
+                        cone = obj.createCone(sound);
+                        cone.filename = file.name;
+                        self.addCone(cone);
+                        self.app.interactiveCone = cone;
+
+                        // point cone at camera
+                        obj.pointCone(cone, self.app.camera.threeCamera.position);
+                        obj.setAudioPosition(cone);
+                      }
+                    })
+                    .catch((err) => {
+                      // no file was loaded: do nothing
+                      console.log(err);
+                    });
                 }
 
-                // create new cone
-                obj.loadSound(path, self.app.audio, cone)
-                  .then((sound) => {
-                    if (cone) {
-                      // copy properties of previous cone
-                      sound.spread = cone.sound.spread;
-                      sound.panner.refDistance = cone.sound.panner.refDistance;
-                      sound.panner.distanceModel = cone.sound.panner.distanceModel;
-                      sound.panner.coneInnerAngle = cone.sound.panner.coneInnerAngle;
-                      sound.panner.coneOuterAngle = cone.sound.panner.coneOuterAngle;
-                      sound.panner.coneOuterGain = cone.sound.panner.coneOuterGain;
-                      sound.volume.gain.value = cone.sound.volume.gain.value;
-                      cone.sound = sound;
-                      obj.setAudioPosition(cone);
+                // hard-coded the timeout but create the sound 
+                // after the tween is finished
+                if (!self.app.isEditingObject) {
+                  self.toggleEditObject();
+                  window.setTimeout(attachCone, 800);
+                }
+                else {
+                  attachCone();
+                }
 
-                      // replace text with file name
-                      cone.filename = file.name;
-                      self.interactiveCone = cone;
-                      self.replaceTextContent(span, file.name);
-                    }
-                    else {
-                      cone = obj.createCone(sound);
-                      cone.filename = file.name;
-                      self.addCone(cone);
-
-                      // point cone at camera
-                      obj.pointCone(cone, self.app.camera.threeCamera.position);
-                      obj.setAudioPosition(cone);
-
-                      // automatically enter edit mode after brief delay
-                      window.setTimeout(function() {
-                        self.app.interactiveCone = cone;
-                        if (!self.app.isEditingObject) {
-                          self.toggleEditObject();
-                        }
-                      }, 500);
-                    }
-                  })
-                  .catch((err) => {
-                    // no file was loaded: do nothing
-                    console.log(err);
-                  });
               }
               break;
             case 'SoundZone':
@@ -771,6 +778,7 @@ export default class GUIWindow {
   }
 
   startDragging(e) {
+    this.app.controls.disable();
 
     const l = this.listeners.find(l => l.elem === e.target || l.elem === e.target.parentNode);
 
@@ -794,6 +802,7 @@ export default class GUIWindow {
     }
 
     this.dragEvent = {};
+    this.app.controls.enable();
   }
 
 addSwipeEvents(div, title, isObject) {
@@ -802,12 +811,11 @@ addSwipeEvents(div, title, isObject) {
         y = null,
         dx = null,
         dy = null;
-    // let bgColor;
+    let controls = this.app.controls;
     title.onmousedown = function(e) {
       x = e.clientX;
       y = e.clientY;
-      // bgColor = div.style.backgroundColor;
-      // div.style.backgroundColor = '#ddd'
+      controls.disable();
     };
 
     div.onmousemove = function(e) {
@@ -831,7 +839,6 @@ addSwipeEvents(div, title, isObject) {
 
     div.onmouseup = function() {
       if (x == null || y == null) { return; }
-      // div.style.backgroundColor = bgColor;
       title.style.marginLeft = 0;
       if (Math.abs(dx) >= 40) {
         const direction = dx < 0 ? "left" : "right";
@@ -839,6 +846,7 @@ addSwipeEvents(div, title, isObject) {
         self.nav({direction: direction, type:objectType});
       }
       x = y = dx = dy = null;
+      controls.enable();
     };
 
     div.onmouseleave = function (e) {

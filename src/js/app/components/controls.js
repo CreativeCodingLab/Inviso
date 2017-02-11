@@ -19,7 +19,6 @@ export default class Controls {
         ZOOM: THREE.MOUSE.MIDDLE
     }
 
-
     this.init();
   }
 
