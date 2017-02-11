@@ -6,6 +6,16 @@ export default class CameraViewer {
   constructor(main) {
     var container = main.container.appendChild(document.createElement('div'));
     container.id = 'cam-control';
+
+    var label = document.createElement('div');
+    label.id = 'cam-control-label';
+    label.innerHTML = 'Aerial view';
+    container.append(label);
+    label.onclick = function() {
+        main.reset();
+    }
+    this.label = label;
+
     // init camera & orbitcontrols
     var camera = new THREE.PerspectiveCamera(45, 1, 1, 10000);
     camera.position.y = 200;
@@ -87,7 +97,12 @@ export default class CameraViewer {
     });
   }
 
+  updateLabel(isPerspectiveView) {
+    this.label.innerHTML = isPerspectiveView ? 'Altitude view' : 'Aerial view';
+  }
+
   reset() {
     this.controls.reset();
+    this.updateLabel(false);
   }
 }

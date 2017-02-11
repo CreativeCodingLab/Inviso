@@ -248,6 +248,8 @@ export default class Main {
     } else {
       this.perspectiveView = false;
     }
+    // sync main controls and cameraviewer controls
+    this.cameraViewer.updateLabel(this.perspectiveView);
 
     /* Checking if the user has walked into a sound zone in each frame. */
     this.checkZones();
@@ -268,12 +270,6 @@ export default class Main {
 
     /* Making the GUI visible if an object is selected */
     this.gui.display(this.activeObject);
-
-    // if (this.activeObject) {
-    //   document.getElementById('guis').style.display = 'block';
-    // } else {
-    //   document.getElementById('guis').style.display = 'none';
-    // }
 
     requestAnimationFrame(this.render.bind(this)); // Bind the main class instead of window object
   }
