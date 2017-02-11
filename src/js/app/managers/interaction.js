@@ -229,6 +229,9 @@ export default class Interaction {
     // turn gui pointer events back on
     main.gui.enable();
 
+    // turn controls back on
+    main.controls.enable();
+
     // mouse leaves the container
     if (!hasFocus) { Config.isMouseOver = false; }
     if (main.isMouseDown === false) { return; }
@@ -303,12 +306,9 @@ export default class Interaction {
         }
       }
 
-      // disable pan when add or moving an object
-      if (main.isAddingTrajectory || main.isAddingObject || main.activeObject) {
-        main.controls.disablePan();
-      }
-      else {
-        main.controls.enablePan();
+      // disable controls when add or moving an object
+      if (main.isAddingTrajectory || main.isAddingObject || (main.activeObject && !main.isEditingObject)) {
+        main.controls.disable();
       }
 
       /**
@@ -348,6 +348,7 @@ export default class Interaction {
         const intersect2 = main.ray.intersectObjects(main.activeObject.cones)[0];
         if (intersect2) {
           main.interactiveCone = intersect2.object;
+          main.controls.disable();
         }
         else {
           main.interactiveCone = null;

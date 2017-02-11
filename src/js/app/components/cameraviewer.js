@@ -76,25 +76,32 @@ export default class CameraViewer {
     // add listeners
     container.addEventListener( 'mousedown', function() {
 
-      document.getElementById('help-camera').style.display = 'none';
+        document.getElementById('help-camera').style.display = 'none';
       
-        if (!main.isAddingObject && !main.isAddingTrajectory) {
-            main.controls.enableRotate();
-            uiControls.enableRotate = true;
+        if (main.isAddingObject || main.isAddingTrajectory) {
+            main.controls.disable();
         }
     }, false );
-
     document.addEventListener( 'mousedown', function(e) {
         if (e.target !== renderer.domElement) {
             container.style.pointerEvents = 'none';
         }
     })
 
+    document.addEventListener( 'mouseleave', function() {
+        container.style.pointerEvents = 'auto';
+        main.controls.enable();
+    });
     document.addEventListener( 'mouseup', function() {
         container.style.pointerEvents = 'auto';
-        main.controls.disableRotate();
-        uiControls.enableRotate = false;
+        main.controls.enable();
     });
+  }
+
+  syncToRotation(controls) {
+    this.controls.constraint.rotateUp(this.controls.getPolarAngle() - controls.getPolarAngle());
+    this.controls.constraint.rotateLeft(this.controls.getAzimuthalAngle() - controls.getAzimuthalAngle());
+    this.controls.update();
   }
 
   updateLabel(isPerspectiveView) {

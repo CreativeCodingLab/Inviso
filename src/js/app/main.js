@@ -244,13 +244,18 @@ export default class Main {
      * X-Z plane
      */
     if (this.controls.threeControls.getPolarAngle() > 0.4) {
-      this.perspectiveView = true;
-    } else {
+      if (!this.perspectiveView) {
+        this.perspectiveView = true;
+        this.cameraViewer.updateLabel(this.perspectiveView);
+      }
+    } else if (this.perspectiveView) {
       this.perspectiveView = false;
+      this.cameraViewer.updateLabel(this.perspectiveView);
     }
-    // sync main controls and cameraviewer controls
-    this.cameraViewer.updateLabel(this.perspectiveView);
 
+    /* sync main controls and cameraviewer controls */
+    this.cameraViewer.syncToRotation(this.controls.threeControls);
+  
     /* Checking if the user has walked into a sound zone in each frame. */
     this.checkZones();
 
@@ -351,13 +356,6 @@ export default class Main {
 
       new TWEEN.Tween(this.controls.threeControls.center)
         .to(this.activeObject.containerObject.position, 800)
-        .onUpdate(() => {
-          // rotate cam viewer along with world camera
-          var c = this.controls.threeControls;
-          var cv = this.cameraViewer.controls;
-          cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
-          cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
-        })
         .start();
 
       /**
@@ -409,6 +407,9 @@ export default class Main {
   }
 
   enterEditObjectView() {
+    // disable panning in object view
+    this.controls.disablePan();
+
     // slightly hacky fix: orbit controls tween works poorly from top view
     if (this.controls.threeControls.getPolarAngle() < 0.01) {
       this.controls.threeControls.constraint.rotateUp(-0.02);
@@ -435,6 +436,9 @@ export default class Main {
   }
 
   exitEditObjectView(reset){
+    // re-enable panning
+    this.controls.enablePan();
+
     if (this.gui.editor) { this.gui.exitEditorGui(); }
     this.isEditingObject = false;
     if (this.head) {

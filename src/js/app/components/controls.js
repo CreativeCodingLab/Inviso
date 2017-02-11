@@ -12,7 +12,13 @@ export default class Controls {
 
     // Controls are only in enabled via 'c' keypress
     this.threeControls.enabled = true;
-    this.disableRotate();
+
+    this.threeControls.mouseButtons = {
+        ORBIT: THREE.MOUSE.LEFT,
+        PAN: THREE.MOUSE.RIGHT,
+        ZOOM: THREE.MOUSE.MIDDLE
+    }
+
 
     this.init();
   }
@@ -31,16 +37,11 @@ export default class Controls {
     this.threeControls.enablePan = true;
   }
 
-  disableRotate() {
-    this.threeControls.mouseButtons = {
-        PAN: THREE.MOUSE.LEFT,
-        ZOOM: THREE.MOUSE.MIDDLE
-    }
+  disable() {
+    this.threeControls.enabled = false;
   }
-  enableRotate() {
-    this.threeControls.mouseButtons = {
-        ORBIT: THREE.MOUSE.LEFT
-    }
+  enable() {
+    this.threeControls.enabled = true;
   }
 
   init() {
