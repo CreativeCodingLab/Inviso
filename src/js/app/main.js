@@ -345,9 +345,9 @@ export default class Main {
 
   tweenToObjectView() {
     if (this.isEditingObject) {
-      let vec = new THREE.Vector3().subVectors(this.camera.threeCamera.position, this.activeObject.containerObject.position).normalize();
+      let vec = new THREE.Vector3().subVectors(this.camera.threeCamera.position, this.activeObject.containerObject.position);
       vec.y = this.activeObject.containerObject.position.y;
-      this.cameraDestination = this.activeObject.containerObject.position.clone().addScaledVector(vec, 1000);
+      this.cameraDestination = this.activeObject.containerObject.position.clone().addScaledVector(vec.normalize(), 500);
 
       new TWEEN.Tween(this.camera.threeCamera.position)
         .to(this.cameraDestination, 800)
