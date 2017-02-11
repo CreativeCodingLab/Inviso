@@ -108,7 +108,7 @@ export default class Main {
       color:0xf0f0f0,
       side:THREE.BackSide,
       transparent: true,
-      opacity: 0.5
+      opacity: 0.2
     }) );
     shadowFloor.rotation.x = Math.PI / 2;
     shadowFloor.position.y = -300;
@@ -408,7 +408,7 @@ export default class Main {
       });
 
       /* lightbox effect */
-      this.renderer.threeRenderer.setClearColor(0xaaeeff);
+      this.renderer.threeRenderer.setClearColor(0xbbeeff);
     }
   }
 
@@ -574,7 +574,7 @@ export default class Main {
   muteAll(excludedSounds) {
     var sounds = [].concat(this.soundObjects, this.soundZones);
 
-    if (excludedSounds) { 
+    if (excludedSounds) {
       excludedSounds = [].concat(excludedSounds);
       sounds = sounds.filter(sound => excludedSounds.indexOf(sound) < 0);
     }
@@ -585,7 +585,7 @@ export default class Main {
   unmuteAll(excludedSounds) {
     var sounds = [].concat(this.soundObjects, this.soundZones);
 
-    if (excludedSounds) { 
+    if (excludedSounds) {
       excludedSounds = [].concat(excludedSounds);
       sounds = sounds.filter(sound => excludedSounds.indexOf(sound) < 0);
     }
@@ -618,9 +618,9 @@ export default class Main {
   }
 
 /**
-  (didn't know where I should put this) 
+  (didn't know where I should put this)
 
-  overrides three.js triangulate with libtess.js algorithm for the conversion of a curve to a filled (2D) path. still doesn't produce desired behavior with some non-simple paths 
+  overrides three.js triangulate with libtess.js algorithm for the conversion of a curve to a filled (2D) path. still doesn't produce desired behavior with some non-simple paths
 
   adapted from libtess example page https://brendankenny.github.io/libtess.js/examples/simple_triangulation/index.html
   */
@@ -679,7 +679,7 @@ export default class Main {
       tessy.gluTessNormal(0, 0, 1);
 
       tessy.gluTessBeginPolygon(triangles);
-      
+
       // shape should be a single contour without holes anyway...
       tessy.gluTessBeginContour();
       contour.forEach((pt, i) => {
