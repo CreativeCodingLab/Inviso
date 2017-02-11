@@ -6,7 +6,6 @@ import OBJLoader from 'three-obj-loader';
 import Renderer from './components/renderer';
 import Camera from './components/camera';
 import Light from './components/light';
-import CameraViewer from './components/cameraviewer';
 import Controls from './components/controls';
 import PathDrawer from './components/pathdrawer';
 
@@ -138,7 +137,6 @@ export default class Main {
      */
     this.path = new PathDrawer(this.scene);
 
-    this.cameraViewer = new CameraViewer(this);
     new Interaction(this, this.renderer.threeRenderer, this.scene, this.camera.threecamera, this.controls.threeControls);
 
     // Set up rStats if dev environment
@@ -191,6 +189,9 @@ export default class Main {
       this.style.display = 'none';
       document.getElementById('mute-button').style.display = 'block';
     }
+    this.cameraLabel = document.getElementById('camera-label');
+    this.cameraLabel.onclick = this.reset.bind(this);
+    this.cameraLabel.innerHTML = this.isPerspectiveView ? 'Altitude view' : 'Aerial view';    
 
     this.gui = new GUIWindow(this);
 
@@ -244,17 +245,15 @@ export default class Main {
      * X-Z plane
      */
     if (this.controls.threeControls.getPolarAngle() > 0.4) {
+      console.log('hey');
       if (!this.perspectiveView) {
         this.perspectiveView = true;
-        this.cameraViewer.updateLabel(this.perspectiveView);
+        this.cameraLabel.innerHTML = 'Altitude view';
       }
     } else if (this.perspectiveView) {
       this.perspectiveView = false;
-      this.cameraViewer.updateLabel(this.perspectiveView);
+      this.cameraLabel.innerHTML = 'Aerial view';
     }
-
-    /* sync main controls and cameraviewer controls */
-    this.cameraViewer.syncToRotation(this.controls.threeControls);
   
     /* Checking if the user has walked into a sound zone in each frame. */
     this.checkZones();
@@ -414,9 +413,6 @@ export default class Main {
     if (this.controls.threeControls.getPolarAngle() < 0.01) {
       this.controls.threeControls.constraint.rotateUp(-0.02);
       this.controls.threeControls.update();
-
-      this.cameraViewer.controls.constraint.rotateUp(-0.02);
-      this.cameraViewer.controls.update();
     }
 
     if (!this.isEditingObject) {
@@ -467,13 +463,6 @@ export default class Main {
 
       new TWEEN.Tween(this.controls.threeControls.center)
         .to(this.originalCameraCenter, 800)
-        .onUpdate(() => {
-          // rotate cam viewer along with world camera
-          var c = this.controls.threeControls;
-          var cv = this.cameraViewer.controls;
-          cv.constraint.rotateUp(cv.getPolarAngle() - c.getPolarAngle());
-          cv.constraint.rotateLeft(cv.getAzimuthalAngle() - c.getAzimuthalAngle());
-        })
         .start();
     }
     /* turn off lightbox effect */
@@ -485,7 +474,6 @@ export default class Main {
       this.exitEditObjectView(true);
     }
     this.controls.threeControls.reset();
-    this.cameraViewer.reset();
   }
 
   set audio(audio) {

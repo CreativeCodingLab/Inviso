@@ -164,32 +164,15 @@ input[type="file"] {
   display: none;
 }
 
-#cam-control-label {
-  pointer-events: all;
+#camera-label {
   position:absolute;
   bottom:5px;
   right:5px;
-  font-size:14px;
+  margin:20px;
+  font-size:15px;
   text-decoration:underline;
   color:#0066ff;
   cursor:pointer;
-}
-
-#cam-control {
-  position:absolute;
-  right:0;
-  bottom:0;
-  margin:20px;
-  width:100px;
-  height:100px;
-  border:1px solid #666;
-  cursor:grab;
-  cursor:-webkit-grab;
-  opacity:0.66;
-}
-#cam-control:active {
-  cursor:grabbing;
-  cursor:-webkit-grabbing;
 }
 
 #play-mute-button {
