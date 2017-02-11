@@ -669,7 +669,7 @@ export default class GUIWindow {
 
                       // this is clumsy but point cone @ direction of head
                       let direction = self.app.camera.threeCamera.position.clone();
-                      direction.y = obj.containerObject.position.y;
+                      //direction.y = obj.containerObject.position.y;
                       obj.pointCone(cone, direction);
                       obj.setAudioPosition(cone);
 

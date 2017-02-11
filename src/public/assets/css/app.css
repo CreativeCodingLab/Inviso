@@ -243,12 +243,13 @@ input[type="file"] {
 
 #play-mute-button {
   position: absolute;
-  left: 20px; }
+  top: 10px;
+  left: 15px; }
 
 #play-mute-button img {
   cursor: pointer;
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   opacity: 0.5; }
 
 #play-mute-button img:hover {
