@@ -12,6 +12,8 @@ export default class SoundObject {
     this.posZ = 0;
     this.radius = Config.soundObject.defaultRadius;
     this.cones = [];
+    this.audio = main.audio;
+    this.gui = main.gui;
 
     this.trajectory = null;
     this.trajectoryClock = Config.soundObject.defaultTrajectoryClock;
@@ -66,7 +68,7 @@ export default class SoundObject {
     main.scene.add(this.containerObject);
   }
 
-  createCone(sound) {
+  createCone(sound, color = null) {
     sound.volume.gain.value = 1;
     sound.spread = 0.5;
 
@@ -74,7 +76,8 @@ export default class SoundObject {
     const coneHeight = sound.volume.gain.value * 50 + 50;
 
     const coneGeo = new THREE.CylinderGeometry(coneWidth, 0, coneHeight, 100, 1, true);
-    const coneColor = new THREE.Color(0.5, Math.random(), 0.9);
+    const randGreen = color !== null ? color : Math.random();
+    const coneColor = new THREE.Color(0.5, randGreen, 0.9);
     const coneMaterial = new THREE.MeshBasicMaterial({
       color: coneColor,
       opacity: 0.8,
@@ -87,6 +90,7 @@ export default class SoundObject {
 
     const cone = new THREE.Mesh(coneGeo, coneMaterial);
 
+    cone.randGreen = randGreen;
     cone.sound = sound;
     cone.sound.panner.coneInnerAngle = Math.atan(coneWidth / coneHeight) * (180 / Math.PI);
     cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
@@ -110,7 +114,6 @@ export default class SoundObject {
   }
 
   setAudioPosition(object) {
-
     const o = new THREE.Vector3();
     object.updateMatrixWorld();
     o.setFromMatrixPosition(object.matrixWorld);
@@ -439,5 +442,80 @@ export default class SoundObject {
     if (this.trajectory) {
       this.movementIncrement = this.movementSpeed / this.trajectory.spline.getLength(10);
     }
+  }
+
+  toJSON() {
+    return JSON.stringify({
+      filename: this.omniSphere.sound && this.omniSphere.sound && this.omniSphere.sound.name || null,
+      volume: this.omniSphere && this.omniSphere.sound && this.omniSphere.sound.volume.gain.value || null,
+      position: this.containerObject.position,
+      trajectory: this.trajectory && this.trajectory.points || null,
+      cones: this.cones.map(c => {
+        console.log(c);
+        return {
+          filename: c.filename,
+          position: {
+            lat: c.lat,
+            long: c.long
+          },
+          volume: c.sound.volume.gain.value,
+          spread: c.sound.spread,
+          color: c.randGreen,
+        }
+      })
+    });
+  }
+
+  fromJSON(json) {
+    let object = JSON.parse(json);
+    this.containerObject.position.copy(object.position);
+    this.altitudeHelper.position.copy(object.position);
+    this.raycastSphere.position.copy(object.position);
+    this.axisHelper.position.copy(object.position);
+
+    if (object.filename && object.volume) {
+      this.loadSound(`assets/sounds/${object.filename}`, this.audio, false, this).then((sound) => {
+        this.omniSphere.sound = sound;
+        this.omniSphere.sound.name = object.filename;
+        this.omniSphere.sound.volume.gain.value = object.volume;
+      });
+    }
+
+    object.cones.forEach(c => {
+      let cone;
+      this.loadSound(`assets/sounds/${c.filename}`, this.audio, false).then((sound) => {
+        cone = this.createCone(sound, c.color);
+        cone.filename = c.filename;
+        cone.sound.volume.gain.value = c.volume;
+        cone.sound.spread = c.spread;
+        this.changeLength(cone);
+        this.changeWidth(cone);
+        this.gui.addCone(cone);
+        this.pointConeMagic(cone, c.position.lat, c.position.long);
+      });
+    });
+  }
+
+  // Needs to be refactored - also lives in guiwindow
+  pointConeMagic(cone, lat, long) {
+    // adapted from https://gist.github.com/nicoptere/2f2571db4b454bb18cd9
+    const v = (function lonLatToVector3( lng, lat, out )
+      {
+      //flips the Y axis
+      lat = Math.PI / 2 - lat;
+
+      //distribute to sphere
+      out.set(
+        Math.sin( lat ) * Math.sin( lng ),
+        Math.cos( lat ),
+        Math.sin( lat ) * Math.cos( lng )
+      );
+
+      return out;
+
+      })( long, lat, this.containerObject.position.clone() );
+    if (v.x === 0) { v.x = 0.0001; }
+    const point = this.containerObject.position.clone().add(v);
+    this.pointCone(cone, point);
   }
 }

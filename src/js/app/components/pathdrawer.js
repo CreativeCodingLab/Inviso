@@ -43,18 +43,19 @@ export default class PathDrawer {
       this.lastPoint = point;
       this.points.push(point);
       this.lines.push(line);
-      this.scene.add(line);        
+      this.scene.add(line);
     }
   }
 
-  createObject(main) {
-    if (this.isDrawing) {
+  createObject(main, loader = false) {
+    if (this.isDrawing || loader) {
       this.isDrawing = false;
       const points = simplify(this.points, 10, true);
       let object;
       if (this.parentObject) {
         if (points.length >= 3) {
           object = new SoundTrajectory(main, points);
+          object.points = points;
           this.parentObject.trajectory = object;
           object.parentSoundObject = this.parentObject;
           main.soundTrajectories.push(object);
@@ -65,9 +66,9 @@ export default class PathDrawer {
           object = new SoundZone(main, points);
           main.soundZones.push(object);
         } else {
-          object = new SoundObject(main); 
+          object = new SoundObject(main);
           main.soundObjects.push(object);
-        }          
+        }
       }
 
       this.clear();

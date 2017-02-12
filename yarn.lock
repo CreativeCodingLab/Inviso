@@ -3235,9 +3235,9 @@ three-obj-loader@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/three-obj-loader/-/three-obj-loader-1.0.2.tgz#2236dee4a5555836358eca5f5d8216363504e54e"
 
-three@0.81.2:
-  version "0.81.2"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.81.2.tgz#100c078dcfbb0a235e3d433066b1b26b145c69c3"
+three@^0.84.0:
+  version "0.84.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.84.0.tgz#95be85a55a0fa002aa625ed559130957dcffd918"
 
 through2@^2.0.1:
   version "2.0.3"

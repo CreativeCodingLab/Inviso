@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import TWEEN from 'tween.js';
-import OBJLoader from 'three-obj-loader';
+import OBJLoader from './../utils/objloader';
 
 // Components
 import Renderer from './components/renderer';
@@ -236,7 +236,7 @@ export default class Main {
     /**
      * Hands over the positioning of the listener node from the head model
      * to the camera in object edit view
-    **/
+     **/
     if(this.isEditingObject) this.setListenerPosition(this.camera.threeCamera);
 
     /**
@@ -245,7 +245,6 @@ export default class Main {
      * X-Z plane
      */
     if (this.controls.threeControls.getPolarAngle() > 0.4) {
-      console.log('hey');
       if (!this.perspectiveView) {
         this.perspectiveView = true;
         this.cameraLabel.innerHTML = 'Altitude view';
@@ -254,7 +253,7 @@ export default class Main {
       this.perspectiveView = false;
       this.cameraLabel.innerHTML = 'Aerial view';
     }
-  
+
     /* Checking if the user has walked into a sound zone in each frame. */
     this.checkZones();
 
@@ -358,16 +357,16 @@ export default class Main {
         .start();
 
       /**
-        * Edit Object View only applies to sound objects. A Sound Object in the scene
-        * is represented with 4 elements: Raycast Sphere Mesh, AxisHelper,
-        * AltitudeHelper Line, and the containerObject which holds the omniSphere
-        * and the cones. To make only the activeObject and nothing else in the scene,
-        * first we set every object after scene defaults (i.e. grid, collider plane,
-        * lights, edit view light box and camera helper) invisible. Then we find the
-        * index of the raycast sphere that belongs to the active object and make
-        * this and the following 3 object visible to bring the activeObject back
-        * in the scene.
-      **/
+       * Edit Object View only applies to sound objects. A Sound Object in the scene
+       * is represented with 4 elements: Raycast Sphere Mesh, AxisHelper,
+       * AltitudeHelper Line, and the containerObject which holds the omniSphere
+       * and the cones. To make only the activeObject and nothing else in the scene,
+       * first we set every object after scene defaults (i.e. grid, collider plane,
+       * lights, edit view light box and camera helper) invisible. Then we find the
+       * index of the raycast sphere that belongs to the active object and make
+       * this and the following 3 object visible to bring the activeObject back
+       * in the scene.
+       **/
 
       if (this.head) {
         this.head.visible = false;
@@ -605,7 +604,7 @@ export default class Main {
     this.soundTrajectories.splice(i, 1);
   }
 
-/**
+  /**
   (didn't know where I should put this)
 
   overrides three.js triangulate with libtess.js algorithm for the conversion of a curve to a filled (2D) path. still doesn't produce desired behavior with some non-simple paths
@@ -685,18 +684,63 @@ export default class Main {
 
       for (var i = 0; i < nTri; i+=6) {
         var a = map[ triangles[i] + ',' + triangles[i+1] ],
-            b = map[ triangles[i+2] + ',' + triangles[i+3] ],
-            c = map[ triangles[i+4] + ',' + triangles[i+5] ];
+          b = map[ triangles[i+2] + ',' + triangles[i+3] ],
+          c = map[ triangles[i+4] + ',' + triangles[i+5] ];
 
         if (a == undefined || b == undefined || c == undefined) {continue;}
         vertIndices.push([a, b, c]);
         result.push( [ contour[ a ],
-                       contour[ b ],
-                       contour[ c ] ] );
+          contour[ b ],
+          contour[ c ] ] );
       }
 
       if ( indices ) return vertIndices;
       return result;
     };
+  }
+
+  export() {
+    return JSON.stringify({
+      camera: this.camera.threeCamera.toJSON(),
+      soundObjects: this.soundObjects.map(obj => obj.toJSON()),
+      soundZones: this.soundZones.map(obj => obj.toJSON())
+    });
+  }
+
+  import(data) {
+    let json = JSON.parse(data);
+    let loader = new THREE.ObjectLoader();
+    const cam = loader.parse(json.camera);
+
+    json.soundObjects.forEach(obj => {
+      let parsed = JSON.parse(obj);
+
+      let newObj = this.path.createObject(this, true);
+      newObj.fromJSON(obj);
+      this.setActiveObject(newObj);
+      this.isAddingObject = false;
+
+      // Trajectory
+      if (parsed.trajectory) {
+        this.path.points = parsed.trajectory.map(i => new THREE.Vector3(i.x, i.y, i.z));
+        this.path.parentObject = newObj;
+        this.path.createObject(this, true);
+      }
+    })
+
+    json.soundZones.forEach(obj => {
+      let object = JSON.parse(obj);
+
+      // Fakes drawing for zone creation
+      this.path.points = object.points;
+
+      let newObj = this.path.createObject(this, true);
+      newObj.fromJSON(obj);
+      this.setActiveObject(newObj);
+      this.isAddingObject = false;
+    })
+
+    this.camera.threeCamera.copy(cam);
+    this.camera.threeCamera.updateProjectionMatrix();
   }
 }
