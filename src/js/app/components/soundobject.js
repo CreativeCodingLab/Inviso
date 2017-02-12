@@ -132,7 +132,7 @@ export default class SoundObject {
 
       m.elements[12] = m.elements[13] = m.elements[14] = 0;
 
-      vec.applyProjection(m);
+      vec.applyMatrix4(m);
       vec.normalize();
       object.sound.panner.setOrientation(vec.x, vec.y, vec.z);
 

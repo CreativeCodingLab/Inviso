@@ -191,7 +191,7 @@ export default class Main {
     }
     this.cameraLabel = document.getElementById('camera-label');
     this.cameraLabel.onclick = this.reset.bind(this);
-    this.cameraLabel.innerHTML = this.isPerspectiveView ? 'Altitude view' : 'Aerial view';    
+    this.cameraLabel.innerHTML = this.isPerspectiveView ? 'Altitude view' : 'Aerial view';
 
     this.gui = new GUIWindow(this);
 
@@ -303,11 +303,11 @@ export default class Main {
     m.elements[12] = m.elements[13] = m.elements[14] = 0;
 
     const vec = new THREE.Vector3(0, 0, -1);
-    vec.applyProjection(m);
+    vec.applyMatrix4(m);
     vec.normalize();
 
     const up = new THREE.Vector3(0, -1, 0);
-    up.applyProjection(m);
+    up.applyMatrix4(m);
     up.normalize();
 
     this.audio.context.listener.setOrientation(vec.x, vec.y, vec.z, up.x, up.y, up.z);
