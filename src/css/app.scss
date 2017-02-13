@@ -165,14 +165,18 @@ input[type="file"] {
 }
 
 #camera-label {
-  position:absolute;
-  bottom:5px;
-  right:5px;
-  margin:20px;
-  font-size:15px;
-  text-decoration:underline;
-  color:#0066ff;
-  cursor:pointer;
+  position: absolute;
+  bottom: 25px;
+  width:100%;
+  text-align: center;
+  font-size:18px;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  -moz-text-decoration-style: dotted;
+-webkit-text-decoration-style: dotted;
+text-decoration-style: dotted; 
+  color:#555;
+  //cursor:pointer;
 }
 
 #play-mute-button {

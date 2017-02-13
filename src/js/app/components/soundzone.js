@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import 'whatwg-fetch';
+import Helpers from '../../utils/helpers';
 
 export default class SoundZone {
   constructor(main, points) {
@@ -187,7 +188,7 @@ export default class SoundZone {
     material = new THREE.MeshLambertMaterial({
       color: 0xff1169,
       transparent: true,
-      opacity: 0.2,
+      opacity: Helpers.mapRange(this.volume, 0, 2, 0.05, 0.35),
       side: THREE.BackSide,
       premultipliedAlpha: true
     });

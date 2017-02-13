@@ -227,13 +227,16 @@ input[type="file"] {
 
 #camera-label {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  margin: 20px;
-  font-size: 15px;
+  bottom: 25px;
+  width: 100%;
+  text-align: center;
+  font-size: 18px;
   text-decoration: underline;
-  color: #0066ff;
-  cursor: pointer; }
+  text-decoration-style: dotted;
+  -moz-text-decoration-style: dotted;
+  -webkit-text-decoration-style: dotted;
+  text-decoration-style: dotted;
+  color: #555; }
 
 #play-mute-button {
   position: absolute;
@@ -267,8 +270,3 @@ input[type="file"] {
   font-size: 12px;
   line-height: 1.25em;
   pointer-events: none; }
-
-  #import {
-    top: -1000px;
-    position: fixed;
-  }
