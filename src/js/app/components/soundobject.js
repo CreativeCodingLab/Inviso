@@ -478,6 +478,7 @@ export default class SoundObject {
         this.omniSphere.sound = sound;
         this.omniSphere.sound.name = object.filename;
         this.omniSphere.sound.volume.gain.value = object.volume;
+        this.setAudioPosition(this.omniSphere);
       });
     }
 
