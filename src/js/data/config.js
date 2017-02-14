@@ -34,8 +34,8 @@ export default {
     near: 0.0008
   },
   grid: {
-    size: 5000,
-    divisions: 50
+    size: 10000,
+    divisions: 80
   },
   camera: {
     fov: 45,
