@@ -345,6 +345,29 @@ export default class SoundObject {
     cone.lat = longlat[1];
   }
 
+  // Needs to be refactored - also lives in guiwindow
+  pointConeMagic(cone, lat, long) {
+    // adapted from https://gist.github.com/nicoptere/2f2571db4b454bb18cd9
+    const v = (function lonLatToVector3( lng, lat )
+      {
+      //flips the Y axis
+      lat = Math.PI / 2 - lat;
+
+      //distribute to sphere
+      return new THREE.Vector3(
+        Math.sin( lat ) * Math.sin( lng ),
+        Math.cos( lat ),
+        Math.sin( lat ) * Math.cos( lng )
+      );
+
+      })( long, lat );
+    if (v.x === 0) { v.x = 0.0001; }
+    const point = this.containerObject.position.clone().add(v);
+    this.pointCone(cone, point);
+
+  }
+
+
   removeCone(cone) {
     cone.sound.source.stop();
     const i = this.cones.indexOf(cone);
@@ -497,26 +520,4 @@ export default class SoundObject {
     });
   }
 
-  // Needs to be refactored - also lives in guiwindow
-  pointConeMagic(cone, lat, long) {
-    // adapted from https://gist.github.com/nicoptere/2f2571db4b454bb18cd9
-    const v = (function lonLatToVector3( lng, lat, out )
-      {
-      //flips the Y axis
-      lat = Math.PI / 2 - lat;
-
-      //distribute to sphere
-      out.set(
-        Math.sin( lat ) * Math.sin( lng ),
-        Math.cos( lat ),
-        Math.sin( lat ) * Math.cos( lng )
-      );
-
-      return out;
-
-      })( long, lat, this.containerObject.position.clone() );
-    if (v.x === 0) { v.x = 0.0001; }
-    const point = this.containerObject.position.clone().add(v);
-    this.pointCone(cone, point);
-  }
 }

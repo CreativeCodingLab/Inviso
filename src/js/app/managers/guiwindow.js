@@ -321,25 +321,7 @@ export default class GUIWindow {
         }
       }
 
-      // adapted from https://gist.github.com/nicoptere/2f2571db4b454bb18cd9
-      const v = (function lonLatToVector3( lng, lat, out )
-      {
-          //flips the Y axis
-          lat = Math.PI / 2 - lat;
-
-          //distribute to sphere
-          out.set(
-                      Math.sin( lat ) * Math.sin( lng ),
-                      Math.cos( lat ),
-                      Math.sin( lat ) * Math.cos( lng )
-          );
-
-          return out;
-
-      })( long, lat, object.containerObject.position.clone() );
-      if (v.x === 0) { v.x = 0.0001; }
-      const point = object.containerObject.position.clone().add(v);
-      object.pointCone(cone, point);
+      object.pointConeMagic(cone, lat, long);
     }
 
     this.addParameter({
@@ -367,7 +349,7 @@ export default class GUIWindow {
     }, elem);
     this.addParameter({
       property: 'Longitude',
-      value: Number((cone.long * 180/Math.PI).toFixed(2)),
+      value: Math.round(cone.long * 180/Math.PI),
       type: 'number',
       cls: 'long',
       suffix: '˚',
@@ -375,7 +357,7 @@ export default class GUIWindow {
     }, elem);
     this.addParameter({
       property: 'Latitude',
-      value: Number((cone.lat * 180/Math.PI).toFixed(2)),
+      value: Math.round(cone.lat * 180/Math.PI),
       type: 'number',
       cls: 'lat',
       suffix: '˚',
@@ -577,8 +559,8 @@ export default class GUIWindow {
           if (cone === this.app.interactiveCone) {
             cones[i].style.display = 'block';
             this.replaceTextContent(cones[i].getElementsByTagName('h4')[0], 'Cone ' + (i+1) + ' of ' + object.cones.length);
-            this.replaceTextContent(cones[i].querySelector('.lat .value'), cone.lat * 180 / Math.PI);
-            this.replaceTextContent(cones[i].querySelector('.long .value'), cone.long * 180 / Math.PI);
+            this.replaceTextContent(cones[i].querySelector('.lat .value'), cone.lat * 180 / Math.PI, 0);
+            this.replaceTextContent(cones[i].querySelector('.long .value'), cone.long * 180 / Math.PI, 0);
             this.replaceTextContent(cones[i].querySelector('.volume .value'), cone.sound.volume.gain.value, 2, true);
             this.replaceTextContent(cones[i].querySelector('.spread .value'), cone.sound.spread, 2, true);
           }
@@ -974,7 +956,12 @@ addSwipeEvents(div, title, isObject) {
   replaceTextContent(parent, text, sigfigs, float) {
     // while(parent.firstChild) { parent.removeChild(parent.firstChild); }
     if (!isNaN(text)) {
-      text = (+text).toFixed(sigfigs || 2);
+      if (isNaN(sigfigs)) {
+        text = (+text).toFixed(2);
+      }
+      else {
+        text = (+text).toFixed(sigfigs);
+      }
       if (!float) text = +text;
     }
     parent.innerHTML = text;
