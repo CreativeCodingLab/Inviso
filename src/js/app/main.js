@@ -191,6 +191,9 @@ export default class Main {
     }
     this.cameraLabel = document.getElementById('camera-label');
     this.cameraLabel.onclick = this.reset.bind(this);
+    // this.cameraLabel.onclick = function (){
+    //   document.getElementById('help-camera').style.display = 'none';
+    // }
     this.cameraLabel.innerHTML = this.perspectiveView ? 'Altitude view' : 'Aerial view';
 
     this.gui = new GUIWindow(this);
@@ -246,6 +249,7 @@ export default class Main {
      */
     if (this.controls.threeControls.getPolarAngle() > 0.4) {
       if (!this.perspectiveView) {
+        document.getElementById('help-camera').style.display = 'none';
         this.perspectiveView = true;
         this.cameraLabel.innerHTML = 'Altitude view';
       }
@@ -405,6 +409,8 @@ export default class Main {
   }
 
   enterEditObjectView() {
+    document.getElementById('camera-label').style.display = 'none';
+
     // disable panning in object view
     this.controls.disablePan();
 
@@ -431,6 +437,7 @@ export default class Main {
   }
 
   exitEditObjectView(reset){
+    document.getElementById('camera-label').style.display = 'block';
     // re-enable panning
     this.controls.enablePan();
 

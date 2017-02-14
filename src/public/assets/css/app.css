@@ -236,7 +236,8 @@ input[type="file"] {
   -moz-text-decoration-style: dotted;
   -webkit-text-decoration-style: dotted;
   text-decoration-style: dotted;
-  color: #555; }
+  color: #555;
+  cursor: pointer; }
 
 #play-mute-button {
   position: absolute;
