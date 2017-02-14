@@ -191,7 +191,7 @@ export default class Main {
     }
     this.cameraLabel = document.getElementById('camera-label');
     this.cameraLabel.onclick = this.reset.bind(this);
-    this.cameraLabel.innerHTML = this.isPerspectiveView ? 'Altitude view' : 'Aerial view';
+    this.cameraLabel.innerHTML = this.perspectiveView ? 'Altitude view' : 'Aerial view';
 
     this.gui = new GUIWindow(this);
 
