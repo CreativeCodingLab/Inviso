@@ -279,7 +279,7 @@ export default class SoundZone {
   }
 
   move(main) {
-    if (!main.perspectiveView) {
+    // if (!main.perspectiveView) {
       const dx = main.mouse.x - this.mouseOffsetX;
       const dy = main.mouse.z - this.mouseOffsetY;
       this.mouseOffsetX = main.mouse.x;
@@ -297,7 +297,7 @@ export default class SoundZone {
         this.containerObject.position.x += dx;
         this.containerObject.position.z += dy;
       }
-    }
+    // }
   }
 
   setActive(main) {
