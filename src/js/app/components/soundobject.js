@@ -77,7 +77,10 @@ export default class SoundObject {
 
     const coneGeo = new THREE.CylinderGeometry(coneWidth, 0, coneHeight, 100, 1, true);
     const randGreen = color !== null ? color : Math.random();
-    const coneColor = new THREE.Color(0.5, randGreen, 0.9);
+    const randBlue = color !== null ? color : Math.random();
+    //const coneColor = new THREE.Color(0.5, randGreen, randBlue);
+    const coneColor = new THREE.Color();
+    coneColor.setHSL(randGreen, randBlue, 0.8);
     const coneMaterial = new THREE.MeshBasicMaterial({
       color: coneColor,
       opacity: 0.8,

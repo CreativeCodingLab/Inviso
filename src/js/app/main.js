@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import TWEEN from 'tween.js';
 import OBJLoader from './../utils/objloader';
+import Helpers from './../utils/helpers';
 
 // Components
 import Renderer from './components/renderer';
@@ -374,6 +375,7 @@ export default class Main {
 
       if (this.head) {
         this.head.visible = false;
+        //this.head.children[0].material.opacity = 0.05;
         this.axisHelper.visible = false;
       }
       this.gui.disableGlobalParameters();
@@ -445,6 +447,7 @@ export default class Main {
     this.isEditingObject = false;
     if (this.head) {
       this.head.visible = true;
+      // this.head.children[0].material.opacity = 1;
       this.axisHelper.visible = true;
     }
     this.gui.enableGlobalParameters();
@@ -457,7 +460,7 @@ export default class Main {
         object.unpause();
       }
       else if (object.type === "SoundZone") {
-        object.shape.material.opacity = 0.2;
+        object.shape.material.opacity = Helpers.mapRange(object.volume, 0, 2, 0.05, 0.35);
         // object.shape.visible = true;
       }
     });
