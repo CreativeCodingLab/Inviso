@@ -48,29 +48,29 @@ export default class Interaction {
         main.moveBackwards = 1 * main.movementSpeed;
       }
 
-      if (this.keyboard.eventMatches(event, 'e')) {
-        this.data = main.export();
+      // if (this.keyboard.eventMatches(event, 'e')) {
+      //   this.data = main.export();
+      //
+      //   const a = document.createElement('a');
+      //   const blob = new Blob([this.data], {'type':'text/plain'});
+      //   a.href = window.URL.createObjectURL(blob);
+      //   a.download = 'export.json';
+      //   a.click();
+      // }
 
-        const a = document.createElement('a');
-        const blob = new Blob([this.data], {'type':'text/plain'});
-        a.href = window.URL.createObjectURL(blob);
-        a.download = 'export.json';
-        a.click();
-      }
-
-      if (this.keyboard.eventMatches(event, 'i')) {
-        const i = document.getElementById('import');
-        i.click();
-        i.addEventListener('change', handleFiles, false);
-
-        function handleFiles() {
-          const reader = new FileReader();
-          reader.addEventListener('load', (e) => {
-            main.import(e.target.result);
-          });
-          reader.readAsText(this.files[0]);
-        }
-      }
+      // if (this.keyboard.eventMatches(event, 'i')) {
+      //   const i = document.getElementById('import');
+      //   i.click();
+      //   i.addEventListener('change', handleFiles, false);
+      //
+      //   function handleFiles() {
+      //     const reader = new FileReader();
+      //     reader.addEventListener('load', (e) => {
+      //       main.import(e.target.result);
+      //     });
+      //     reader.readAsText(this.files[0]);
+      //   }
+      // }
 
       if (this.keyboard.eventMatches(event, 'backspace') ||
         this.keyboard.eventMatches(event, 'delete')) {

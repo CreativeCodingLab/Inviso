@@ -197,6 +197,32 @@ text-decoration-style: dotted;
   display: none;
 }
 
+#save-button {
+  position:absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+#save-button img{
+  cursor:pointer;
+  width:15px;
+  height:15px;
+  opacity:0.5;
+}
+
+#load-button {
+  position:absolute;
+  bottom: 10px;
+  left: 30px;
+}
+
+#load-button img{
+  cursor:pointer;
+  width:15px;
+  height:15px;
+  opacity:0.67;
+}
+
 .help-bubble {
   z-index: 1;
   float: left;

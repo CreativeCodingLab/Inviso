@@ -190,6 +190,29 @@ export default class Main {
       this.style.display = 'none';
       document.getElementById('mute-button').style.display = 'block';
     }
+
+    const this_ = this;
+    document.getElementById('save-button').onclick = function() {
+      this.data = this_.export();
+      const a = document.createElement('a');
+      const blob = new Blob([this.data], {'type':'text/plain'});
+      a.href = window.URL.createObjectURL(blob);
+      a.download = 'export.json';
+      a.click();
+    }
+    document.getElementById('load-button').onclick = function() {
+      const i = document.getElementById('import');
+      i.click();
+      i.addEventListener('change', handleFiles, false);
+
+      function handleFiles() {
+        const reader = new FileReader();
+        reader.addEventListener('load', (e) => {
+          this_.import(e.target.result);
+        });
+        reader.readAsText(this.files[0]);
+      }
+    }
     this.cameraLabel = document.getElementById('camera-label');
     this.cameraLabel.onclick = this.reset.bind(this);
     // this.cameraLabel.onclick = function (){
