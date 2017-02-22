@@ -409,7 +409,6 @@ export default class SoundZone {
   }
 
   toJSON() {
-    console.log(this.points);
     return JSON.stringify({
       position: this.containerObject.position,
       points: this.splinePoints,

@@ -226,6 +226,7 @@ input[type="file"] {
   display: none; }
 
 #camera-label {
+  z-index: 1;
   position: absolute;
   bottom: 25px;
   width: 100%;
@@ -257,6 +258,7 @@ input[type="file"] {
   display: none; }
 
 #save-button {
+  z-index: 2;
   position: absolute;
   bottom: 10px;
   left: 10px; }
@@ -268,6 +270,7 @@ input[type="file"] {
   opacity: 0.5; }
 
 #load-button {
+  z-index: 2;
   position: absolute;
   bottom: 10px;
   left: 30px; }
