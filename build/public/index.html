@@ -10,18 +10,47 @@
   <section id="appContainer" class="main">
     <div id="loading">Loading...</div>
 
-    <input id="myInput" type="file" style="visibility:hidden">
+    <form>
+      <input id="soundPicker" type="file" accept="audio/*" style="visibility:hidden">
+    </form>
     <div id="UIContainer">
       <button id="add-object-button"> + </button>
       <div id="guis"></div>
     </div>
+
+    <div id="play-mute-button">
+      <img id="mute-button" src="./assets/models/unmute.svg">
+      <img id="unmute-button" src="./assets/models/mute.svg">
+    </div>
+
+    <div id="save-button"><img id="save-button" src="./assets/models/save.svg"></div>
+    <div id="load-button"><img id="load-button" src="./assets/models/load.svg"></div>
+
+    <div id="help-add" class="help-bubble" style="right: 250px; top: 12px;">
+      <p>After clicking the add button, <b>click</b> anywhere on the screen to </p>
+      <p>create a <i>sound object</i>, or <b>click & drag</b> to draw a <i>sound zone</i>. </p>
+    </div>
+
+    <div id="camera-label">Aerial view</div>
+
+    <div id="help-camera" class="help-bubble" style="bottom:20px; left: 50%; margin-left:60px">
+      <p><b>Click & drag</b> anywhere on the screen to rotate the</p>
+      <p>view; <b>right-click & drag</b> to pan. When <b>Altitude View</b></p>
+      <p>is active, you can change the height of a sound object</p>
+      <p>or a trajectory point.</p>
+    </div>
+
+    <div id="help-head" class="help-bubble" style="top:50%; left: 50%; margin-left:-350px">
+      <p> Use <b>W</b>, <b>A</b>, <b>S</b>, <b>D</b> keys to move the head inside the scene. </p>
+    </div>
   </section>
 
+  <input id="import" type="file"/>
 
   <script src="./assets/js/rStats.js"></script>
   <script src="./assets/js/rStats.extras.js"></script>
-  <script src="./assets/js/dat.gui.min.js"></script>
   <script src="./assets/js/simplify3D.js"></script>
+  <script src="./assets/js/libtess.min.js"></script>
   <script src="./assets/js/app.js"></script>
 </body>
 </html>
