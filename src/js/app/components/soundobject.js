@@ -156,7 +156,6 @@ export default class SoundObject {
         .then(buffer => context.decodeAudioData(buffer, (decodedData) => {
           if (object && object.type === "SoundObject") {
             /* attach omnidirectional sound */
-            console.log('attaching omni sound');
             object = object.omniSphere;
           }
 

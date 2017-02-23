@@ -254,6 +254,9 @@ export default class Main {
       rS('rStats').end();
     }
 
+    /* Frame rate dependency for the head movement speed */
+    this.movementSpeed = 10 * (30 / rS('FPS').value());
+
     /* Camera tweening object update */
     TWEEN.update();
 
