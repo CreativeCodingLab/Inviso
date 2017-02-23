@@ -128,7 +128,7 @@ export default class GUIWindow {
         object.raycastSphere.position.copy(destination);
 
         if (object.cones[0]) {
-          for (const i in object.cones) {
+          for (let i in object.cones) {
             object.setAudioPosition(this.cones[i]);
           }
         }
@@ -673,7 +673,7 @@ export default class GUIWindow {
                     });
                 }
 
-                // hard-coded the timeout but create the sound 
+                // hard-coded the timeout but create the sound
                 // after the tween is finished
                 if (!self.app.isEditingObject) {
                   self.toggleEditObject();
