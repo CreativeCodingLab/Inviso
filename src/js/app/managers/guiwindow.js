@@ -637,18 +637,11 @@ export default class GUIWindow {
                   }
 
                   // create new cone
-                  obj.loadSound(path, self.app.audio, cone)
+                  obj.loadSound(path, self.app.audio, self.app.isMuted, cone)
                     .then((sound) => {
                       if (cone) {
                         // copy properties of previous cone
-                        sound.spread = cone.sound.spread;
-                        sound.panner.refDistance = cone.sound.panner.refDistance;
-                        sound.panner.distanceModel = cone.sound.panner.distanceModel;
-                        sound.panner.coneInnerAngle = cone.sound.panner.coneInnerAngle;
-                        sound.panner.coneOuterAngle = cone.sound.panner.coneOuterAngle;
-                        sound.panner.coneOuterGain = cone.sound.panner.coneOuterGain;
-                        sound.volume.gain.value = cone.sound.volume.gain.value;
-                        cone.sound = sound;
+                        obj.applySoundToCone(cone, sound);
                         obj.setAudioPosition(cone);
 
                         // replace text with file name
@@ -664,7 +657,6 @@ export default class GUIWindow {
 
                         // point cone at camera
                         obj.pointCone(cone, self.app.camera.threeCamera.position);
-                        obj.setAudioPosition(cone);
                       }
                     })
                     .catch((err) => {

@@ -369,6 +369,16 @@ export default class SoundObject {
 
   }
 
+  applySoundToCone(cone, sound) {
+    sound.spread = cone.sound.spread;
+    sound.panner.refDistance = cone.sound.panner.refDistance;
+    sound.panner.distanceModel = cone.sound.panner.distanceModel;
+    sound.panner.coneInnerAngle = cone.sound.panner.coneInnerAngle;
+    sound.panner.coneOuterAngle = cone.sound.panner.coneOuterAngle;
+    sound.panner.coneOuterGain = cone.sound.panner.coneOuterGain;
+    sound.volume.gain.value = cone.sound.volume.gain.value;
+    cone.sound = sound;
+  }
 
   removeCone(cone) {
     cone.sound.source.stop();
