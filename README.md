@@ -1,6 +1,6 @@
 # Inviso
 
-A cross-platform tool for designing interactive virtual soundscapes. 
+A cross-platform tool for designing interactive virtual soundscapes.
 
 ## Project Structure
 * build - Directory for built and compressed files from the npm build script
@@ -25,17 +25,24 @@ yarn install
 Then run dev script:
 
 ```
-yarn run dev
+yarn dev
 ```
 
 Spins up a webpack dev server at localhost:8080 and keeps track of all js and sass changes to files. Only reloads automatically upon save of js files.
 
 ## Build
 ```
-yarn run build
+yarn build
 ```
 
-Cleans existing build folder while linting js folder and then copies over the public folder from src. Then sets environment to production and compiles js and css into build.
+Cleans existing build folder and then copies over the public folder from src. Then sets environment to production and compiles js and css into build.
+
+## Deploy
+```
+yarn deploy
+```
+
+Deploys `build/public` to gh-pages branch.
 
 ## Other Yarn Scripts
 You can run any of these individually if you'd like with the npm run command:
@@ -51,7 +58,6 @@ You can run any of these individually if you'd like with the npm run command:
 * build:js - Run webpack in production environment
 
 ## Input Controls
-* Enable camera with 'c'
 * Reset camera with 'r'
 * Arrow controls will pan
 * Mouse left click will rotate/right click will pan

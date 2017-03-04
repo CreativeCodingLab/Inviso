@@ -6,8 +6,8 @@
   "main": "app.js",
   "scripts": {
     "dev": "run-p dev:sass webpack-server webpack-watch",
-    "build": "run-s prebuild build:dir build:js build:sass",
-    "prebuild": "run-s clean",
+    "build": "run-s clean build:dir build:js build:sass",
+    "prebuild": "run-s clean lint",
     "clean": "rimraf build",
     "deploy": "gh-pages -d build/public",
     "lint": "eslint src/js/",
