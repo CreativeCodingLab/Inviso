@@ -397,6 +397,18 @@ export default class SoundZone {
     this.checkMuteState(main);
   }
 
+  turnVisible() {
+
+  }
+
+  turnInvisible() {
+    this.shape.material.visible = false;
+    this.pointObjects.forEach((point) => {
+      point.children[0].visible = false;
+    });
+    this.spline.mesh.material.visible = false;
+  }
+
   checkMuteState(main) {
     if (this.mainMixer) {
       if (main.isMuted || this.isMuted) {

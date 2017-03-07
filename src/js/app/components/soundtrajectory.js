@@ -17,7 +17,7 @@ export default class SoundTrajectory {
 
     this.cursor = new THREE.Mesh(
       new THREE.SphereGeometry(15),
-      new THREE.MeshBasicMaterial({ 
+      new THREE.MeshBasicMaterial({
         color: 0xff1169,
         transparent: true,
         opacity: 0.5,
@@ -359,6 +359,20 @@ export default class SoundTrajectory {
     this.splinePoints.splice(i, 1);
     this.deselectPoint();
     this.updateTrajectory();
+  }
+
+  turnVisible() {
+    this.spline.mesh.visible = true;
+    this.pointObjects.forEach((point) => {
+      point.visible = true;
+    });
+  }
+
+  turnInvisible() {
+    this.spline.mesh.visible = false;
+    this.pointObjects.forEach((point) => {
+      point.visible = false;
+    });
   }
 
   /**

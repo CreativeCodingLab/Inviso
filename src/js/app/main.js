@@ -44,6 +44,7 @@ export default class Main {
     this.isAddingTrajectory = false;
     this.isAddingObject = false;
     this.isEditingObject = false;
+    this.isUserStudyLoading = false;
 
     this.activeObject = null;
 
@@ -63,7 +64,6 @@ export default class Main {
     this.yawLeft = 0;
     this.yawRight = 0;
     this.rotationSpeed = 0.05;
-    this.listenerMovementSpeed = 5;
 
     this.perspectiveView = false;
     this.keyPressed = false;

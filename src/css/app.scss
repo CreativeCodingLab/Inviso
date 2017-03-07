@@ -198,28 +198,27 @@ input[type="file"] {
   display: none;
 }
 
-#save-button {
-  z-index: 2;
+#save {
   position:absolute;
   bottom: 10px;
-  left: 10px;
+  left: 15px;
 }
 
-#save-button img{
+#save img{
   cursor:pointer;
   width:15px;
   height:15px;
   opacity:0.5;
 }
 
-#load-button {
+#load {
   z-index: 2;
   position:absolute;
   bottom: 10px;
-  left: 30px;
+  left: 45px;
 }
 
-#load-button img{
+#load img{
   cursor:pointer;
   width:15px;
   height:15px;
@@ -227,7 +226,6 @@ input[type="file"] {
 }
 
 .help-bubble {
-  z-index: -1;
   float: left;
   position:absolute;
   padding:10px;

@@ -418,6 +418,18 @@ export default class SoundObject {
     this.checkMuteState(main);
   }
 
+  turnVisible() {
+    this.containerObject.visible = true;
+    this.axisHelper.visible = true;
+    this.altitudeHelper.visible = true;
+  }
+
+  turnInvisible() {
+    this.containerObject.visible = false;
+    this.axisHelper.visible = false;
+    this.altitudeHelper.visible = false;
+  }
+
   checkMuteState(main) {
     if (main.isMuted || this.isMuted) {
       this.cones.forEach(cone => cone.sound.mainMixer.gain.value = 0);
