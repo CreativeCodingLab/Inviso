@@ -252,6 +252,7 @@ export default class Interaction {
   onMouseUp(main, event, hasFocus) {
     // turn gui pointer events back on
     main.gui.enable();
+    document.getElementById('GlobalContainer').style.pointerEvents = 'auto';
 
     // turn controls back on
     main.controls.enable();
@@ -294,6 +295,7 @@ export default class Interaction {
   onMouseDown(main, event) {
     // turn gui events off when interacting with scene objects
     main.gui.disable();
+    document.getElementById('GlobalContainer').style.pointerEvents = 'none';
 
     /**
      * !keyPressed is added to avoid interaction with object when the camera
