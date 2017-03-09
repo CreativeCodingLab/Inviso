@@ -9,7 +9,7 @@
 @import './components/loading';
 
 #GlobalContainer{
-  
+
 }
 
 #UIContainer{
@@ -241,6 +241,7 @@ input[type="file"] {
   border-radius:10px;
   display: block;
   font-size:12px;
+  font-family:roboto,'helvetica neue', helvetica, arial, sans-serif;
   line-height:1.25em;
   pointer-events: none;
 }
