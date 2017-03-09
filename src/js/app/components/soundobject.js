@@ -108,6 +108,16 @@ export default class SoundObject {
       return c;
     }
 
+    sound.scriptNode.onaudioprocess = function() {
+      let array =  new Uint8Array(sound.analyser.frequencyBinCount);
+      sound.analyser.getByteFrequencyData(array);
+      let values = 0;
+      let length = array.length;
+      for (let i = 0; i < length; i++) values += array[i];
+      let average = values / length;
+      cone.material.opacity = Helpers.mapRange(average, 50, 100, 0.65, 0.95);
+    }
+
     cone.long = cone.lat = 0;
 
     this.cones.push(cone);
@@ -159,27 +169,54 @@ export default class SoundObject {
             object = object.omniSphere;
           }
 
-          if (object && object.sound && object.sound.source) {
+          if (object && object.sound) {
             object.sound.source.stop();
+            object.sound.source.disconnect(object.sound.scriptNode);
+            object.sound.scriptNode.disconnect(context.destination);
           }
 
           const sound = {};
           sound.mainMixer = mainMixer;
+
+          sound.analyser = context.createAnalyser();
+          sound.analyser.smoothingTimeConstant = 0.5;
+          sound.analyser.fftSize = 1024;
+
+          sound.scriptNode = context.createScriptProcessor(2048, 1, 1);
+          sound.scriptNode.connect(context.destination);
+
           sound.source = context.createBufferSource();
           sound.source.loop = true;
+          sound.source.connect(sound.scriptNode);
+
           sound.panner = context.createPanner();
           sound.panner.panningModel = 'HRTF';
           sound.panner.distanceModel = 'inverse';
           sound.panner.refDistance = 100;
+
           sound.volume = context.createGain();
           sound.source.connect(sound.volume);
+          sound.volume.connect(sound.analyser);
           sound.volume.connect(sound.panner);
           sound.panner.connect(mainMixer);
           mainMixer.connect(audio.destination);
           mainMixer.gain.value = mute ? 0 : 1;
+
           sound.source.buffer = decodedData;
           sound.source.start(context.currentTime + 0.020);
           resolve( sound );
+
+          if(object && object.name == 'omniSphere'){
+            sound.scriptNode.onaudioprocess = function() {
+              let array =  new Uint8Array(sound.analyser.frequencyBinCount);
+              sound.analyser.getByteFrequencyData(array);
+              let values = 0;
+              let length = array.length;
+              for (let i = 0; i < length; i++) values += array[i];
+              let average = values / length;
+              object.material.opacity = Helpers.mapRange(average, 50, 100, 0.65, 0.95);
+            }
+          }
         }));
     });
 
@@ -370,6 +407,17 @@ export default class SoundObject {
   }
 
   applySoundToCone(cone, sound) {
+
+    sound.scriptNode.onaudioprocess = function() {
+      let array =  new Uint8Array(sound.analyser.frequencyBinCount);
+      sound.analyser.getByteFrequencyData(array);
+      let values = 0;
+      let length = array.length;
+      for (let i = 0; i < length; i++) values += array[i];
+      let average = values / length;
+      cone.material.opacity = Helpers.mapRange(average, 50, 100, 0.65, 0.95);
+    }
+
     sound.spread = cone.sound.spread;
     sound.panner.refDistance = cone.sound.panner.refDistance;
     sound.panner.distanceModel = cone.sound.panner.distanceModel;
@@ -382,6 +430,9 @@ export default class SoundObject {
 
   removeCone(cone) {
     cone.sound.source.stop();
+    cone.sound.source.disconnect(cone.sound.scriptNode);
+    cone.sound.scriptNode.disconnect(this.audio.destination);
+    cone.sound = null;
     const i = this.cones.indexOf(cone);
     this.cones.splice(i, 1);
     this.containerObject.remove(cone);

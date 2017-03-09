@@ -628,19 +628,21 @@ export default class GUIWindow {
               }
               else {
 
-                function attachCone() {
-                  // replace sound attached to existing cone
-                  var text = span.innerText || span.textContent;
-                  let cone = null;
-                  if (obj.cones && obj.cones.length > 0 && text) {
-                    cone = obj.cones.find(c => c.filename == text);
-                  }
+                // replace sound attached to existing cone
+                var text = span.innerText || span.textContent;
+                let cone = null;
+                if (obj.cones && obj.cones.length > 0 && text) {
+                  cone = obj.cones.find(c => c.filename == text);
+                }
 
+                function attachCone() {
                   // create new cone
                   obj.loadSound(path, self.app.audio, self.app.isMuted, cone)
                     .then((sound) => {
                       if (cone) {
                         // copy properties of previous cone
+                        cone.sound.source.disconnect(cone.sound.scriptNode);
+                        cone.sound.scriptNode.disconnect(self.app.audio.destination);
                         obj.applySoundToCone(cone, sound);
                         obj.setAudioPosition(cone);
 
@@ -667,7 +669,7 @@ export default class GUIWindow {
 
                 // hard-coded the timeout but create the sound
                 // after the tween is finished
-                if (!self.app.isEditingObject) {
+                if (!cone && !self.app.isEditingObject) {
                   self.toggleEditObject();
                   window.setTimeout(attachCone, 800);
                 }
@@ -700,12 +702,18 @@ export default class GUIWindow {
   }
 
   detachSound(fileSpan, removeSpan) {
+
+    var self = this;
+
     fileSpan.innerHTML = 'None';
     removeSpan.style.display = 'none';
 
     if (this.obj.type === "SoundObject") {
       if (this.obj.omniSphere.sound && this.obj.omniSphere.sound.source) {
         this.obj.omniSphere.sound.source.stop();
+        this.obj.omniSphere.sound.source.disconnect(this.obj.omniSphere.sound.scriptNode);
+        this.obj.omniSphere.sound.scriptNode.disconnect(self.app.audio.destination);
+        this.obj.omniSphere.material.opacity = 0.8;
         this.obj.omniSphere.sound = null;
         this.obj.changeRadius();
       }
