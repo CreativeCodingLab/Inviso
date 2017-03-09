@@ -641,8 +641,6 @@ export default class GUIWindow {
                     .then((sound) => {
                       if (cone) {
                         // copy properties of previous cone
-                        cone.sound.source.disconnect(cone.sound.scriptNode);
-                        cone.sound.scriptNode.disconnect(self.app.audio.destination);
                         obj.applySoundToCone(cone, sound);
                         obj.setAudioPosition(cone);
 
@@ -712,7 +710,7 @@ export default class GUIWindow {
       if (this.obj.omniSphere.sound && this.obj.omniSphere.sound.source) {
         this.obj.omniSphere.sound.source.stop();
         this.obj.omniSphere.sound.source.disconnect(this.obj.omniSphere.sound.scriptNode);
-        this.obj.omniSphere.sound.scriptNode.disconnect(self.app.audio.destination);
+        this.obj.omniSphere.sound.scriptNode.disconnect(self.app.audio.context.destination);
         this.obj.omniSphere.material.opacity = 0.8;
         this.obj.omniSphere.sound = null;
         this.obj.changeRadius();

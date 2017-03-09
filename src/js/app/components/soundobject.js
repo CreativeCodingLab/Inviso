@@ -431,7 +431,7 @@ export default class SoundObject {
   removeCone(cone) {
     cone.sound.source.stop();
     cone.sound.source.disconnect(cone.sound.scriptNode);
-    cone.sound.scriptNode.disconnect(this.audio.destination);
+    cone.sound.scriptNode.disconnect(this.audio.context.destination);
     cone.sound = null;
     const i = this.cones.indexOf(cone);
     this.cones.splice(i, 1);

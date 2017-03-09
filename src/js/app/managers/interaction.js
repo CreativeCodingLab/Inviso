@@ -19,7 +19,7 @@ export default class Interaction {
     // Listeners
     // Mouse events
     this.renderer.domElement.addEventListener('mousemove', event => this.onMouseMove(main, event), false);
-    this.renderer.domElement.addEventListener('mouseleave', event => this.onMouseUp(main,event, false), false);
+    this.renderer.domElement.addEventListener('mouseleave', event => this.onMouseUp(main, event, false), false);
     this.renderer.domElement.addEventListener('mouseover', event => this.onMouseOver(event), false);
     this.renderer.domElement.addEventListener('mouseup', event => this.onMouseUp(main, event, true), false);
     this.renderer.domElement.addEventListener('mousedown', event => this.onMouseDown(main, event), false);
