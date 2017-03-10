@@ -96,7 +96,7 @@ export default class SoundObject {
     cone.randGreen = randGreen;
     cone.sound = sound;
     cone.sound.panner.coneInnerAngle = Math.atan(coneWidth / coneHeight) * (180 / Math.PI);
-    cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
+    cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 3;
     cone.sound.panner.coneOuterGain = 0.05;
     // cone.sound.volume.gain.value = Helpers.mapRange(coneHeight, 100, 150, 0.5, 2);
 
@@ -193,6 +193,7 @@ export default class SoundObject {
           sound.panner.panningModel = 'HRTF';
           sound.panner.distanceModel = 'inverse';
           sound.panner.refDistance = 100;
+          sound.panner.rolloffFactor = 5;
 
           sound.volume = context.createGain();
           sound.source.connect(sound.volume);
@@ -330,7 +331,7 @@ export default class SoundObject {
     const r = cone.sound.spread * 90;
     const l = cone.sound.volume.gain.value * 50 + 50;
     cone.sound.panner.coneInnerAngle = Math.atan( r / l) * (180 / Math.PI);
-    cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 1.5;
+    cone.sound.panner.coneOuterAngle = cone.sound.panner.coneInnerAngle * 3;
 
     cone.geometry.dynamic = true;
 
