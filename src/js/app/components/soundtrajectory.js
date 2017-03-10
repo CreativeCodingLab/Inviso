@@ -195,7 +195,6 @@ export default class SoundTrajectory {
     this.hideCursor();
     if (this.selectedPoint) {
       const i = this.pointObjects.indexOf(this.selectedPoint);
-      let pointer;
 
       if (i > -1) {
         /**
@@ -203,17 +202,17 @@ export default class SoundTrajectory {
          * moved in the Y-axis (height).
          */
         if (perspectiveView) {
-          pointer = this.splinePoints[i];
-          const posY = Helpers.mapRange(nonScaledMouse.y, -0.5, 0.5, -200, 200);
-          pointer.y = posY;
+          let dy = nonScaledMouse.y - this.nonScaledMouseOffsetY;
+          dy = Helpers.mapRange(dy, -0.5, 0.5, -200, 200);
+          this.splinePoints[i].y = Math.min(Math.max(this.splinePoints[i].y + dy, -300), 300);
+          this.nonScaledMouseOffsetY = nonScaledMouse.y;
         } else {
-          pointer = mouse;
+          /* Otherwise the mouse position vector is copied to the control point. */
+          const pointer = mouse.clone();
+          pointer.y = this.splinePoints[i].y;
+          this.splinePoints[i].copy(pointer);
         }
 
-        pointer.y = this.splinePoints[i].y;
-
-        /* Otherwise the mouse position vector is copied to the control point. */
-        this.splinePoints[i].copy(pointer);
         this.updateTrajectory();
         this.selectPoint(this.pointObjects[i]);
       }
@@ -232,12 +231,8 @@ export default class SoundTrajectory {
           200,
         );
 
-        this.objects.forEach((obj) => {
-          obj.position.y += posY;
-        });
-
         this.splinePoints.forEach((pt) => {
-          pt.y += posY;
+          pt.y = Math.min(Math.max(-300, pt.y + posY), 300);
         });
 
         this.nonScaledMouseOffsetY = nonScaledMouse.y;
@@ -288,18 +283,15 @@ export default class SoundTrajectory {
     this.spline.mesh.material.color.setHex(0xcccccc);
   }
 
-  select(intersect) {
+  select(intersect, main) {
     if (!intersect) return;
 
     const obj = intersect.object;
 
     if (obj.type === 'Line') {
       this.addPoint(intersect.point);
-    } else if (obj.parent.type === 'Object3D') {
-      this.selectPoint(obj.parent);
     } else {
-      // TODO: main?
-      this.deselectPoint();
+      this.selectPoint(obj.parent);
       this.setMouseOffset(main.nonScaledMouse, intersect.point);
     }
   }

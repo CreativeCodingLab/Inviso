@@ -357,7 +357,7 @@ export default class Interaction {
         // click inside active object
         if (main.activeObject.type != 'SoundObject'){
           const intersect = main.activeObject.objectUnderMouse(main.ray);
-          main.activeObject.select(intersect);
+          main.activeObject.select(intersect, main);
         } else {
           main.activeObject.select(main);
         }

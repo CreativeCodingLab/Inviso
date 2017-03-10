@@ -121,30 +121,24 @@ export default class GUIWindow {
         destination.y = Math.min(Math.max(-300,destination.y), 300);
 
         // move all child objects of the object
-        object.containerObject.position.copy(destination);
-        object.axisHelper.position.copy(destination);
-        object.altitudeHelper.position.copy(destination);
-        object.altitudeHelper.position.y = 0;
-        object.raycastSphere.position.copy(destination);
-
-        if (object.cones[0]) {
-          for (let i in object.cones) {
-            object.setAudioPosition(this.cones[i]);
-          }
-        }
-
-        if (object.omniSphere.sound){
-          object.setAudioPosition(object.omniSphere);
-        }
+        object.setPosition(destination);
 
         if (object.trajectory) {
           // move trajectory
-          object.trajectory.objects.forEach((obj) => {
-            obj.position[component] += dx;
-          })
-          object.trajectory.splinePoints.forEach((pt) => {
-            pt[component] += dx;
-          });
+          if (component === 'y') {
+            object.trajectory.splinePoints.forEach((pt) => {
+              pt[component] = Math.min(Math.max(-300, pt[component] + dx), 300);
+            });
+            object.trajectory.updateTrajectory();
+          }
+          else {
+            object.trajectory.objects.forEach((obj) => {
+              obj.position[component] += dx;
+            })
+            object.trajectory.splinePoints.forEach((pt) => {
+              pt[component] += dx;
+            });            
+          }
         }
       }//end setObjectPosition
 
@@ -482,7 +476,7 @@ export default class GUIWindow {
       },elem);
 
       this.addParameter({
-          property: 'x',
+          property: 'Position X',
           value: Number(pos.x.toFixed(2)),
           type: 'number',
           cls: 'x',
@@ -490,7 +484,7 @@ export default class GUIWindow {
       },elem);
 
       this.addParameter({
-          property: 'z',
+          property: 'Position Y',
           value: Number(pos.z.toFixed(2)),
           type: 'number',
           cls: 'z',

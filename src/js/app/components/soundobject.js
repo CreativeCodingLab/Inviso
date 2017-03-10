@@ -262,13 +262,17 @@ export default class SoundObject {
       pointer.y = this.containerObject.position.y;
     }
 
-    this.containerObject.position.copy(pointer);
-    this.axisHelper.position.copy(pointer);
-    this.altitudeHelper.position.copy(pointer);
-    this.altitudeHelper.position.y = 0;
-    this.raycastSphere.position.copy(pointer);
-
     if (this.trajectory) this.trajectory.move(pointer, main.nonScaledMouse, main.perspectiveView);
+
+    this.setPosition(pointer);
+  }
+
+  setPosition(position) {
+    this.containerObject.position.copy(position);
+    this.axisHelper.position.copy(position);
+    this.altitudeHelper.position.copy(position);
+    this.altitudeHelper.position.y = 0;
+    this.raycastSphere.position.copy(position);
 
     if (this.cones[0]) {
       for (const i in this.cones) {
@@ -548,6 +552,7 @@ export default class SoundObject {
       filename: this.omniSphere.sound && this.omniSphere.sound && this.omniSphere.sound.name || null,
       volume: this.omniSphere && this.omniSphere.sound && this.omniSphere.sound.volume.gain.value || null,
       position: this.containerObject.position,
+      movementSpeed: this.movementSpeed,
       trajectory: this.trajectory && this.trajectory.points || null,
       cones: this.cones.map(c => {
         console.log(c);
@@ -594,6 +599,7 @@ export default class SoundObject {
         this.pointConeMagic(cone, c.position.lat, c.position.long);
       });
     });
-  }
 
+    this.movementSpeed = object.movementSpeed;
+  }
 }
