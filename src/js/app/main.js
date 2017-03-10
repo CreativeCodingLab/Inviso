@@ -761,6 +761,7 @@ export default class Main {
         this.path.points = parsed.trajectory.map(i => new THREE.Vector3(i.x, i.y, i.z));
         this.path.parentObject = newObj;
         this.path.createObject(this, true);
+        newObj.calculateMovementSpeed();
       }
     })
 
