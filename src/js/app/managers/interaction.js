@@ -76,7 +76,7 @@ export default class Interaction {
         this.keyboard.eventMatches(event, 'delete')) {
 
         if (main.activeObject && main.activeObject.type === 'SoundTrajectory') {
-          if (main.activeObject.selectedPoint && main.activeObject.splinePoints.length > 3) {
+          if (main.activeObject.selectedPoint && main.activeObject.splinePoints.length > 2) {
             main.activeObject.removePoint();
           }
         }

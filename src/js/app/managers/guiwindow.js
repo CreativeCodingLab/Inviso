@@ -180,7 +180,7 @@ export default class GUIWindow {
       gElem.style.display = this.app.isEditingObject ? 'none' : 'block';
 
       this.addParameter({
-          property: 'x',
+          property: 'Position X',
           value: Number(mesh.position.x.toFixed(2)),
           type: 'number',
           cls: 'x',
@@ -188,19 +188,19 @@ export default class GUIWindow {
       },gElem);
 
       this.addParameter({
-          property: 'y',
-          value: Number(mesh.position.y.toFixed(2)),
-          type: 'number',
-          cls: 'y',
-          bind: setObjectPosition.bind(this, "y")
-      },gElem);
-
-      this.addParameter({
-          property: 'z',
+          property: 'Position Y',
           value: Number(mesh.position.z.toFixed(2)),
           type: 'number',
           cls: 'z',
           bind: setObjectPosition.bind(this, "z")
+      },gElem);
+
+      this.addParameter({
+          property: 'Altitude',
+          value: Number(mesh.position.y.toFixed(2)),
+          type: 'number',
+          cls: 'y',
+          bind: setObjectPosition.bind(this, "y")
       },gElem);
 
       let coneCount = this.addParameter({

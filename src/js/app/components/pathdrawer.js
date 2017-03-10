@@ -53,7 +53,7 @@ export default class PathDrawer {
       const points = simplify(this.points, 10, true);
       let object;
       if (this.parentObject) {
-        if (points.length >= 3) {
+        if (points.length >= 2) {
           object = new SoundTrajectory(main, points);
           object.points = points;
           this.parentObject.trajectory = object;
