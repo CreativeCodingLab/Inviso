@@ -421,17 +421,30 @@ export default class SoundZone {
   }
 
   toJSON() {
-    return JSON.stringify({
+    const object = {
       position: this.containerObject.position,
       points: this.splinePoints,
-      filename: this.filename
-    });
+      filename: this.filename,
+      volume: this.volume
+    };
+    return JSON.stringify(object);
   }
 
   fromJSON(json) {
     let object = JSON.parse(json);
     this.containerObject.position.copy(object.position);
 
-    this.loadSound(object.filename, this.audio, false);
+    if (object.filename) {
+      this.loadSound(object.filename, this.audio, false)
+        .then(() => {
+          if (this.sound && this.sound.source) {
+            const volume = Math.max(Math.min(object.volume, 2), 0.0);
+            console.log(volume);
+            this.shape.material.opacity = Helpers.mapRange(volume, 0, 2, 0.05, 0.35);
+            this.volume = volume;
+            this.sound.source.volume.gain.value = volume;
+          }
+        });      
+    }
   }
 }

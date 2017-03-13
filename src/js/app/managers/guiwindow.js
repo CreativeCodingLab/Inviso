@@ -711,6 +711,7 @@ export default class GUIWindow {
       }
     }
     if (this.obj.type === "SoundZone") {
+      this.obj.filename = null;
       this.obj.clear();
     }
   }
