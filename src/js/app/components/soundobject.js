@@ -193,7 +193,7 @@ export default class SoundObject {
           sound.panner.panningModel = 'HRTF';
           sound.panner.distanceModel = 'inverse';
           sound.panner.refDistance = 100;
-          sound.panner.rolloffFactor = 5;
+          //sound.panner.rolloffFactor = 5;
 
           sound.volume = context.createGain();
           sound.source.connect(sound.volume);

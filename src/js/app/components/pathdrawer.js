@@ -55,10 +55,10 @@ export default class PathDrawer {
       if (this.parentObject) {
         if (points.length >= 2) {
           object = new SoundTrajectory(main, points);
+          if (main.isUserStudyLoading) object.turnInvisible();
           object.points = points;
           this.parentObject.trajectory = object;
           object.parentSoundObject = this.parentObject;
-          if (main.isUserStudyLoading) object.turnInvisible();
           main.soundTrajectories.push(object);
         }
       }
@@ -74,7 +74,6 @@ export default class PathDrawer {
         }
       }
 
-      main.isUserStudyLoading = false;
       this.clear();
 
       if (object) {
