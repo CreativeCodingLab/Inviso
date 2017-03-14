@@ -138,8 +138,12 @@ export default class Interaction {
         main.moveBackwards = 0;
       }
 
-      if (this.keyboard.eventMatches(event, 'r')) {
-        main.reset(true);
+      // if (this.keyboard.eventMatches(event, 'r')) {
+      //   main.reset(true);
+      // }
+
+      if (this.keyboard.eventMatches(event, 'u')) {
+        main.isUserStudyLoading = !main.isUserStudyLoading;
       }
     });
   }
