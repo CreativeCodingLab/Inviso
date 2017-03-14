@@ -437,11 +437,10 @@ export default class SoundZone {
     if (object.filename) {
       this.loadSound(object.filename, this.audio, false)
         .then(() => {
+          const volume = Math.max(Math.min(object.volume, 2), 0.0);
+          this.shape.material.opacity = Helpers.mapRange(volume, 0, 2, 0.05, 0.35);
+          this.volume = volume;
           if (this.sound && this.sound.source) {
-            const volume = Math.max(Math.min(object.volume, 2), 0.0);
-            console.log(volume);
-            this.shape.material.opacity = Helpers.mapRange(volume, 0, 2, 0.05, 0.35);
-            this.volume = volume;
             this.sound.source.volume.gain.value = volume;
           }
         });      

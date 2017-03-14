@@ -777,6 +777,7 @@ export default class Main {
       this.isAddingObject = false;
     })
 
+    this.setActiveObject(null);
     this.camera.threeCamera.copy(cam);
     this.camera.threeCamera.updateProjectionMatrix();
   }

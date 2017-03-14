@@ -575,7 +575,7 @@ export default class GUIWindow {
       this.replaceTextContent(x, pos.x);
       this.replaceTextContent(z, pos.z);
       this.replaceTextContent(rotation, zone.containerObject.rotation.y * 180 / Math.PI);
-      this.replaceTextContent(volume, zone.sound && zone.sound.source ? zone.sound.source.volume.gain.value : 'N/A');
+      this.replaceTextContent(volume, isNaN(zone.volume) ? 'N/A' : zone.volume);
   }
 
   // ------------ event callbacks ------------ //
