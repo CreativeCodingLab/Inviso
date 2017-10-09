@@ -499,6 +499,9 @@ export default class GUIWindow {
       suffix: '˚',
       bind: setZoneRotation.bind(this)
     }, elem);
+
+    this.addNav({type: "object", direction: "left"}, elem);
+    this.addNav({type: "object", direction: "right"}, elem);
   }
 
 
@@ -752,7 +755,7 @@ export default class GUIWindow {
       }
     }
     else {
-      const everyObject = [].concat(this.app.soundObjects/*, this.app.soundZones*/);
+      const everyObject = [].concat(this.app.soundObjects, this.app.soundZones);
       let i = everyObject.indexOf(this.obj);
       if (i > -1) {
         i = e.direction === 'left' ? i - 1 + everyObject.length : i + 1;
