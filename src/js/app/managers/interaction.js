@@ -144,6 +144,9 @@ export default class Interaction {
 
       if (this.keyboard.eventMatches(event, 'u')) {
         main.isUserStudyLoading = !main.isUserStudyLoading;
+        document.getElementById('help-add').style.display = 'none';
+        document.getElementById('help-camera').style.display = 'none';
+        document.getElementById('help-head').style.display = 'none';
       }
     });
   }
