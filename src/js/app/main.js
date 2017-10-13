@@ -525,6 +525,11 @@ export default class Main {
    */
   toggleAddTrajectory(state) {
     this.isAddingTrajectory = (state === undefined) ? !this.isAddingTrajectory : state;
+    const trajectoryElement = document.getElementById('add-trajectory');
+    if (trajectoryElement) {
+      trajectoryElement.classList.toggle('active', this.isAddingTrajectory);
+    }
+
     this.reset();
   }
 
@@ -534,6 +539,9 @@ export default class Main {
    */
   toggleAddObject() {
     this.isAddingObject = !this.isAddingObject;
+    if (this.isAddingTrajectory) {
+      this.toggleAddTrajectory(false);
+    }
     this.reset();
 
     var btn = document.getElementById('add-object-button');
