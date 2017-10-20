@@ -584,120 +584,102 @@ export default class GUIWindow {
   // ------------ event callbacks ------------ //
   // attach a sound to an object
   addSound(e) {
-      var obj = this.obj;
-      var span = e.target;
-      var input = document.getElementById('soundPicker');
-      // listen to click
-      var self = this;
-      input.onchange = function(e) {
-        var file = e.target.files[0];
-        input.parentNode.reset();
+    var obj = this.obj;
+    var span = e.target;
+    var input = document.getElementById('soundPicker');
 
-        if (file) {
-          var path = 'assets/sounds/'+file.name;
+    // listen to click
+    var self = this;
 
-          // load sound onto obect
-          switch (obj.type) {
-            case 'SoundTrajectory':
-              obj = obj.parentSoundObject;
-            case 'SoundObject':
-              // check if sound is attaching to omnisphere or cone
-              if (span.parentNode.id === "omnisphere-sound-loader") {
-                obj.loadSound(path, self.app.audio, self.app.isMuted, obj)
-                  .then((sound) => {
-                    // check for existing sound
-                    if (obj.omniSphere.sound && obj.omniSphere.sound.volume) {
-                      // copy properties of previous sound
-                      sound.volume.gain.value = obj.omniSphere.sound.volume.gain.value;
-                      sound.panner.refDistance = obj.omniSphere.sound.panner.refDistance;
-                      sound.panner.distanceModel = obj.omniSphere.sound.panner.distanceModel;
-                    }
-                    obj.omniSphere.sound = sound;
-                    obj.omniSphere.sound.name = file.name;
+    input.onchange = function(e) {
+      const file = e.target.files[0];
+
+      input.parentNode.reset();
+
+      if (file) {
+        // load sound onto obect
+        switch (obj.type) {
+          case 'SoundTrajectory':
+            obj = obj.parentSoundObject;
+
+          case 'SoundObject':
+            // check if sound is attaching to omnisphere or cone
+            if (span.parentNode.id === 'omnisphere-sound-loader') {
+              obj.loadSound(file, self.app.audio, self.app.isMuted, obj).then((sound) => {
+                if (obj.omniSphere.sound && obj.omniSphere.sound.volume) {
+                  // copy properties of previous sound
+                  sound.volume.gain.value = obj.omniSphere.sound.volume.gain.value;
+                  sound.panner.refDistance = obj.omniSphere.sound.panner.refDistance;
+                  sound.panner.distanceModel = obj.omniSphere.sound.panner.distanceModel;
+                }
+
+                obj.omniSphere.sound = sound;
+                obj.omniSphere.sound.name = file.name;
+                self.replaceTextContent(span, file.name);
+                obj.setAudioPosition(obj.omniSphere);
+                span.nextSibling.style.display = 'inline-block';
+              });
+            } else {
+              // replace sound attached to existing cone
+              const text = span.innerText || span.textContent;
+              let cone = null;
+
+              if (obj.cones && obj.cones.length > 0 && text) {
+                cone = obj.cones.find(c => c.filename === text);
+              }
+
+              function attachCone() {
+                // create new cone
+                obj.loadSound(file, self.app.audio, self.app.isMuted, cone).then((sound) => {
+                  if (cone) {
+                    // copy properties of previous cone
+                    obj.applySoundToCone(cone, sound);
+                    obj.setAudioPosition(cone);
+
+                    // replace text with file name
+                    cone.filename = file.name;
+                    self.app.interactiveCone = cone;
                     self.replaceTextContent(span, file.name);
-                    obj.setAudioPosition(obj.omniSphere);
-                    span.nextSibling.style.display = 'inline-block';
-                  })
-                  .catch((err) => {
-                    // no file was loaded: do nothing
-                    console.log(err);
-                  });
-              }
-              else {
+                  } else {
+                    cone = obj.createCone(sound);
+                    cone.filename = file.name;
+                    self.addCone(cone);
+                    self.app.interactiveCone = cone;
 
-                // replace sound attached to existing cone
-                var text = span.innerText || span.textContent;
-                let cone = null;
-                if (obj.cones && obj.cones.length > 0 && text) {
-                  cone = obj.cones.find(c => c.filename == text);
-                }
-
-                function attachCone() {
-                  // create new cone
-                  obj.loadSound(path, self.app.audio, self.app.isMuted, cone)
-                    .then((sound) => {
-                      if (cone) {
-                        // copy properties of previous cone
-                        obj.applySoundToCone(cone, sound);
-                        obj.setAudioPosition(cone);
-
-                        // replace text with file name
-                        cone.filename = file.name;
-                        self.app.interactiveCone = cone;
-                        self.replaceTextContent(span, file.name);
-                      }
-                      else {
-                        cone = obj.createCone(sound);
-                        cone.filename = file.name;
-                        self.addCone(cone);
-                        self.app.interactiveCone = cone;
-
-                        // point cone at camera
-                        obj.pointCone(cone, self.app.camera.threeCamera.position);
-                      }
-                    })
-                    .catch((err) => {
-                      // no file was loaded: do nothing
-                      console.log(err);
-                    });
-                }
-
-                // hard-coded the timeout but create the sound
-                // after the tween is finished
-                if (!cone && !self.app.isEditingObject) {
-                  self.toggleEditObject();
-                  window.setTimeout(attachCone, 800);
-                }
-                else {
-                  attachCone();
-                }
-
-              }
-              break;
-            case 'SoundZone':
-
-              // add sound to zone
-              obj.loadSound(path, self.app.audio, self.app.isMuted)
-                .then(() => {
-                  // replace text with file name
-                  self.replaceTextContent(span, file.name);
-                  span.nextSibling.style.display = 'inline-block';
-                })
-                .catch((err) => {
-                  // no file was loaded: do nothing
-                  console.log(err);
+                    // point cone at camera
+                    obj.pointCone(cone, self.app.camera.threeCamera.position);
+                  }
                 });
-              break;
-            default:
-              break;
-          }
+              }
+
+              // hard-coded the timeout but create the sound
+              // after the tween is finished
+              if (!cone && !self.app.isEditingObject) {
+                self.toggleEditObject();
+                window.setTimeout(attachCone, 800);
+              } else {
+                attachCone();
+              }
+            }
+            break;
+
+          case 'SoundZone':
+            // add sound to zone
+            obj.loadSound(file, self.app.audio, self.app.isMuted);
+            self.replaceTextContent(span, file.name);
+            span.nextSibling.style.display = 'inline-block';
+            break;
+
+          default:
+            break;
         }
-      };
-      input.click();
+      }
+    };
+
+    input.click();
   }
 
   detachSound(fileSpan, removeSpan) {
-
     var self = this;
 
     fileSpan.innerHTML = 'None';
