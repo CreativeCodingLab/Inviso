@@ -434,7 +434,7 @@ export default class GUIWindow {
 
   // set up initial parameters for a soundzone
   initSoundzoneGUI(zone) {
-      var elem = this.addElem('Zone ' + (this.app.soundZones.indexOf(zone)+1), true);
+      var elem = this.addElem('Zone ' + (this.app.soundZones.indexOf(zone)+1), false);
 
       function setZonePosition(component, dx) {
         zone.containerObject.position[component] += dx;

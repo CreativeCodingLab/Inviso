@@ -437,6 +437,7 @@ export default class Main {
   }
 
   enterEditObjectView() {
+    this.toggleAddTrajectory(false);
     document.getElementById('camera-label').style.display = 'none';
 
     // disable panning in object view
