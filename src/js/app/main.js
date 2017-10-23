@@ -33,6 +33,7 @@ export default class Main {
     OBJLoader(THREE);
     this.overrideTriangulate();
     this.setupAudio();
+    this.audioFiles = [];
 
     this.mouse = new THREE.Vector3();
     this.nonScaledMouse = new THREE.Vector3();
@@ -193,12 +194,12 @@ export default class Main {
 
     const this_ = this;
     document.getElementById('save-button').onclick = function() {
-      this.data = this_.export();
-      const a = document.createElement('a');
-      const blob = new Blob([this.data], {'type':'text/plain'});
-      a.href = window.URL.createObjectURL(blob);
-      a.download = 'export.json';
-      a.click();
+      this.data = this_.export().then((data) => {
+        const a = document.createElement('a');
+        a.href = data;
+        a.download = 'export.zip';
+        a.click();
+      });
     }
     document.getElementById('load-button').onclick = function() {
       const i = document.getElementById('import');
@@ -206,11 +207,7 @@ export default class Main {
       i.addEventListener('change', handleFiles, false);
 
       function handleFiles() {
-        const reader = new FileReader();
-        reader.addEventListener('load', (e) => {
-          this_.import(e.target.result);
-        });
-        reader.readAsText(this.files[0]);
+        this_.import(this.files[0]);
       }
     }
     this.cameraLabel = document.getElementById('camera-label');
@@ -225,6 +222,88 @@ export default class Main {
     // Start render which does not wait for model fully loaded
     this.container.querySelector('#loading').style.display = 'none';
     this.render();
+
+    zip.workerScriptsPath = './assets/js/';
+
+    this.zipHelper = (function() {
+      var zipFileEntry,
+        zipWriter,
+        writer,
+        URL = window.URL || window.webkitURL || window.mozURL;
+
+      return {
+        addFiles: (files, oninit, onadd, onprogress, onend) => {
+          var addIndex = 0;
+
+          function nextFile() {
+            var file = files[addIndex];
+            onadd(file);
+            zipWriter.add(
+              file.name,
+              new zip.BlobReader(file),
+              function() {
+                addIndex++;
+                if (addIndex < files.length) nextFile();
+                else onend();
+              },
+              onprogress,
+            );
+          }
+
+          function createZipWriter() {
+            zip.createWriter(
+              writer,
+              function(writer) {
+                zipWriter = writer;
+                oninit();
+                nextFile();
+              },
+              function(error) {
+                console.log(error);
+              },
+            );
+          }
+
+          if (zipWriter) nextFile();
+          writer = new zip.BlobWriter();
+          createZipWriter();
+        },
+
+        getEntries: (file, onend) => {
+          zip.createReader(new zip.BlobReader(file), (zipReader) => {
+            zipReader.getEntries(onend);
+          }, (error) => {
+            console.log(error);
+          });
+        },
+
+        getEntryFile: (entry, onend, onprogress) => {
+          var writer, zipFileEntry;
+
+          function getData() {
+            entry.getData(writer, (blob) => {
+              onend(entry.filename, blob);
+            }, onprogress);
+          }
+
+          writer = new zip.BlobWriter();
+          getData();
+        },
+
+        getBlobURL: (callback) => {
+          zipWriter.close(function(blob) {
+            var blobURL = URL.createObjectURL(blob);
+            callback(blobURL);
+            zipWriter = null;
+          });
+        },
+
+        getBlob: (callback) => {
+          zipWriter.close(callback);
+        },
+      };
+    })();
+
     Config.isLoaded = true;
   }
 
@@ -745,49 +824,125 @@ export default class Main {
   }
 
   export() {
-    return JSON.stringify({
-      camera: this.camera.threeCamera.toJSON(),
-      soundObjects: this.soundObjects.map(obj => obj.toJSON()),
-      soundZones: this.soundZones.map(obj => obj.toJSON())
+    const zipHelper = this.zipHelper;
+    const that = this;
+
+    let promise = new Promise(function(resolve, reject) {
+      var files = [];
+      const exportJSON = JSON.stringify({
+        camera: that.camera.threeCamera.toJSON(),
+        soundObjects: that.soundObjects.map((obj) => {
+          if (obj.file) files.push(obj.file);
+          return obj.toJSON();
+        }),
+        soundZones: that.soundZones.map((obj) => {
+          if (obj.file) files.push(obj.file);
+          return obj.toJSON();
+        }),
+      }, null, 2);
+
+      const configBlob = new Blob([exportJSON], {type: 'application/json'});
+      const configFile = new File([configBlob], 'config.json');
+      let exportFiles = files.concat([configFile]);
+
+      zipHelper.addFiles(
+        exportFiles,
+        function() {},
+        function(file) {},
+        function(current, total) {},
+        function() {
+          zipHelper.getBlobURL(function(blobURL) {
+            resolve(blobURL);
+          });
+        },
+      );
     });
+
+    return promise;
   }
 
   import(data) {
-    let json = JSON.parse(data);
-    let loader = new THREE.ObjectLoader();
-    const cam = loader.parse(json.camera);
+    const zipHelper = this.zipHelper;
+    var files = {};
+    var promises = [];
 
-    json.soundObjects.forEach(obj => {
-      let parsed = JSON.parse(obj);
+    zipHelper.getEntries(data, (entries) => {
+      promises = entries.map(function(entry) {
+        return new Promise(function(resolve, reject) {
+          zipHelper.getEntryFile(entry, function(filename, blob) {
+              var fileReader = new FileReader();
+              var fl = {};
 
-      let newObj = this.path.createObject(this, true);
-      newObj.fromJSON(obj);
-      this.setActiveObject(newObj);
-      this.isAddingObject = false;
+              fileReader.onload = function() {
+                if (filename === 'config.json') {
+                  fl[filename] = fileReader.result;
+                } else {
+                  fl[filename] = new File([fileReader.result], filename);
+                }
 
-      // Trajectory
-      if (parsed.trajectory) {
-        this.path.points = parsed.trajectory.map(i => new THREE.Vector3(i.x, i.y, i.z));
-        this.path.parentObject = newObj;
-        this.path.createObject(this, true);
-        newObj.calculateMovementSpeed();
-      }
-    })
+                resolve(fl);
+              };
 
-    json.soundZones.forEach(obj => {
-      let object = JSON.parse(obj);
+              if (filename === 'config.json') {
+                fileReader.readAsText(blob);
+              } else {
+                fileReader.readAsArrayBuffer(blob);
+              }
 
-      // Fakes drawing for zone creation
-      this.path.points = object.points;
+          }, function(current, total) {
 
-      let newObj = this.path.createObject(this, true);
-      newObj.fromJSON(obj);
-      this.setActiveObject(newObj);
-      this.isAddingObject = false;
-    })
+          });
+        });
+      });
 
-    this.setActiveObject(null);
-    this.camera.threeCamera.copy(cam);
-    this.camera.threeCamera.updateProjectionMatrix();
+      Promise.all(promises).then((resolvedFiles) => {
+        const importedData = Object.assign(...resolvedFiles);
+        console.log(importedData);
+        const config = importedData['config.json'];
+
+        if (!config) {
+          alert('no config');
+          return;
+        }
+
+        let json = JSON.parse(config);
+        let loader = new THREE.ObjectLoader();
+        const cam = loader.parse(json.camera);
+
+        json.soundObjects.forEach(obj => {
+          let parsed = JSON.parse(obj);
+
+          let newObj = this.path.createObject(this, true);
+          newObj.fromJSON(obj, importedData);
+          this.setActiveObject(newObj);
+          this.isAddingObject = false;
+
+          // Trajectory
+          if (parsed.trajectory) {
+            this.path.points = parsed.trajectory.map(i => new THREE.Vector3(i.x, i.y, i.z));
+            this.path.parentObject = newObj;
+            this.path.createObject(this, true);
+            newObj.calculateMovementSpeed();
+          }
+        });
+
+        json.soundZones.forEach(obj => {
+          var object = JSON.parse(obj);
+
+          // Fakes drawing for zone creation
+          this.path.points = object.points;
+
+          let newObj = this.path.createObject(this, true);
+          newObj.fromJSON(obj, importedData);
+
+          this.setActiveObject(newObj);
+          this.isAddingObject = false;
+        });
+
+        this.setActiveObject(null);
+        this.camera.threeCamera.copy(cam);
+        this.camera.threeCamera.updateProjectionMatrix();
+      });
+    });
   }
 }

@@ -162,6 +162,7 @@ export default class SoundObject {
     var sound = {};
 
     this.filename = file.name;
+    this.file = file;
 
     let promise = new Promise(function(resolve, reject) {
       reader.onload = (ev) => {
@@ -569,7 +570,7 @@ export default class SoundObject {
     });
   }
 
-  fromJSON(json) {
+  fromJSON(json, importedData) {
     const object = JSON.parse(json);
     this.containerObject.position.copy(object.position);
     this.altitudeHelper.position.copy(object.position);
@@ -577,26 +578,32 @@ export default class SoundObject {
     this.axisHelper.position.copy(object.position);
 
     if (object.filename && object.volume) {
-      this.loadSound(object.filename, this.audio, false, this).then((sound) => {
-        this.omniSphere.sound = sound;
-        this.omniSphere.sound.name = object.filename;
-        this.omniSphere.sound.volume.gain.value = object.volume;
-        this.setAudioPosition(this.omniSphere);
-      });
+      let file = importedData[object.filename]
+      if (file) {
+        this.loadSound(file, this.audio, false, this).then((sound) => {
+          this.omniSphere.sound = sound;
+          this.omniSphere.sound.name = object.filename;
+          this.omniSphere.sound.volume.gain.value = object.volume;
+          this.setAudioPosition(this.omniSphere);
+        });
+      }
     }
 
     object.cones.forEach((c) => {
       let cone;
-      this.loadSound(c.filename, this.audio, false).then((sound) => {
-        cone = this.createCone(sound, c.color);
-        cone.filename = c.filename;
-        cone.sound.volume.gain.value = c.volume;
-        cone.sound.spread = c.spread;
-        this.changeLength(cone);
-        this.changeWidth(cone);
-        this.gui.addCone(cone);
-        this.pointConeMagic(cone, c.position.lat, c.position.long);
-      });
+      let file = importedData[c.filename]
+      if (file) {
+        this.loadSound(file, this.audio, false).then((sound) => {
+          cone = this.createCone(sound, c.color);
+          cone.filename = c.filename;
+          cone.sound.volume.gain.value = c.volume;
+          cone.sound.spread = c.spread;
+          this.changeLength(cone);
+          this.changeWidth(cone);
+          this.gui.addCone(cone);
+          this.pointConeMagic(cone, c.position.lat, c.position.long);
+        });
+      }
     });
 
     this.movementSpeed = object.movementSpeed;

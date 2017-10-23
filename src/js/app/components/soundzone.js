@@ -431,20 +431,19 @@ export default class SoundZone {
     return JSON.stringify(object);
   }
 
-  fromJSON(json) {
+  fromJSON(json, importedData) {
     const object = JSON.parse(json);
     this.containerObject.position.copy(object.position);
+    let file = importedData[object.filename];
 
-    if (object.filename) {
-      this.loadSound(object.filename, this.audio, false)
-        .then(() => {
-          const volume = Math.max(Math.min(object.volume, 2), 0.0);
-          this.shape.material.opacity = Helpers.mapRange(volume, 0, 2, 0.05, 0.35);
-          this.volume = volume;
-          if (this.sound && this.sound.source) {
-            this.sound.source.volume.gain.value = volume;
-          }
-        });
+    if (file) {
+      this.loadSound(file, this.audio, false);
+      const volume = Math.max(Math.min(object.volume, 2), 0.0);
+      this.shape.material.opacity = Helpers.mapRange(volume, 0, 2, 0.05, 0.35);
+      this.volume = volume;
+      if (this.sound && this.sound.source) {
+        this.sound.source.volume.gain.value = volume;
+      }
     }
   }
 }
