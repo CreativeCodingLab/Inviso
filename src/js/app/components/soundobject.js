@@ -155,16 +155,18 @@ export default class SoundObject {
     }
   }
 
-  loadSound(soundFileName, audio, mute, object) {
+  loadSound(file, audio, mute, object) {
     const context = audio.context;
     const mainMixer = context.createGain();
+    let reader = new FileReader();
+    var sound = {};
+
+    this.filename = file.name;
 
     let promise = new Promise(function(resolve, reject) {
-
-      fetch(soundFileName)
-        .then(response => response.arrayBuffer())
-        .then(buffer => context.decodeAudioData(buffer, (decodedData) => {
-          if (object && object.type === "SoundObject") {
+      reader.onload = (ev) => {
+        context.decodeAudioData(ev.target.result, function(decodedData) {
+          if (object && object.type === 'SoundObject') {
             /* attach omnidirectional sound */
             object = object.omniSphere;
           }
@@ -175,7 +177,6 @@ export default class SoundObject {
             object.sound.scriptNode.disconnect(context.destination);
           }
 
-          const sound = {};
           sound.mainMixer = mainMixer;
 
           sound.analyser = context.createAnalyser();
@@ -193,7 +194,8 @@ export default class SoundObject {
           sound.panner.panningModel = 'HRTF';
           sound.panner.distanceModel = 'inverse';
           sound.panner.refDistance = 100;
-          //sound.panner.rolloffFactor = 5;
+
+          // sound.panner.rolloffFactor = 5;
 
           sound.volume = context.createGain();
           sound.source.connect(sound.volume);
@@ -205,27 +207,25 @@ export default class SoundObject {
 
           sound.source.buffer = decodedData;
           sound.source.start(context.currentTime + 0.020);
-          resolve( sound );
 
-          if(object && object.name == 'omniSphere'){
-            sound.scriptNode.onaudioprocess = function() {
-              let array =  new Uint8Array(sound.analyser.frequencyBinCount);
+          if (object && object.name === 'omniSphere') {
+            sound.scriptNode.onaudioprocess = () => {
+              const array = new Uint8Array(sound.analyser.frequencyBinCount);
               sound.analyser.getByteFrequencyData(array);
               let values = 0;
-              let length = array.length;
+              const length = array.length;
               for (let i = 0; i < length; i++) values += array[i];
-              let average = values / length;
+              const average = values / length;
               object.material.opacity = Helpers.mapRange(average, 50, 100, 0.65, 0.95);
-            }
+            };
           }
-        }));
-    });
 
-    promise
-      .catch(err => {
-        alert('could not load file');
-        console.log(err);
-      });
+          resolve(sound);
+        });
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
 
     return promise;
   }
@@ -549,36 +549,35 @@ export default class SoundObject {
 
   toJSON() {
     return JSON.stringify({
-      filename: this.omniSphere.sound && this.omniSphere.sound && this.omniSphere.sound.name || null,
-      volume: this.omniSphere && this.omniSphere.sound && this.omniSphere.sound.volume.gain.value || null,
+      filename: (this.omniSphere.sound && this.omniSphere.sound && this.omniSphere.sound.name) || null,
+      volume: (this.omniSphere && this.omniSphere.sound && this.omniSphere.sound.volume.gain.value) || null,
       position: this.containerObject.position,
       movementSpeed: this.movementSpeed,
-      trajectory: this.trajectory && this.trajectory.points || null,
-      cones: this.cones.map(c => {
-        console.log(c);
+      trajectory: (this.trajectory && this.trajectory.points) || null,
+      cones: this.cones.map((c) => {
         return {
           filename: c.filename,
           position: {
             lat: c.lat,
-            long: c.long
+            long: c.long,
           },
           volume: c.sound.volume.gain.value,
           spread: c.sound.spread,
           color: c.randGreen,
-        }
-      })
+        };
+      }),
     });
   }
 
   fromJSON(json) {
-    let object = JSON.parse(json);
+    const object = JSON.parse(json);
     this.containerObject.position.copy(object.position);
     this.altitudeHelper.position.copy(object.position);
     this.raycastSphere.position.copy(object.position);
     this.axisHelper.position.copy(object.position);
 
     if (object.filename && object.volume) {
-      this.loadSound(`assets/sounds/${object.filename}`, this.audio, false, this).then((sound) => {
+      this.loadSound(object.filename, this.audio, false, this).then((sound) => {
         this.omniSphere.sound = sound;
         this.omniSphere.sound.name = object.filename;
         this.omniSphere.sound.volume.gain.value = object.volume;
@@ -586,9 +585,9 @@ export default class SoundObject {
       });
     }
 
-    object.cones.forEach(c => {
+    object.cones.forEach((c) => {
       let cone;
-      this.loadSound(`assets/sounds/${c.filename}`, this.audio, false).then((sound) => {
+      this.loadSound(c.filename, this.audio, false).then((sound) => {
         cone = this.createCone(sound, c.color);
         cone.filename = c.filename;
         cone.sound.volume.gain.value = c.volume;

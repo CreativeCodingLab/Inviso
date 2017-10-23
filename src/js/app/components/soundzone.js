@@ -78,36 +78,35 @@ export default class SoundZone {
     this.sound = {};
   }
 
-  loadSound(soundFileName, audio, mute) {
+  loadSound(file, audio, mute) {
     const context = audio.context;
-    this.filename = soundFileName;
+    let reader = new FileReader();
 
-    let promise = fetch(soundFileName)
-      .then(response => response.arrayBuffer())
-      .then(buffer => context.decodeAudioData(buffer, (decodedData) => {
-        this.clear();
-        this.sound.name = soundFileName;
-        this.sound.source = context.createBufferSource();
-        this.mainMixer = context.createGain();
-        this.sound.volume = context.createGain();
-        this.sound.source.volume = context.createGain();
-        this.sound.source.connect(this.sound.source.volume);
-        this.sound.source.volume.connect(this.sound.volume);
-        this.sound.volume.connect(this.mainMixer);
-        this.mainMixer.connect(audio.destination);
-        this.mainMixer.gain.value = mute ? 0 : 1;
-        this.sound.volume.gain.value = 0.0;
-        this.sound.buffer = decodedData;
-        this.loaded = true;
-      }));
+    this.filename = file.name;
+    this.file = file;
+    let that = this;
 
-    promise
-      .catch(err => {
-        alert('could not load file');
-        console.log(err);
+    reader.onload = (ev) => {
+      context.decodeAudioData(ev.target.result, function(decodedData) {
+        that.clear();
+        that.sound.name = file.name;
+        that.sound.source = context.createBufferSource();
+        that.sound.source.buffer = decodedData;
+        that.mainMixer = context.createGain();
+        that.sound.volume = context.createGain();
+        that.sound.source.volume = context.createGain();
+        that.sound.source.connect(that.sound.source.volume);
+        that.sound.source.volume.connect(that.sound.volume);
+        that.sound.volume.connect(that.mainMixer);
+        that.mainMixer.connect(audio.destination);
+        that.mainMixer.gain.value = mute ? 0 : 1;
+        that.sound.volume.gain.value = 0.0;
+        that.sound.buffer = decodedData;
+        that.loaded = true;
       });
+    };
 
-    return promise;
+    reader.readAsArrayBuffer(file);
   }
 
   renderPath(args) {
@@ -249,6 +248,7 @@ export default class SoundZone {
   hideCursor() {
     this.cursor.visible = false;
   }
+
   showCursor(object, point) {
     if (object !== this.shape) {
       this.cursor.visible = true;
@@ -338,7 +338,7 @@ export default class SoundZone {
     const i = this.pointObjects.indexOf(this.selectedPoint);
     this.splinePoints.splice(i, 1);
     this.deselectPoint();
-    this.updateZone({index: i, updateType: "delete"});
+    this.updateZone({index: i, updateType: 'delete'});
   }
 
   addPoint(point) {
@@ -371,7 +371,7 @@ export default class SoundZone {
     }
 
     this.splinePoints.splice(minPoint, 0, position);
-    this.updateZone({index: minPoint, updateType: "add"});
+    this.updateZone({index: minPoint, updateType: 'add'});
     this.selectPoint(this.pointObjects[minPoint]);
   }
 
@@ -392,6 +392,7 @@ export default class SoundZone {
     this.isMuted = true;
     this.checkMuteState(main);
   }
+
   unmute(main) {
     this.isMuted = false;
     this.checkMuteState(main);
@@ -431,7 +432,7 @@ export default class SoundZone {
   }
 
   fromJSON(json) {
-    let object = JSON.parse(json);
+    const object = JSON.parse(json);
     this.containerObject.position.copy(object.position);
 
     if (object.filename) {
@@ -443,7 +444,7 @@ export default class SoundZone {
           if (this.sound && this.sound.source) {
             this.sound.source.volume.gain.value = volume;
           }
-        });      
+        });
     }
   }
 }
