@@ -1,6 +1,7 @@
 # Inviso
 
 A cross-platform tool for designing interactive virtual soundscapes.
+
 Accessible online at: inviso.cc
 
 <img width="1440" alt="inviso" src="https://user-images.githubusercontent.com/10594286/31970006-9fdb31f4-b8e4-11e7-95f8-ebbd7c5280e1.png">
@@ -61,7 +62,6 @@ You can run any of these individually if you'd like with the npm run command:
 * build:js - Run webpack in production environment
 
 ## Input Controls
-* Reset camera with 'r'
 * Arrow controls will pan
 * Mouse left click will rotate/right click will pan
 * Scrollwheel zooms in and out
@@ -71,4 +71,5 @@ You can run any of these individually if you'd like with the npm run command:
 
 ## Team
 Project leader, primary developer: Anıl Çamcı [<acamci@umich.edu>]
+
 Contributors: Kristine Lee [<khlee2@uic.edu>] (DevOps), Cody J. Roberts [<codyroberts@protonmail.com>] (DevOps), Angus Forbes [<anugs@ucsc.edu>]
