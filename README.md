@@ -1,6 +1,9 @@
 # Inviso
 
 A cross-platform tool for designing interactive virtual soundscapes.
+Accessible online at: inviso.cc
+
+https://user-images.githubusercontent.com/10594286/31970006-9fdb31f4-b8e4-11e7-95f8-ebbd7c5280e1.png
 
 ## Project Structure
 * build - Directory for built and compressed files from the npm build script
@@ -65,3 +68,7 @@ You can run any of these individually if you'd like with the npm run command:
 * Delete objects with 'delete' or 'backspace'
 * Move dummyhead with 'w/a/s/d'
 * Hide stats with 'h' -- dev mode only
+
+## Team
+Project leader, primary developer: Anıl Çamcı
+Contributors: Kristine Lee <khlee2@uic.edu> (DevOps), Cody J. Roberts <codyroberts@protonmail.com> (DevOps), Angus Forbes <anugs@ucsc.edu>
