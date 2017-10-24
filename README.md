@@ -70,5 +70,5 @@ You can run any of these individually if you'd like with the npm run command:
 * Hide stats with 'h' -- dev mode only
 
 ## Team
-Project leader, primary developer: Anıl Çamcı
-Contributors: Kristine Lee <khlee2@uic.edu> (DevOps), Cody J. Roberts <codyroberts@protonmail.com> (DevOps), Angus Forbes <anugs@ucsc.edu>
+Project leader, primary developer: Anıl Çamcı [<acamci@umich.edu>]
+Contributors: Kristine Lee [<khlee2@uic.edu>] (DevOps), Cody J. Roberts [<codyroberts@protonmail.com>] (DevOps), Angus Forbes [<anugs@ucsc.edu>]
