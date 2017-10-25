@@ -234,6 +234,15 @@ input[type="file"] {
   opacity:0.67;
 }
 
+#githubLink{
+  z-index: 2;
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  width:25px;
+  height:25px;
+  opacity: 0.7;}
+
 .help-bubble {
   float: left;
   position:absolute;
