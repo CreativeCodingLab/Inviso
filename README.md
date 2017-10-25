@@ -1,7 +1,7 @@
 # Inviso
 
 A cross-platform tool for designing interactive virtual soundscapes. <br/>
-Accessible online at: <a link href="inviso.cc">inviso.cc</a>
+Accessible online at: <a link href="http://inviso.cc">inviso.cc</a>
 
 <img width="1440" alt="inviso" src="https://user-images.githubusercontent.com/10594286/31970006-9fdb31f4-b8e4-11e7-95f8-ebbd7c5280e1.png">
 
