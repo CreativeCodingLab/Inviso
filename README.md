@@ -1,8 +1,7 @@
 # Inviso
 
-A cross-platform tool for designing interactive virtual soundscapes.
-
-Accessible online at: inviso.cc
+A cross-platform tool for designing interactive virtual soundscapes. <br/>
+Accessible online at: <a link href="inviso.cc">inviso.cc</a>
 
 <img width="1440" alt="inviso" src="https://user-images.githubusercontent.com/10594286/31970006-9fdb31f4-b8e4-11e7-95f8-ebbd7c5280e1.png">
 
@@ -70,6 +69,5 @@ You can run any of these individually if you'd like with the npm run command:
 * Hide stats with 'h' -- dev mode only
 
 ## Team
-Project leader, primary developer: Anıl Çamcı [<acamci@umich.edu>]
-
+Project leader, primary developer: Anıl Çamcı [<acamci@umich.edu>]<br/>
 Contributors: Kristine Lee [<khlee2@uic.edu>] (DevOps), Cody J. Roberts [<codyroberts@protonmail.com>] (DevOps), Angus Forbes [<anugs@ucsc.edu>]
