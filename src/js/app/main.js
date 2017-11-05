@@ -833,6 +833,11 @@ export default class Main {
         camera: that.camera.threeCamera.toJSON(),
         soundObjects: that.soundObjects.map((obj) => {
           if (obj.file) files.push(obj.file);
+
+          obj.cones.forEach((c) => {
+            if (c.file) files.push(c.file);
+          });
+
           return obj.toJSON();
         }),
         soundZones: that.soundZones.map((obj) => {
@@ -897,7 +902,6 @@ export default class Main {
 
       Promise.all(promises).then((resolvedFiles) => {
         const importedData = Object.assign(...resolvedFiles);
-        console.log(importedData);
         const config = importedData['config.json'];
 
         if (!config) {

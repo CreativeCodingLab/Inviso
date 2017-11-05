@@ -642,6 +642,7 @@ export default class GUIWindow {
                     self.replaceTextContent(span, file.name);
                   } else {
                     cone = obj.createCone(sound);
+                    cone.file = file;
                     cone.filename = file.name;
                     self.addCone(cone);
                     self.app.interactiveCone = cone;

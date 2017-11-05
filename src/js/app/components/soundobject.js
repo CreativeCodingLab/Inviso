@@ -161,8 +161,11 @@ export default class SoundObject {
     let reader = new FileReader();
     var sound = {};
 
-    this.filename = file.name;
-    this.file = file;
+
+    if (object) { // cones can be null at this point
+      object.filename = file.name;
+      object.file = file;
+    }
 
     let promise = new Promise(function(resolve, reject) {
       reader.onload = (ev) => {
@@ -557,6 +560,7 @@ export default class SoundObject {
       trajectory: (this.trajectory && this.trajectory.points) || null,
       cones: this.cones.map((c) => {
         return {
+          file: c.file,
           filename: c.filename,
           position: {
             lat: c.lat,
@@ -578,7 +582,7 @@ export default class SoundObject {
     this.axisHelper.position.copy(object.position);
 
     if (object.filename && object.volume) {
-      let file = importedData[object.filename]
+      const file = importedData[object.filename];
       if (file) {
         this.loadSound(file, this.audio, false, this).then((sound) => {
           this.omniSphere.sound = sound;
@@ -591,10 +595,11 @@ export default class SoundObject {
 
     object.cones.forEach((c) => {
       let cone;
-      let file = importedData[c.filename]
+      const file = importedData[c.filename];
       if (file) {
         this.loadSound(file, this.audio, false).then((sound) => {
           cone = this.createCone(sound, c.color);
+          cone.file = file;
           cone.filename = c.filename;
           cone.sound.volume.gain.value = c.volume;
           cone.sound.spread = c.spread;
