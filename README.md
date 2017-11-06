@@ -70,4 +70,4 @@ You can run any of these individually if you'd like with the npm run command:
 
 ## Team
 Project leader, primary developer: Anıl Çamcı [<acamci@umich.edu>]<br/>
-Contributors: Kristine Lee [<khlee2@uic.edu>] (DevOps), Cody J. Roberts [<codyroberts@protonmail.com>] (DevOps), Angus Forbes [<anugs@ucsc.edu>]
+Contributors: Kristine Lee [<khlee2@uic.edu>] (DevOps), Cody J. Roberts [<codyroberts@protonmail.com>] (DevOps), Angus Forbes [<angus@ucsc.edu>]
