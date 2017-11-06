@@ -5,7 +5,7 @@ Accessible online at: <a link href="http://inviso.cc">inviso.cc</a>
 
 <img width="1440" alt="inviso" src="https://user-images.githubusercontent.com/10594286/31970006-9fdb31f4-b8e4-11e7-95f8-ebbd7c5280e1.png">
 
-The ACM UIST paper about INVISO, including a video, can be found <a link href="https://dl.acm.org/citation.cfm?doid=3126594.3126644">here</a>.
+An ACM UIST paper about INVISO, including a video figure, can be found <a link href="https://dl.acm.org/citation.cfm?doid=3126594.3126644">here</a>.
 
 ## Project Structure
 * build - Directory for built and compressed files from the npm build script
