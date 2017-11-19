@@ -8,18 +8,14 @@
 // Components
 @import './components/loading';
 
-#GlobalContainer{
-
-}
-
-#UIContainer{
+#UIContainer {
   position: absolute;
   right: 200px;
   top: 0%;
   column-count: 1;
 }
 
-#add-object-button{
+#add-object-button {
   z-index: 1;
   position: relative;
   margin: 0;
@@ -38,35 +34,41 @@
   background-color: #f44b76;
 }
 
-#guis{
-  position:absolute;
-  top:40px;
-  width:220px;
-  background-color:rgba(255,255,255,0.6);
-  font-family:roboto,'helvetica neue', helvetica, arial, sans-serif;
+#guis {
+  position: absolute;
+  top: 40px;
+  width: 220px;
+  background-color: rgba(255, 255, 255, 0.6);
+  font-family: roboto, 'helvetica neue', helvetica, arial, sans-serif;
   line-height: 20px;
   box-shadow: 0 0 5px #aaa;
-  transition:background-color 200ms ease, color 200ms ease, opacity 200ms ease;
-  -webkit-transition:background-color 200ms ease, color 200ms ease, opacity 200ms ease;
+  transition: background-color 200ms ease, color 200ms ease, opacity 200ms ease;
+  -webkit-transition: background-color 200ms ease, color 200ms ease,
+    opacity 200ms ease;
 }
+
 #guis > div {
   padding: 15px;
-  position:relative;
+  position: relative;
 }
-#guis > div+div {
-  border-top:0.5px solid #aaa;
+
+#guis > div + div {
+  border-top: 0.5px solid #aaa;
 }
+
 #guis h4 {
-  position:relative;
+  position: relative;
   margin: 0;
-  margin-top:0.2em;
-  font-weight:400;
-  text-align:center;
+  margin-top: 0.2em;
+  font-weight: 400;
+  text-align: center;
 }
-#guis h4+* {
-  margin-top:1em;
+
+#guis h4 + * {
+  margin-top: 1em;
 }
-#guis div>span {
+
+#guis div > span {
   font-size: 0.8em;
   vertical-align: top;
 }
@@ -75,101 +77,109 @@
   font-weight: bold;
   display: inline-block;
   width: 70px;
-  position:absolute;
+  position: absolute;
 }
-#guis .valueSpan {
-  cursor:pointer;
-  border-bottom: 1px dotted #555;
-  display:inline-block;
 
-  max-width:90px;
-  overflow:hidden;
-  text-overflow:ellipsis;
+#guis .valueSpan {
+  cursor: pointer;
+  border-bottom: 1px dotted #555;
+  display: inline-block;
+
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #guis {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Chrome/Safari/Opera */
-   -khtml-user-select: none; /* Konqueror */
-     -moz-user-select: none; /* Firefox */
-      -ms-user-select: none; /* Internet Explorer/Edge */
-          user-select: none; /* Non-prefixed version, currently
+  -khtml-user-select: none; /* Konqueror */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
                                 not supported by any browser */
 }
 
-.property + .valueSpan { margin-left:80px; }
+.property + .valueSpan {
+  margin-left: 80px;
+}
 
 #guis.editor {
   background-color: #555;
-  color:white;
+  color: white;
 }
+
 #guis.editor .valueSpan {
-  border-bottom-color:white;
+  border-bottom-color: white;
 }
 
 #guis .edit-toggle {
-  line-height:1.2em;
-  color:indigo;
+  line-height: 1.2em;
+  color: indigo;
 }
+
 #guis.editor .edit-toggle {
-  color:skyblue;
+  color: skyblue;
 }
 
 #guis .remove-file {
-  padding:0 2px;
+  padding: 0 2px;
   margin: 0 2px;
   color: #f44b76;
-  cursor:pointer;
-  font-size:20px;
-  line-height:11px;
-  display:inline-block;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 11px;
+  display: inline-block;
   vertical-align: top;
-  font-weight:bold;
-}
-#guis .remove-file:hover {
-  color:pink;
+  font-weight: bold;
 }
 
-#guis .cone, #guis.editor .cone {
+#guis .remove-file:hover {
+  color: pink;
+}
+
+#guis .cone,
+#guis.editor .cone {
   color: black;
 }
-#guis .cone .valueSpan, #guis.editor .cone .valueSpan {
+#guis .cone .valueSpan,
+#guis.editor .cone .valueSpan {
   border-bottom-color: #555;
 }
 
 #guis.editor .nav-object {
-  color:rgba(220,220,220,0.5);
+  color: rgba(220, 220, 220, 0.5);
 }
 #guis.editor .nav-object:hover {
-  color:white;
+  color: white;
 }
 #guis .nav {
-  color:rgba(85,85,85,0.5);
+  color: rgba(85, 85, 85, 0.5);
   transition: color 100ms ease;
 
-  top:10px;
-  cursor:pointer;
-  padding:0 12px;
-  font-size:40px;
-  position:absolute;
-  line-height:1.1em;
+  top: 10px;
+  cursor: pointer;
+  padding: 0 12px;
+  font-size: 40px;
+  position: absolute;
+  line-height: 1.1em;
 }
 #guis .nav:hover {
-  color:#333;
-  text-shadow:0 0 5px #aaa;
+  color: #333;
+  text-shadow: 0 0 5px #aaa;
 }
 #guis .nav-left {
-  left:0;
+  left: 0;
 }
 #guis .nav-right {
-  right:0;
+  right: 0;
 }
 
 #guis .active {
   background-color: #99ccff;
 }
 
-input[type="file"] {
+input[type='file'] {
   display: none;
 }
 
@@ -177,85 +187,86 @@ input[type="file"] {
   z-index: 1;
   position: absolute;
   bottom: 25px;
-  width:100%;
+  width: 100%;
   text-align: center;
-  font-size:18px;
+  font-size: 18px;
   text-decoration: underline;
   text-decoration-style: dotted;
   -moz-text-decoration-style: dotted;
   -webkit-text-decoration-style: dotted;
   text-decoration-style: dotted;
-  color:#555;
-  cursor:pointer;
+  color: #555;
+  cursor: pointer;
 }
 
 #play-mute-button {
-  position:absolute;
-  top:10px;
-  left:15px;
+  position: absolute;
+  top: 10px;
+  left: 15px;
 }
 #play-mute-button img {
-  cursor:pointer;
-  width:20px;
-  height:20px;
-  opacity:0.5;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  opacity: 0.5;
 }
 #play-mute-button img:hover {
-  opacity:0.66;
+  opacity: 0.66;
 }
 #unmute-button {
   display: none;
 }
 
 #save {
-  position:absolute;
+  position: absolute;
   bottom: 10px;
   left: 15px;
 }
 
-#save img{
-  cursor:pointer;
-  width:15px;
-  height:15px;
-  opacity:0.5;
+#save img {
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+  opacity: 0.5;
 }
 
 #load {
   z-index: 2;
-  position:absolute;
+  position: absolute;
   bottom: 10px;
   left: 45px;
 }
 
-#load img{
-  cursor:pointer;
-  width:15px;
-  height:15px;
-  opacity:0.67;
+#load img {
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+  opacity: 0.67;
 }
 
-#githubLink{
+#githubLink {
   z-index: 2;
   position: absolute;
   bottom: 10px;
   right: 15px;
-  width:25px;
-  height:25px;
-  opacity: 0.7;}
+  width: 25px;
+  height: 25px;
+  opacity: 0.7;
+}
 
 .help-bubble {
   float: left;
-  position:absolute;
-  padding:10px;
-  color:#FFF;
-  background:#777;
+  position: absolute;
+  padding: 10px;
+  color: #fff;
+  background: #777;
   opacity: 0.75;
-  -webkit-border-radius:10px;
-  -moz-border-radius:10px;
-  border-radius:10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
   display: block;
-  font-size:12px;
-  font-family:roboto,'helvetica neue', helvetica, arial, sans-serif;
-  line-height:1.25em;
+  font-size: 12px;
+  font-family: roboto, 'helvetica neue', helvetica, arial, sans-serif;
+  line-height: 1.25em;
   pointer-events: none;
 }

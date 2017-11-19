@@ -829,19 +829,25 @@ export default class Main {
 
     let promise = new Promise(function(resolve, reject) {
       var files = [];
+
+      const addFile = (file) => {
+        const fileExists = files.map(f => f.name).includes(file.name);
+        if (!fileExists) files.push(file);
+      };
+
       const exportJSON = JSON.stringify({
         camera: that.camera.threeCamera.toJSON(),
         soundObjects: that.soundObjects.map((obj) => {
-          if (obj.file) files.push(obj.file);
+          if (obj.file) addFile(obj.file);
 
           obj.cones.forEach((c) => {
-            if (c.file) files.push(c.file);
+            if (c.file) addFile(obj.file);
           });
 
           return obj.toJSON();
         }),
         soundZones: that.soundZones.map((obj) => {
-          if (obj.file) files.push(obj.file);
+          if (obj.file) addFile(obj.file);
           return obj.toJSON();
         }),
       }, null, 2);
