@@ -841,7 +841,7 @@ export default class Main {
           if (obj.file) addFile(obj.file);
 
           obj.cones.forEach((c) => {
-            if (c.file) addFile(obj.file);
+            if (c.file) addFile(c.file);
           });
 
           return obj.toJSON();
