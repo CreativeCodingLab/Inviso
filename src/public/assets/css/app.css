@@ -105,7 +105,7 @@ body {
   top: 40px;
   width: 220px;
   background-color: rgba(255, 255, 255, 0.6);
-  font-family: roboto,'helvetica neue', helvetica, arial, sans-serif;
+  font-family: roboto, 'helvetica neue', helvetica, arial, sans-serif;
   line-height: 20px;
   box-shadow: 0 0 5px #aaa;
   transition: background-color 200ms ease, color 200ms ease, opacity 200ms ease;
@@ -192,10 +192,12 @@ body {
 #guis .remove-file:hover {
   color: pink; }
 
-#guis .cone, #guis.editor .cone {
+#guis .cone,
+#guis.editor .cone {
   color: black; }
 
-#guis .cone .valueSpan, #guis.editor .cone .valueSpan {
+#guis .cone .valueSpan,
+#guis.editor .cone .valueSpan {
   border-bottom-color: #555; }
 
 #guis.editor .nav-object {
@@ -227,7 +229,7 @@ body {
 #guis .active {
   background-color: #99ccff; }
 
-input[type="file"] {
+input[type='file'] {
   display: none; }
 
 #camera-label {
@@ -285,11 +287,20 @@ input[type="file"] {
   height: 15px;
   opacity: 0.67; }
 
+#githubLink {
+  z-index: 2;
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  width: 25px;
+  height: 25px;
+  opacity: 0.7; }
+
 .help-bubble {
   float: left;
   position: absolute;
   padding: 10px;
-  color: #FFF;
+  color: #fff;
   background: #777;
   opacity: 0.75;
   -webkit-border-radius: 10px;
@@ -297,6 +308,6 @@ input[type="file"] {
   border-radius: 10px;
   display: block;
   font-size: 12px;
-  font-family: roboto,'helvetica neue', helvetica, arial, sans-serif;
+  font-family: roboto, 'helvetica neue', helvetica, arial, sans-serif;
   line-height: 1.25em;
   pointer-events: none; }

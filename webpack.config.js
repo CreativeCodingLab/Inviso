@@ -1,45 +1,46 @@
 // Global imports
-var webpack = require('webpack'),
-    path    = require('path');
+const webpack = require('webpack');
+const path = require('path');
 
 // Paths
-var entry           = './src/js/app.js',
-    includePath     = path.join(__dirname, 'src/js'),
-    nodeModulesPath = path.join(__dirname, 'node_modules'),
-    outputPath      = path.join(__dirname, 'src/public/assets/js');
+const entry = './src/js/app.js';
+const includePath = path.join(__dirname, 'src/js');
+const nodeModulesPath = path.join(__dirname, 'node_modules');
+let outputPath = path.join(__dirname, 'src/public/assets/js');
 
 // Environment
-var PROD = JSON.parse(process.env.NODE_ENV || 0);
+const PROD = JSON.parse(process.env.NODE_ENV || 0);
 
 // Dev environment
-var env     = 'dev',
-    time    = Date.now(),
-    devtool = 'eval',
-    debug   = true,
-    plugins = [
-      new webpack.NoErrorsPlugin(),
-      new webpack.DefinePlugin({
-        __ENV__: JSON.stringify(env),
-        ___BUILD_TIME___: time
-      })
-    ];
+let env = 'dev';
+let devtool = 'eval';
+let debug = true;
+
+const time = Date.now();
+const plugins = [
+  new webpack.NoErrorsPlugin(),
+  new webpack.DefinePlugin({
+    __ENV__: JSON.stringify(env),
+    ___BUILD_TIME___: time,
+  }),
+];
 
 // Production environment
 if (PROD) {
   env = 'prod';
   devtool = 'hidden-source-map';
   debug = false;
-  outputPath = __dirname + '/build/public/assets/js';
+  outputPath = path.join(__dirname, '/build/public/assets/js');
 
-  uglifyOptions = {
+  const uglifyOptions = {
     sourceMap: false,
     mangle: true,
     compress: {
-      drop_console: true
+      drop_console: true,
     },
     output: {
-      comments: false
-    }
+      comments: false,
+    },
   };
   plugins.push(new webpack.optimize.UglifyJsPlugin(uglifyOptions));
 }
@@ -51,35 +52,35 @@ console.log('    - nodeModulesPath ', nodeModulesPath);
 
 module.exports = {
   stats: {
-    colors: true
+    colors: true,
   },
-  debug: debug,
-  devtool: devtool,
+  debug,
+  devtool,
   devServer: {
-    contentBase: 'src/public'
+    contentBase: 'src/public',
   },
-  entry: [
-    entry
-  ],
+  entry: [entry],
   output: {
     path: outputPath,
     publicPath: 'assets/js',
-    filename: 'app.js'
+    filename: 'app.js',
   },
   module: {
     loaders: [
+      {
+        test: /\.scss$/,
+        loaders: ['style-loader', 'css-loader', 'sass-loader'],
+      },
       {
         test: /\.js?$/,
         loader: 'babel-loader',
         query: {
           retainLines: true,
-          presets: ['es2015']
+          presets: ['es2015'],
         },
-        include: [
-          includePath, nodeModulesPath
-        ]
-      }
-    ]
+        include: [includePath, nodeModulesPath],
+      },
+    ],
   },
-  plugins: plugins
+  plugins,
 };

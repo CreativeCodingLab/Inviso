@@ -334,7 +334,7 @@ export default class Main {
     }
 
     /* Frame rate dependency for the head movement speed */
-    this.movementSpeed = 10 * (30 / rS('FPS').value());
+    if(rS('FPS').value()) this.movementSpeed = 10 * (30 / rS('FPS').value());
 
     /* Camera tweening object update */
     TWEEN.update();
@@ -829,19 +829,25 @@ export default class Main {
 
     let promise = new Promise(function(resolve, reject) {
       var files = [];
+
+      const addFile = (file) => {
+        const fileExists = files.map(f => f.name).includes(file.name);
+        if (!fileExists) files.push(file);
+      };
+
       const exportJSON = JSON.stringify({
         camera: that.camera.threeCamera.toJSON(),
         soundObjects: that.soundObjects.map((obj) => {
-          if (obj.file) files.push(obj.file);
+          if (obj.file) addFile(obj.file);
 
           obj.cones.forEach((c) => {
-            if (c.file) files.push(c.file);
+            if (c.file) addFile(c.file);
           });
 
           return obj.toJSON();
         }),
         soundZones: that.soundZones.map((obj) => {
-          if (obj.file) files.push(obj.file);
+          if (obj.file) addFile(obj.file);
           return obj.toJSON();
         }),
       }, null, 2);
