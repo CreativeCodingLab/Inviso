@@ -334,7 +334,7 @@ export default class Main {
     }
 
     /* Frame rate dependency for the head movement speed */
-    this.movementSpeed = 10 * (30 / rS('FPS').value());
+    if(rS('FPS').value()) this.movementSpeed = 10 * (30 / rS('FPS').value());
 
     /* Camera tweening object update */
     TWEEN.update();
