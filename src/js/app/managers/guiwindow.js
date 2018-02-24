@@ -137,7 +137,7 @@ export default class GUIWindow {
             })
             object.trajectory.splinePoints.forEach((pt) => {
               pt[component] += dx;
-            });            
+            });
           }
         }
       }//end setObjectPosition
@@ -398,7 +398,7 @@ export default class GUIWindow {
       cls:'speed',
       bind: function(dx) {
         const speed = object.movementSpeed + dx/10;
-        object.movementSpeed = Math.min(Math.max(-40, speed), 40);
+        object.movementSpeed = Math.min(Math.max(-100, speed), 100);
         object.calculateMovementSpeed();
       }
     }, elem);
